@@ -15,6 +15,9 @@ class CreateRegrasTable extends Migration
     {
         Schema::create('regras', function (Blueprint $table) {
             $table->id();
+            $table->string('coluna_carro');
+            $table->string('coluna_interesse');
+            $table->integer('prioridade')->default(10);
             $table->timestamps();
         });
     }

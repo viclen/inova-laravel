@@ -18,5 +18,6 @@ class DatabaseSeeder extends Seeder
         $this->call(MarcaSeeder::class);
         $this->call(EstoqueSeeder::class);
         $this->call(InteresseSeeder::class);
+        $this->call(RegraSeeder::class);
     }
 }

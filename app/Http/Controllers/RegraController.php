@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Marca;
+use App\Regra;
 use Illuminate\Http\Request;
 
-class MarcaController extends Controller
+class RegraController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,16 +14,7 @@ class MarcaController extends Controller
      */
     public function index()
     {
-        $qtd = request()->input('qtd');
-        if ($qtd) {
-            request()->session()->put('qtd', $qtd);
-        } else {
-            $qtd = request()->session()->get('qtd', 10);
-        }
-
-        return view('pages.marca.index', [
-            'dados' => Marca::withCount('carros as carros')->paginate($qtd),
-        ]);
+        //
     }
 
     /**
@@ -50,52 +41,45 @@ class MarcaController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Marca  $marca
+     * @param  \App\Regra  $regra
      * @return \Illuminate\Http\Response
      */
-    public function show(Marca $marca)
+    public function show(Regra $regra)
     {
-        return $marca;
+
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Marca  $marca
+     * @param  \App\Regra  $regra
      * @return \Illuminate\Http\Response
      */
-    public function edit(Marca $marca)
+    public function edit(Regra $regra)
     {
-        return $marca;
+        //
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Marca  $marca
+     * @param  \App\Regra  $regra
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Marca $marca)
+    public function update(Request $request, Regra $regra)
     {
-        return $marca;
+        //
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Marca  $marca
+     * @param  \App\Regra  $regra
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Marca $marca)
+    public function destroy(Regra $regra)
     {
-        if (!count($marca->carros) && $marca->delete()) {
-            return [
-                'status' => 1
-            ];
-        }
-        return [
-            'status' => 0
-        ];
+        //
     }
 }

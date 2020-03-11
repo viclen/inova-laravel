@@ -63,6 +63,7 @@ class CarroController extends Controller
     public function show(Carro $carro)
     {
         //
+        return $carro;
     }
 
     /**
@@ -74,6 +75,7 @@ class CarroController extends Controller
     public function edit(Carro $carro)
     {
         //
+        return $carro;
     }
 
     /**
@@ -86,6 +88,7 @@ class CarroController extends Controller
     public function update(Request $request, Carro $carro)
     {
         //
+        return $carro;
     }
 
     /**
@@ -96,6 +99,14 @@ class CarroController extends Controller
      */
     public function destroy(Carro $carro)
     {
-        //
+        if($carro->delete()){
+            return [
+                'status' => 1
+            ];
+        }
+
+        return [
+            'status' => 0
+        ];
     }
 }
