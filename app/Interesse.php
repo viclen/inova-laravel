@@ -19,4 +19,9 @@ class Interesse extends Model
     {
         return $this->belongsTo(Cliente::class);
     }
+
+    public function carro()
+    {
+        return $this->belongsTo(Carro::class);
+    }
 }
