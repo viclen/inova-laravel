@@ -28,3 +28,7 @@ Route::resource('interesses', 'InteresseController')->middleware('auth');
 Route::get('/testAPI', function() {
     return view('test.api');
 });
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
