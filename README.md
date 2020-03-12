@@ -30,7 +30,7 @@ Data:
   senha: 'senha'
 }
 
-Var ser retornado:
+Vai ser retornado:
 {
   status: 1,
   token: saodnin4n53in34nffndfsdfsdf232q...
