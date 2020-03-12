@@ -46,7 +46,7 @@ class RegraController extends Controller
      */
     public function show(Regra $regra)
     {
-
+        return $regra;
     }
 
     /**
@@ -57,7 +57,7 @@ class RegraController extends Controller
      */
     public function edit(Regra $regra)
     {
-        //
+        return $regra;
     }
 
     /**
@@ -69,7 +69,7 @@ class RegraController extends Controller
      */
     public function update(Request $request, Regra $regra)
     {
-        //
+        return $regra;
     }
 
     /**
@@ -80,6 +80,13 @@ class RegraController extends Controller
      */
     public function destroy(Regra $regra)
     {
-        //
+        return [
+            'status' => 1,
+        ];
+    }
+
+    public function list()
+    {
+        return Regra::all();
     }
 }

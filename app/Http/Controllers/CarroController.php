@@ -109,4 +109,9 @@ class CarroController extends Controller
             'status' => 0
         ];
     }
+
+    public function list()
+    {
+        return Carro::all();
+    }
 }

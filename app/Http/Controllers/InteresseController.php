@@ -118,4 +118,9 @@ class InteresseController extends Controller
             'status' => 0,
         ];
     }
+
+    public function list()
+    {
+        return Interesse::all();
+    }
 }

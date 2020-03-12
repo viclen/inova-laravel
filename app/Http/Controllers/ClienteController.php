@@ -90,6 +90,11 @@ class ClienteController extends Controller
     {
         return [
             'status' => 0
-        ]
+        ];
+    }
+
+    public function list()
+    {
+        return Cliente::all();
     }
 }

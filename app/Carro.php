@@ -6,6 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Carro extends Model
 {
+    protected $fillable = [
+        'nome',
+        'fipe_id',
+        'marca_id'
+    ];
+
     public function marca()
     {
         return $this->belongsTo(Marca::class);

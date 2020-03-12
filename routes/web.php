@@ -24,3 +24,7 @@ Route::resource('carros', 'CarroController')->middleware('auth');
 Route::resource('marcas', 'MarcaController')->middleware('auth');
 Route::resource('regras', 'RegraController')->middleware('auth');
 Route::resource('interesses', 'InteresseController')->middleware('auth');
+
+Route::get('/testAPI', function() {
+    return view('test.api');
+});
