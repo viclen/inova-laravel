@@ -26,8 +26,8 @@ POST
 -----------------------------
 Data: 
 {
-  email: 'admin',
-  senha: '0.admin.1'
+  email: 'email ou username',
+  senha: 'senha'
 }
 
 Var ser retornado:
