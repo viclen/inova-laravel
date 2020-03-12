@@ -14,7 +14,7 @@ class CreateCarrosTable extends Migration
     public function up()
     {
         Schema::create('carros', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->string('nome');
             $table->unsignedBigInteger('fipe_id')->nullable();
             $table->unsignedBigInteger('marca_id')->nullable();

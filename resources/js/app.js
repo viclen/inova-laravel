@@ -20,12 +20,7 @@ window.Vue = require('vue');
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
 Vue.component('tabela-acoes', require('./components/TabelaAcoes.vue').default);
-
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { fas } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-library.add(fas)
-Vue.component('fa-icon', FontAwesomeIcon)
+Vue.component('test-api', require('./components/TestAPI.vue').default);
 
 import Toasted from 'vue-toasted';
 import BootstrapVue from 'bootstrap-vue';

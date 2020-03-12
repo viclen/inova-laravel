@@ -44,7 +44,6 @@ class ClienteController extends Controller
      */
     public function store(Request $request)
     {
-        //
     }
 
     /**
@@ -55,7 +54,7 @@ class ClienteController extends Controller
      */
     public function show(Cliente $cliente)
     {
-        //
+        return $cliente;
     }
 
     /**
@@ -66,7 +65,7 @@ class ClienteController extends Controller
      */
     public function edit(Cliente $cliente)
     {
-        //
+        return $cliente;
     }
 
     /**
@@ -78,7 +77,7 @@ class ClienteController extends Controller
      */
     public function update(Request $request, Cliente $cliente)
     {
-        //
+        return $cliente;
     }
 
     /**
@@ -89,6 +88,13 @@ class ClienteController extends Controller
      */
     public function destroy(Cliente $cliente)
     {
-        //
+        return [
+            'status' => 0
+        ];
+    }
+
+    public function list()
+    {
+        return Cliente::all();
     }
 }

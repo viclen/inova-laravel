@@ -55,7 +55,7 @@ class MarcaController extends Controller
      */
     public function show(Marca $marca)
     {
-        //
+        return $marca;
     }
 
     /**
@@ -66,7 +66,7 @@ class MarcaController extends Controller
      */
     public function edit(Marca $marca)
     {
-        //
+        return $marca;
     }
 
     /**
@@ -78,7 +78,7 @@ class MarcaController extends Controller
      */
     public function update(Request $request, Marca $marca)
     {
-        //
+        return $marca;
     }
 
     /**
@@ -89,6 +89,18 @@ class MarcaController extends Controller
      */
     public function destroy(Marca $marca)
     {
-        //
+        if (!count($marca->carros) && $marca->delete()) {
+            return [
+                'status' => 1
+            ];
+        }
+        return [
+            'status' => 0
+        ];
+    }
+
+    public function list()
+    {
+        return Marca::all();
     }
 }

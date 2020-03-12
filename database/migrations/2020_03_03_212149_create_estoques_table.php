@@ -14,7 +14,7 @@ class CreateEstoquesTable extends Migration
     public function up()
     {
         Schema::create('estoques', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->float('valor', 11, 2);
             $table->float('fipe', 11, 2);
             $table->integer('ano');

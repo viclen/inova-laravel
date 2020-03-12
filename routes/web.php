@@ -22,3 +22,13 @@ Route::get('/home', 'HomeController@index')->name('home');
 Route::resource('clientes', 'ClienteController')->middleware('auth');
 Route::resource('carros', 'CarroController')->middleware('auth');
 Route::resource('marcas', 'MarcaController')->middleware('auth');
+Route::resource('regras', 'RegraController')->middleware('auth');
+Route::resource('interesses', 'InteresseController')->middleware('auth');
+
+Route::get('/testAPI', function() {
+    return view('test.api');
+});
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
