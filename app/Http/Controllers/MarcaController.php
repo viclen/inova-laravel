@@ -35,7 +35,7 @@ class MarcaController extends Controller
      */
     public function create()
     {
-        return view('pages.carro.create', [
+        return view('pages.marca.create', [
             'tipos' => (new Marca())->getTypes(),
         ]);
     }
@@ -93,7 +93,10 @@ class MarcaController extends Controller
      */
     public function edit(Marca $marca)
     {
-        return $marca;
+        return view('pages.marca.edit', [
+            'tipos' => (new Marca())->getTypes(),
+            'dados' => $marca,
+        ]);
     }
 
     /**
@@ -105,7 +108,28 @@ class MarcaController extends Controller
      */
     public function update(Request $request, Marca $marca)
     {
-        return $marca;
+        $validator = Validator::make($request->all(), [
+            'nome' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return [
+                'status' => 0,
+                'errors' => $validator->errors()
+            ];
+        } else {
+            if ($marca->update($request->all())) {
+                return [
+                    'status' => 1,
+                    'data' => $marca,
+                ];
+            }
+        }
+
+        return [
+            'status' => 0,
+            'errors' => []
+        ];
     }
 
     /**

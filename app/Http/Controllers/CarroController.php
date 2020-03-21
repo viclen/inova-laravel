@@ -106,8 +106,13 @@ class CarroController extends Controller
      */
     public function edit(Carro $carro)
     {
-        //
-        return $carro;
+        return view('pages.carro.edit', [
+            'tipos' => (new Carro)->getTypes(),
+            'opcoes' => [
+                'marcas' => Marca::select(["id", "nome as texto"])->get(),
+            ],
+            'dados' => $carro,
+        ]);
     }
 
     /**
@@ -119,8 +124,32 @@ class CarroController extends Controller
      */
     public function update(Request $request, Carro $carro)
     {
-        //
-        return $carro;
+        $validator = Validator::make($request->all(), [
+            'nome' => 'required',
+            'marca_id' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return [
+                'status' => 0,
+                'errors' => $validator->errors()
+            ];
+        } else {
+            $carro->nome = $request['nome'];
+            $carro->marca_id = $request['marca_id'];
+
+            if ($carro->save()) {
+                return [
+                    'status' => 1,
+                    'data' => $carro,
+                ];
+            }
+        }
+
+        return [
+            'status' => 0,
+            'errors' => []
+        ];
     }
 
     /**

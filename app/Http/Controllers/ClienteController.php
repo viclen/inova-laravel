@@ -99,7 +99,10 @@ class ClienteController extends Controller
      */
     public function edit(Cliente $cliente)
     {
-        return $cliente;
+        return view('pages.cliente.edit', [
+            'tipos' => (new Cliente)->getTypes(),
+            'dados' => $cliente,
+        ]);
     }
 
     /**
@@ -111,7 +114,33 @@ class ClienteController extends Controller
      */
     public function update(Request $request, Cliente $cliente)
     {
-        return $cliente;
+        $validator = Validator::make($request->all(), [
+            'nome' => 'required',
+            'telefone' => 'required|regex:/^\([1-9]{2}\) [0-9]{4,5}\-[0-9]{4}$/',
+            'endereco' => '',
+            'cidade' => '',
+            'email' => '',
+            'cpf' => '',
+        ]);
+
+        if ($validator->fails()) {
+            return [
+                'status' => 0,
+                'errors' => $validator->errors()
+            ];
+        } else {
+            if ($cliente->update($request->all())) {
+                return [
+                    'status' => 1,
+                    'data' => $cliente,
+                ];
+            }
+        }
+
+        return [
+            'status' => 0,
+            'errors' => []
+        ];
     }
 
     /**

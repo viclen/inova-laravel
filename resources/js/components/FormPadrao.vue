@@ -10,9 +10,10 @@
       <label
         v-bind:for="campo.nome+'_'"
         class="text-capitalize col-md-4 col-form-label text-md-right"
+        v-if="campo.nome != 'id'"
       >{{ campo.label }}</label>
 
-      <div class="col-md-6">
+      <div class="col-md-6" v-if="campo.nome != 'id'">
         <select
           v-if="campo.tipo=='select'"
           v-bind:id="campo.nome+'_'"
@@ -95,7 +96,14 @@
     </div>
     <div class="form-group row">
       <div class="col-md-10 text-right">
-        <button class="btn btn-primary" v-on:click="salvar()">Salvar</button>
+        <button class="btn btn-primary" v-on:click="salvar()">
+          <fa-icon icon="save" />&nbsp;
+          Salvar
+        </button>
+        <button class="btn btn-secondary" v-on:click="cancelar()">
+          <fa-icon icon="times" />&nbsp;
+          Cancelar
+        </button>
       </div>
     </div>
   </div>
@@ -114,7 +122,8 @@ export default {
   data() {
     return {
       campos: [],
-      loading: false
+      loading: false,
+      id: undefined
     };
   },
   mounted() {
@@ -149,6 +158,22 @@ export default {
       }
     }
 
+    this.$nextTick(() => {
+      if (this.valores != undefined && this.valores.id) {
+        this.id = this.valores.id;
+
+        for (const nome in this.valores) {
+          const valor = this.valores[nome];
+
+          this.campos.forEach((campo, i) => {
+            if (campo.nome == nome) {
+              this.campos[i].valor = valor;
+            }
+          });
+        }
+      }
+    });
+
     this.campos = campos;
   },
   methods: {
@@ -161,7 +186,7 @@ export default {
         data[campo.nome] = campo.valor;
       });
 
-      if (this.id != undefined) {
+      if (this.valores && this.id) {
         let url = this.action != undefined ? this.action : window.location.href;
 
         if (!url.includes(this.id)) {
@@ -169,7 +194,7 @@ export default {
           url = url.replace("/edit", "");
         }
 
-        axios.put(url, data).then(r => fimRequest(r));
+        axios.put(url, data).then(r => this.fimRequest(r));
       } else {
         axios
           .post(
@@ -200,7 +225,7 @@ export default {
           } else {
             window.location = window.location.href;
           }
-        }, 2000);
+        }, 1000);
 
         let toast = this.$toasted.success("Salvo com sucesso!", {
           theme: "toasted-primary",
@@ -340,6 +365,13 @@ export default {
         }
       }
       return finalValue;
+    },
+    cancelar() {
+      if (this.redirect) {
+        window.location = this.redirect;
+      } else {
+        window.history.back();
+      }
     }
   }
 };
