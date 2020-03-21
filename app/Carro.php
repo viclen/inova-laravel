@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Carro extends Model
 {
@@ -25,5 +26,19 @@ class Carro extends Model
     public function interesses()
     {
         return $this->hasMany(Interesse::class);
+    }
+
+    public function getTypes()
+    {
+        $types = [];
+        $items = DB::select('describe ' . $this->getTable());
+
+        foreach ($items as $item) {
+            if (strpos($item->Field, "fipe") === false) {
+                $types[$item->Field] = $item->Type;
+            }
+        }
+
+        return $types;
     }
 }

@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Estoque extends Model
 {
@@ -19,5 +20,17 @@ class Estoque extends Model
     public function carro()
     {
         return $this->belongsTo(Carro::class);
+    }
+
+    public function getTypes()
+    {
+        $types = [];
+        $items = DB::select('describe ' . $this->getTable());
+
+        foreach ($items as $item) {
+            $types[$item->Field] = $item->Type;
+        }
+
+        return $types;
     }
 }

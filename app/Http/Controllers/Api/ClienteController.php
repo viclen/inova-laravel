@@ -13,7 +13,14 @@ class ClienteController extends Controller
     public function index()
     {
         if (request()->input($this->with)) {
-            return Cliente::with(request()->input($this->with))->get();
+            try {
+                return Cliente::with(request()->input($this->with))->get();
+            } catch (\Throwable $th) {
+                return [
+                    'status' => 0,
+                    'message' => 'Relacao nao encontrada',
+                ];
+            }
         }
 
         return Cliente::all();

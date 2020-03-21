@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Marca;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class MarcaController extends Controller
 {
@@ -33,7 +35,9 @@ class MarcaController extends Controller
      */
     public function create()
     {
-        //
+        return view('pages.carro.create', [
+            'tipos' => (new Marca())->getTypes(),
+        ]);
     }
 
     /**
@@ -44,7 +48,30 @@ class MarcaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'nome' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return [
+                'status' => 0,
+                'errors' => $validator->errors()
+            ];
+        } else {
+            $marca = new Marca($request->all());
+
+            if ($marca->save()) {
+                return [
+                    'status' => 1,
+                    'data' => $marca,
+                ];
+            }
+        }
+
+        return [
+            'status' => 0,
+            'errors' => []
+        ];
     }
 
     /**
@@ -102,5 +129,25 @@ class MarcaController extends Controller
     public function list()
     {
         return Marca::all();
+    }
+
+    public function search($search)
+    {
+        $qtd = request()->input('qtd');
+        if ($qtd) {
+            request()->session()->put('qtd', $qtd);
+        } else {
+            $qtd = request()->session()->get('qtd', 10);
+        }
+
+        $search = "%" . addslashes($search) . "%";
+        $dados = Marca::withCount('carros as carros')
+            ->where("marcas.nome", "like", $search)
+            ->orderBy('marcas.nome')
+            ->paginate($qtd);
+
+        return view('pages.marca.index', [
+            'dados' => $dados,
+        ]);
     }
 }

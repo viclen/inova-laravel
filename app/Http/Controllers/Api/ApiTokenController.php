@@ -30,7 +30,7 @@ class ApiTokenController extends Controller
 
         $user = User::where('email', $request['email'])->orWhere('username', $request['email'])->first();
 
-        if (Hash::check($request['senha'], $user->password)) {
+        if ($user && Hash::check($request['senha'], $user->password)) {
             $token = Str::random(80);
             $user->forceFill([
                 'api_token' => hash('sha256', $token),

@@ -283,10 +283,21 @@ export default {
       if (id > -1) {
         let url = "/" + this.controller + "s/" + this.dados[id].id;
         axios.delete(url).then(r => {
-          if (r.data == "1") {
+          if (r.data.status == "1") {
             this.dadosTabela.splice(id, 1);
             this.dados.splice(id, 1);
+
+            let toast = this.$toasted.success("Apagado com sucesso!", {
+              theme: "toasted-primary",
+              position: "bottom-right",
+              duration: 5000
+            });
           } else {
+            let toast = this.$toasted.error("Não foi possível apagar.", {
+              theme: "toasted-primary",
+              position: "bottom-right",
+              duration: 5000
+            });
             // console.log(r);
           }
           this.mostrarModalDelete = false;
@@ -300,7 +311,7 @@ export default {
     },
     editarRegistro(id) {
       window.location =
-        "/" + this.controller + "s" + "/edit/" + this.dados[id].id;
+        "/" + this.controller + "s/" + this.dados[id].id + "/edit";
     },
     verRegistro(id) {
       window.location = "/" + this.controller + "s" + "/" + this.dados[id].id;

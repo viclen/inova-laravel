@@ -17,13 +17,11 @@ class CreateClientesTable extends Migration
             $table->bigIncrements('id');
             $table->string('nome');
             $table->string('telefone', 20);
-            $table->string('endereco')->default('');
-            $table->string('cidade')->default('');
-            $table->string('email')->default('');
-            $table->string('cpf', 14)->default('');
+            $table->string('endereco')->nullable();
+            $table->string('cidade')->nullable();
+            $table->string('email')->nullable();
+            $table->string('cpf', 14)->nullable();
             $table->timestamps();
-
-
         });
     }
 

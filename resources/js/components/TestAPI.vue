@@ -51,7 +51,12 @@ export default {
           if (r.data.status == 1) {
             this.token = r.data.token;
             this.type = 1;
+          } else {
+            console.log(r.data);
           }
+        })
+        .catch(e => {
+          console.log(e);
         });
     },
     getRoute() {

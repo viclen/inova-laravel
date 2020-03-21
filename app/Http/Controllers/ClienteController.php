@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Cliente;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class ClienteController extends Controller
 {
@@ -33,7 +36,9 @@ class ClienteController extends Controller
      */
     public function create()
     {
-        //
+        return view('pages.cliente.create', [
+            'tipos' => (new Cliente)->getTypes(),
+        ]);
     }
 
     /**
@@ -44,6 +49,35 @@ class ClienteController extends Controller
      */
     public function store(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'nome' => 'required',
+            'telefone' => 'required|regex:/^\([1-9]{2}\) [0-9]{4,5}\-[0-9]{4}$/',
+            'endereco' => '',
+            'cidade' => '',
+            'email' => '',
+            'cpf' => '',
+        ]);
+
+        if ($validator->fails()) {
+            return [
+                'status' => 0,
+                'errors' => $validator->errors()
+            ];
+        } else {
+            $cliente = new Cliente($request->all());
+
+            if ($cliente->save()) {
+                return [
+                    'status' => 1,
+                    'data' => $cliente,
+                ];
+            }
+        }
+
+        return [
+            'status' => 0,
+            'errors' => []
+        ];
     }
 
     /**
@@ -88,6 +122,15 @@ class ClienteController extends Controller
      */
     public function destroy(Cliente $cliente)
     {
+        if (count($cliente->carros) || count($cliente->interesses)) {
+            return [
+                'status' => 0
+            ];
+        } elseif ($cliente->delete()) {
+            return [
+                'status' => 1
+            ];
+        }
         return [
             'status' => 0
         ];
@@ -96,5 +139,37 @@ class ClienteController extends Controller
     public function list()
     {
         return Cliente::all();
+    }
+
+    public function search($search)
+    {
+        $qtd = request()->input('qtd');
+        if ($qtd) {
+            request()->session()->put('qtd', $qtd);
+        } else {
+            $qtd = request()->session()->get('qtd', 10);
+        }
+
+        $search = "%" . addslashes($search) . "%";
+        $dados = DB::table('clientes')
+            ->where("clientes.nome", "like", $search)
+            ->orWhere("clientes.telefone", "like", $search)
+            ->orWhere("clientes.cidade", "like", $search)
+            ->orWhere("clientes.email", "like", $search)
+            ->orWhere("clientes.cpf", "like", $search)
+            ->selectRaw('
+                clientes.id,
+                clientes.nome,
+                clientes.email,
+                clientes.telefone,
+                clientes.cidade,
+                clientes.cpf
+            ')
+            ->orderBy('clientes.nome')
+            ->paginate($qtd);
+
+        return view('pages.cliente.index', [
+            'dados' => $dados,
+        ]);
     }
 }

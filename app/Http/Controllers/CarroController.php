@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Carro;
+use App\Marca;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class CarroController extends Controller
 {
@@ -40,7 +43,12 @@ class CarroController extends Controller
      */
     public function create()
     {
-        //
+        return view('pages.carro.create', [
+            'tipos' => (new Carro)->getTypes(),
+            'opcoes' => [
+                'marcas' => Marca::select(["id", "nome as texto"])->get(),
+            ]
+        ]);
     }
 
     /**
@@ -51,7 +59,31 @@ class CarroController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'nome' => 'required',
+            'marca_id' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return [
+                'status' => 0,
+                'errors' => $validator->errors()
+            ];
+        } else {
+            $carro = new Carro($request->all());
+
+            if ($carro->save()) {
+                return [
+                    'status' => 1,
+                    'data' => $carro,
+                ];
+            }
+        }
+
+        return [
+            'status' => 0,
+            'errors' => []
+        ];
     }
 
     /**
@@ -99,7 +131,7 @@ class CarroController extends Controller
      */
     public function destroy(Carro $carro)
     {
-        if($carro->delete()){
+        if (!count($carro->estoques) && !count($carro->interesses) && $carro->delete()) {
             return [
                 'status' => 1
             ];
@@ -113,5 +145,30 @@ class CarroController extends Controller
     public function list()
     {
         return Carro::all();
+    }
+
+    public function search($search)
+    {
+        $qtd = request()->input('qtd');
+        if ($qtd) {
+            request()->session()->put('qtd', $qtd);
+        } else {
+            $qtd = request()->session()->get('qtd', 10);
+        }
+
+        $search = "%" . addslashes($search) . "%";
+        $dados = DB::table('carros')
+            ->leftJoin('estoques', 'estoques.carro_id', 'carros.id')
+            ->leftJoin('marcas', 'marcas.id', 'carros.marca_id')
+            ->where("carros.nome", "like", $search)
+            ->orWhere("marcas.nome", "like", $search)
+            ->selectRaw("carros.*, marcas.nome as marca, avg(estoques.fipe) as fipe, count(estoques.id) as estoque")
+            ->groupBy('carros.id')
+            ->orderByDesc('estoque')
+            ->paginate($qtd);
+
+        return view('pages.carro.index', [
+            'dados' => $dados,
+        ]);
     }
 }

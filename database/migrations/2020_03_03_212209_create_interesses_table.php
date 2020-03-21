@@ -17,7 +17,7 @@ class CreateInteressesTable extends Migration
             $table->bigIncrements('id');
             $table->integer('ano')->nullable();
             $table->string('cor')->nullable();
-            $table->text('observacoes')->default('');
+            $table->text('observacoes')->nullable();
             $table->boolean('financiado')->default(0);
             $table->unsignedBigInteger('cliente_id');
             $table->unsignedBigInteger('carro_id');

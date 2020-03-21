@@ -25,10 +25,15 @@ Route::resource('marcas', 'MarcaController')->middleware('auth');
 Route::resource('regras', 'RegraController')->middleware('auth');
 Route::resource('interesses', 'InteresseController')->middleware('auth');
 
-Route::get('/testAPI', function() {
+Route::get('/testAPI', function () {
     return view('test.api');
 });
 
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
+
+// search
+Route::get('/clientes/search/{search}', 'ClienteController@search')->middleware('auth');
+Route::get('/carros/search/{search}', 'CarroController@search')->middleware('auth');
+Route::get('/marcas/search/{search}', 'MarcaController@search')->middleware('auth');
