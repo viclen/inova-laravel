@@ -11,22 +11,21 @@
         v-bind:for="campo.nome+'_'"
         class="text-capitalize col-md-4 col-form-label text-md-right"
         v-if="campo.nome != 'id'"
-      >{{ campo.label }}</label>
+      >
+        {{ campo.label }}
+        <span v-if="campo.tipo == 'valor'">(R$)</span>
+      </label>
 
       <div class="col-md-6" v-if="campo.nome != 'id'">
-        <select
+        <v-select
           v-if="campo.tipo=='select'"
+          :options="campo.opcoes"
           v-bind:id="campo.nome+'_'"
-          v-bind:class="{'custom-select': true, 'is-invalid': campo.error != undefined}"
+          v-bind:class="{'border border-danger rounded is-invalid': campo.error != undefined}"
           v-model="campo.valor"
         >
-          <option value></option>
-          <option
-            v-for="(opcao,j) in campo.opcoes"
-            v-bind:key="'opcao'+j"
-            v-bind:value="opcao.id"
-          >{{ opcao.texto }}</option>
-        </select>
+          <div slot="no-options">Nenhum resultado.</div>
+        </v-select>
 
         <input
           type="text"
@@ -46,7 +45,7 @@
 
         <textarea
           v-bind:class="{'form-control': true, 'is-invalid': campo.error != undefined}"
-          v-else-if="campo.tipo=='text-area'"
+          v-else-if="campo.tipo=='textarea'"
           v-bind:id="campo.nome+'_'"
           v-model="campo.valor"
         ></textarea>
@@ -67,6 +66,7 @@
           v-bind:class="{'form-control': true, 'is-invalid': campo.error != undefined}"
           v-model="campo.valor"
           v-on:keyup="campo.valor = formatarValor(campo.valor)"
+          placeholder="R$ 12.345,00"
         />
 
         <input
@@ -143,8 +143,11 @@ export default {
           !(this.esconder != undefined && this.esconder.includes(campo))
         ) {
           let opcoes =
-            this.opcoes != undefined
-              ? this.opcoes[campo.replace("_id", "s")]
+            this.opcoes != undefined && this.opcoes[campo.replace("_id", "s")]
+              ? this.opcoes[campo.replace("_id", "s")].map(item => ({
+                  id: item.id,
+                  label: item.nome
+                }))
               : undefined;
 
           campos.push({
@@ -167,7 +170,17 @@ export default {
 
           this.campos.forEach((campo, i) => {
             if (campo.nome == nome) {
-              this.campos[i].valor = valor;
+              if (campo.tipo == "select") {
+                for (const j in campo.opcoes) {
+                  const opcao = campo.opcoes[j];
+                  if (opcao.id == valor) {
+                    this.campos[i].valor = opcao;
+                    break;
+                  }
+                }
+              } else {
+                this.campos[i].valor = valor;
+              }
             }
           });
         }
@@ -183,7 +196,13 @@ export default {
       let data = {};
 
       this.campos.forEach(campo => {
-        data[campo.nome] = campo.valor;
+        if (campo.tipo == "select") {
+          data[campo.nome] = campo.valor ? campo.valor.id : null;
+        } else if (campo.tipo == "valor") {
+          data[campo.nome] = (campo.valor + "").split(".").join("").replace(",", ".");
+        } else {
+          data[campo.nome] = campo.valor;
+        }
       });
 
       if (this.valores && this.id) {
@@ -300,11 +319,11 @@ export default {
         } else {
           n1 = n;
         }
-        var n2 = reverseStr(onlyNumbers.split(",")[0]);
+        var n2 = this.reverseStr(onlyNumbers.split(",")[0]);
         if (n2.length > 2) {
           n2 = n2.charAt(0) + n2.charAt(1);
         }
-        onlyNumbers = reverseStr(n1) + "," + n2;
+        onlyNumbers = this.reverseStr(n1) + "," + n2;
       } else {
         var n1 = "";
         if (onlyNumbers.length > 3) {
@@ -318,7 +337,7 @@ export default {
         } else {
           n1 = onlyNumbers;
         }
-        onlyNumbers = reverseStr(n1);
+        onlyNumbers = this.reverseStr(n1);
       }
       return onlyNumbers;
     },
@@ -372,6 +391,13 @@ export default {
       } else {
         window.history.back();
       }
+    },
+    reverseStr(str) {
+      var reversed = "";
+      for (let i = str.length - 1; i >= 0; i--) {
+        reversed += str.charAt(i);
+      }
+      return reversed;
     }
   }
 };

@@ -46,7 +46,7 @@ class CarroController extends Controller
         return view('pages.carro.create', [
             'tipos' => (new Carro)->getTypes(),
             'opcoes' => [
-                'marcas' => Marca::select(["id", "nome as texto"])->get(),
+                'marcas' => Marca::select(["id", "nome"])->get(),
             ]
         ]);
     }
@@ -109,7 +109,7 @@ class CarroController extends Controller
         return view('pages.carro.edit', [
             'tipos' => (new Carro)->getTypes(),
             'opcoes' => [
-                'marcas' => Marca::select(["id", "nome as texto"])->get(),
+                'marcas' => Marca::select(["id", "nome"])->get(),
             ],
             'dados' => $carro,
         ]);

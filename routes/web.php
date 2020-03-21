@@ -23,6 +23,7 @@ Route::resource('clientes', 'ClienteController')->middleware('auth');
 Route::resource('carros', 'CarroController')->middleware('auth');
 Route::resource('marcas', 'MarcaController')->middleware('auth');
 Route::resource('regras', 'RegraController')->middleware('auth');
+Route::resource('estoques', 'EstoqueController')->middleware('auth');
 Route::resource('interesses', 'InteresseController')->middleware('auth');
 
 Route::get('/testAPI', function () {
@@ -37,3 +38,5 @@ Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/clientes/search/{search}', 'ClienteController@search')->middleware('auth');
 Route::get('/carros/search/{search}', 'CarroController@search')->middleware('auth');
 Route::get('/marcas/search/{search}', 'MarcaController@search')->middleware('auth');
+Route::get('/estoques/search/{search}', 'EstoqueController@search')->middleware('auth');
+Route::get('/interesses/search/{search}', 'InteresseController@search')->middleware('auth');

@@ -40,6 +40,9 @@
                         <a href="{{route('clientes.index')}}" class="nav-link">Clientes</a>
                         <a href="{{route('carros.index')}}" class="nav-link">Carros</a>
                         <a href="{{route('marcas.index')}}" class="nav-link">Marcas</a>
+                        <a href="{{route('estoques.index')}}" class="nav-link">Estoques</a>
+                        <a href="{{route('regras.index')}}" class="nav-link">Regras</a>
+                        <a href="{{route('interesses.index')}}" class="nav-link">Interesses</a>
                     </ul>
 
                     <!-- Right Side Of Navbar -->

@@ -1,5 +1,7 @@
 require('./bootstrap');
 
+import 'vue-select/dist/vue-select.css';
+
 window.Vue = require('vue');
 
 Vue.component('tabela-acoes', require('./components/TabelaAcoes.vue').default);
@@ -10,6 +12,9 @@ import Toasted from 'vue-toasted';
 import BootstrapVue from 'bootstrap-vue';
 Vue.use(BootstrapVue)
 Vue.use(Toasted);
+
+import vSelect from "vue-select";
+Vue.component("v-select", vSelect);
 
 // font awesome
 import { library } from '@fortawesome/fontawesome-svg-core'
