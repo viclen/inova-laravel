@@ -25,7 +25,7 @@ class ClienteController extends Controller
         }
 
         return view('pages.cliente.index', [
-            'dados' => Cliente::paginate($qtd),
+            'dados' => Cliente::select(['id', 'nome', 'telefone', 'email', 'cidade'])->paginate($qtd),
         ]);
     }
 
@@ -88,7 +88,22 @@ class ClienteController extends Controller
      */
     public function show(Cliente $cliente)
     {
-        return $cliente;
+        $carros = $cliente->carros->toArray();
+        $this->delete_col($carros, 'pivot');
+
+        return view('pages.padrao.verdados', [
+            'dados' => [
+                'cliente' => $cliente->getAttributes(),
+                'carros' => $carros,
+                'interesses' => $cliente->interesses->toArray(),
+            ]
+        ]);
+    }
+
+    public function delete_col(&$array, $key) {
+        return array_walk($array, function (&$v) use ($key) {
+            unset($v[$key]);
+        });
     }
 
     /**

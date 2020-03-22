@@ -11,7 +11,7 @@ class ClienteSeeder extends Seeder
      */
     public function run()
     {
-        $max = 50;
+        $max = 100;
         for ($i = 0; $i < $max; $i++) {
             factory(App\Cliente::class)->create();
         }

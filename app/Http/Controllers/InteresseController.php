@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Carro;
 use App\Estoque;
 use App\Interesse;
+use App\Match;
 use App\Regra;
 use Illuminate\Http\Request;
 
@@ -17,7 +18,22 @@ class InteresseController extends Controller
      */
     public function index()
     {
-        //
+        $qtd = request()->input('qtd');
+        if ($qtd) {
+            request()->session()->put('qtd', $qtd);
+        } else {
+            $qtd = request()->session()->get('qtd', 10);
+        }
+
+        $dados = Interesse::leftJoin('carros', 'interesses.carro_id', 'carros.id')
+            ->leftJoin('clientes', 'clientes.id', 'interesses.cliente_id')
+            ->selectRaw("clientes.nome as cliente, carros.nome as carro, interesses.*")
+            ->orderByDesc('interesses.created_at')
+            ->paginate($qtd);
+
+        return view('pages.interesse.index', [
+            'dados' => $dados,
+        ]);
     }
 
     /**
@@ -47,34 +63,21 @@ class InteresseController extends Controller
      * @param  \App\Interesse  $interesse
      * @return \Illuminate\Http\Response
      */
-    public function show(Interesse $interesse)
+    public function show($id)
     {
-        return $interesse;
+        $interesse = Interesse::find($id);
+        $matches = Match::findEstoques($interesse)->toArray();
 
-        // $interesse = Interesse::find($id);
+        $interesse->marca = $interesse->carro->marca->nome;
+        $interesse->carro = $interesse->carro->nome;
 
-        // $regras = Regra::all();
-
-        // $carrosencontrados = [];
-        // foreach ($regras as $regra) {
-        //     $estoque = Estoque::join('carros', 'estoques.carro_id', 'carros.id')
-        //         ->whereRaw("$regra->coluna_carro LIKE '" . $interesse[$regra->coluna_interesse] . "'")->get();
-
-        //     foreach ($estoque as $estoque) {
-        //         $carrosencontrados[$estoque->id] = isset($carrosencontrados[$estoque->id]) ?
-        //             $carrosencontrados[$estoque->id] + $regra->prioridade : $regra->prioridade;
-        //     }
-        // }
-
-        // uasort($carrosencontrados, function ($a, $b) {
-        //     return $b - $a;
-        // });
-
-        // return [
-        //     'interesse' => $interesse,
-        //     'probabilidade' => $carrosencontrados,
-        //     'carros' => Estoque::with('carro')->whereIn('id', array_keys($carrosencontrados))->get()
-        // ];
+        return view('pages.padrao.verdados', [
+            'dados' => [
+                'interesse' => $interesse->getAttributes(),
+                'estoques' => $matches,
+            ],
+            'highlight' => true,
+        ]);
     }
 
     /**

@@ -82,7 +82,12 @@ class MarcaController extends Controller
      */
     public function show(Marca $marca)
     {
-        return $marca;
+        return view('pages.padrao.verdados', [
+            'dados' => [
+                'marca' => $marca->getAttributes(),
+                'carros' => $marca->carros->toArray(),
+            ]
+        ]);
     }
 
     /**

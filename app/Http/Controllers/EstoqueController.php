@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Carro;
 use App\Estoque;
+use App\Match;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -25,7 +26,7 @@ class EstoqueController extends Controller
 
         $estoques = Estoque::join('carros', 'carros.id', 'carro_id')
             ->leftJoin('marcas', 'carros.marca_id', 'marcas.id')
-            ->selectRaw('estoques.id, carros.nome as carro, marcas.nome as marca, estoques.valor, estoques.fipe, estoques.ano, estoques.cor')
+            ->selectRaw('estoques.id, carros.nome as carro, marcas.nome as marca, estoques.valor, estoques.fipe, estoques.ano, estoques.placa, estoques.cor')
             ->paginate($qtd);
 
         return view('pages.estoque.index', [
@@ -60,6 +61,7 @@ class EstoqueController extends Controller
             'valor' => "required",
             'carro_id' => "required",
             'fipe' => "",
+            'placa' => "",
             'ano' => "",
             'cor' => "",
             'chassi' => "",
@@ -96,7 +98,18 @@ class EstoqueController extends Controller
      */
     public function show(Estoque $estoque)
     {
-        return $estoque;
+        $matches = Match::findInteresses($estoque)->toArray();
+
+        $estoque->marca = $estoque->carro->marca->nome;
+        $estoque->carro = $estoque->carro->nome;
+
+        return view('pages.padrao.verdados', [
+            'dados' => [
+                'estoque' => $estoque->getAttributes(),
+                'interesses' => $matches,
+            ],
+            'highlight' => true,
+        ]);
     }
 
     /**
@@ -129,6 +142,7 @@ class EstoqueController extends Controller
             'valor' => "required",
             'carro_id' => "required",
             'fipe' => "",
+            'placa' => "",
             'ano' => "",
             'cor' => "",
             'chassi' => "",
@@ -189,6 +203,7 @@ class EstoqueController extends Controller
             ->where("carros.nome", "like", $search)
             ->orWhere("marcas.nome", "like", $search)
             ->orWhere("estoques.ano", "like", $search)
+            ->orWhere("estoques.placa", "like", $search)
             ->orWhere("estoques.cor", "like", $search)
             ->selectRaw('estoques.id, carros.nome as carro, marcas.nome as marca, estoques.valor, estoques.fipe, estoques.ano, estoques.cor')
             ->paginate($qtd);

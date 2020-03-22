@@ -89,6 +89,16 @@
           placeholder="123.456.789-10"
         />
 
+        <input
+          type="text"
+          v-else-if="campo.tipo=='placa'"
+          v-bind:id="campo.nome+'_'"
+          v-bind:class="{'form-control': true, 'is-invalid': campo.error != undefined}"
+          v-model="campo.valor"
+          v-on:keyup="campo.valor = formatarPlaca(campo.valor)"
+          placeholder="ABC-1234"
+        />
+
         <span v-if="campo.error != undefined" class="invalid-feedback" role="alert">
           <strong>{{ campo.error }}</strong>
         </span>
@@ -199,7 +209,10 @@ export default {
         if (campo.tipo == "select") {
           data[campo.nome] = campo.valor ? campo.valor.id : null;
         } else if (campo.tipo == "valor") {
-          data[campo.nome] = (campo.valor + "").split(".").join("").replace(",", ".");
+          data[campo.nome] = (campo.valor + "")
+            .split(".")
+            .join("")
+            .replace(",", ".");
         } else {
           data[campo.nome] = campo.valor;
         }
@@ -279,6 +292,8 @@ export default {
     getInput(campo, tipo) {
       if (campo.startsWith("telefone")) {
         return "telefone";
+      } else if (campo.startsWith("placa")) {
+        return "placa";
       } else if (campo.startsWith("cpf")) {
         return "cpf";
       } else if (campo.startsWith("email")) {
@@ -384,6 +399,44 @@ export default {
         }
       }
       return finalValue;
+    },
+    formatarPlaca(entrada) {
+      let pattern = "AAA-0000";
+      let allow_letters =
+        "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
+      let allow_numbers = "1234567890";
+
+      let letters = "";
+      let numbers = "";
+
+      for (let i = 0; i < entrada.length && i < pattern.length; i++) {
+        if (
+          pattern.charAt(i) == "A" &&
+          allow_letters.includes(entrada.charAt(i))
+        ) {
+          letters += entrada.charAt(i);
+        } else if (
+          pattern.charAt(i) == "0" &&
+          allow_numbers.includes(entrada.charAt(i))
+        ) {
+          numbers += entrada.charAt(i);
+        } else if (pattern.charAt(i) == "-") {
+          if (entrada.charAt(i) == "-") {
+            letters += entrada.charAt(i);
+          } else if (allow_numbers.includes(entrada.charAt(i))) {
+            letters += "-";
+            numbers += entrada.charAt(i);
+          }
+        }
+      }
+
+      var finalValue = letters;
+
+      if (finalValue.length > 3) {
+        finalValue += numbers;
+      }
+
+      return finalValue.toUpperCase();
     },
     cancelar() {
       if (this.redirect) {

@@ -44,6 +44,8 @@
     </div>
     <div class="row">
       <div class="col">
+        <p class="text-center" v-if="!dadosTabela.length">Nenhum dado.</p>
+
         <table class="table table-responsive table-striped w-100 bg-white">
           <thead class="w-100">
             <tr>
@@ -58,9 +60,24 @@
           </thead>
           <tbody>
             <template v-for="(item, i) in dadosTabela">
-              <tr v-bind:key="i">
+              <tr
+                v-bind:key="i"
+                v-bind:class="{ 'bg-info': highlight && i==0, 'text-white': highlight && i==0 }"
+              >
                 <template v-for="(coluna, j) in item">
-                  <td v-bind:key="j" class="nowrap ellipsis">{{ coluna }}</td>
+                  <td v-bind:key="j" class="nowrap ellipsis">
+                    <fa-icon
+                      v-if="coluna === true"
+                      icon="check"
+                      v-bind:class="{ 'text-success': !(highlight && i==0) }"
+                    />
+                    <fa-icon
+                      v-else-if="coluna === false"
+                      icon="times"
+                      v-bind:class="{ 'text-danger': !(highlight && i==0) }"
+                    />
+                    <span v-else>{{ coluna }}</span>
+                  </td>
                 </template>
                 <td v-bind:key="i">
                   <div class="dropdown" v-if="n_acoes>1">
@@ -160,14 +177,16 @@ export default {
     "dados",
     "colunas",
     "controller",
-    "cadastravel",
+    "podecriar",
     "ver",
     "editar",
     "excluir",
     "mostrarid",
     "podevoltar",
     "podepesquisar",
-    "colunasvalor"
+    "colunasvalor",
+    "colunascheck",
+    "highlight"
   ],
   data() {
     return {
@@ -186,7 +205,7 @@ export default {
   },
   mounted() {
     this.prepararTabela();
-    if (this.cadastravel === false) {
+    if (this.podecriar === false) {
       this.mostrarCadastrar = false;
     }
     if (this.ver === false) {
@@ -261,6 +280,11 @@ export default {
                   true,
                   true
                 );
+              } else if (
+                this.colunascheck &&
+                this.colunascheck.includes(t.toLowerCase())
+              ) {
+                retorno[t.toLowerCase()] = dado[t.toLowerCase()] == 1;
               } else {
                 retorno[t.toLowerCase()] = dado[t.toLowerCase()];
               }
@@ -407,7 +431,7 @@ export default {
 .ellipsis {
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 300px;
+  max-width: 150px;
 }
 .ellipsis:hover {
   max-width: 100%;

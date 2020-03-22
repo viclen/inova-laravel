@@ -94,8 +94,15 @@ class CarroController extends Controller
      */
     public function show(Carro $carro)
     {
-        //
-        return $carro;
+        $carro->marca = $carro->marca->nome;
+
+        return view('pages.padrao.verdados', [
+            'dados' => [
+                'carro' => $carro->getAttributes(),
+                'estoques' => $carro->estoques->toArray(),
+                'interesses' => $carro->interesses->toArray(),
+            ]
+        ]);
     }
 
     /**
