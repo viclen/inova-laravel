@@ -14,7 +14,6 @@
         </div>
 
         @foreach ($dados as $titulo => $items)
-        @if ($items)
         <div class="col-12 mb-3">
             <div class="card">
                 <div class="card-header text-capitalize">
@@ -22,11 +21,14 @@
                 </div>
 
                 <div class="card-body">
+                    @if ($items)
                     @foreach ($items as $nome => $item)
                     @if (is_array($item) || $item instanceof Collection)
                     <tabela-acoes :mostrarid="false" :dados="{{ json_encode($items) }}" :colunas="''"
-                        :controller="'estoque'" :colunasvalor="['fipe', 'valor']" :podecriar="false" :podevoltar="false"
-                        :podepesquisar="false" :colunascheck="['financiado']" :highlight="{{ isset($highlight) && $highlight }}">
+                        :controller="'{{ $titulo }}'" :colunasvalor="['fipe', 'valor']" :podecriar="false"
+                        :podevoltar="false" :podepesquisar="false" :colunascheck="['financiado']"
+                        :highlight="{{ isset($highlight) && $highlight ? "true" : "false" }}">
+
                         @break
                         @endif
 
@@ -43,10 +45,12 @@
                         </div>
                         @endif
                         @endforeach
+                        @else
+                        <div class="alert alert-secondary mb-0" role="alert">Nenhum dado.</div>
+                        @endif
                 </div>
             </div>
         </div>
-        @endif
         @endforeach
     </div>
 </div>

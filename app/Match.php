@@ -18,14 +18,21 @@ class Match extends Model
 
     static public function findInteresses(Estoque $estoque, $financiado = false)
     {
+        $regras = Regra::where('grupo', 'ordem')->get();
+        $ordem = [];
+        foreach ($regras as $regra) {
+            $ordem[$regra->nome] = $regra->valor;
+        }
+
         $matches = [];
 
         $int_carro = Interesse::where('carro_id', $estoque->carro_id)->get();
         foreach ($int_carro as $interesse) {
+            $valor = isset($ordem['carro']) ? pow(2, intval($ordem['carro'])) : 16;
             if (isset($matches[$interesse->id])) {
-                $matches[$interesse->id] += 16;
+                $matches[$interesse->id] += $valor;
             } else {
-                $matches[$interesse->id] = 16;
+                $matches[$interesse->id] = $valor;
             }
 
             if (($financiado && $interesse->financiado) || (!$financiado && !$interesse->financiado)) {
@@ -38,10 +45,11 @@ class Match extends Model
             ->select(['interesses.id'])
             ->get();
         foreach ($int_marca as $interesse) {
+            $valor = isset($ordem['marca']) ? pow(2, intval($ordem['marca'])) : 8;
             if (isset($matches[$interesse->id])) {
-                $matches[$interesse->id] += 8;
+                $matches[$interesse->id] += $valor;
             } else {
-                $matches[$interesse->id] = 8;
+                $matches[$interesse->id] = $valor;
             }
 
             if (($financiado && $interesse->financiado) || (!$financiado && !$interesse->financiado)) {
@@ -49,33 +57,40 @@ class Match extends Model
             }
         }
 
-        $porcentagem = 0.2;
+        $regra = Regra::where([
+            ['grupo', 'valor'],
+            ['nome', 'porcentagem']
+        ])->first();
+        $porcentagem = $regra ? $regra->valor / 100 : 0.2;
         $int_valor = Interesse::where('valor', ">", $estoque->valor - $estoque->valor * $porcentagem)
             ->where('valor', "<", $estoque->valor + $estoque->valor * $porcentagem)
             ->get();
         foreach ($int_valor as $interesse) {
+            $valor = isset($ordem['valor']) ? pow(2, intval($ordem['valor'])) : 4;
             if (isset($matches[$interesse->id])) {
-                $matches[$interesse->id] += 4;
+                $matches[$interesse->id] += $valor;
             } else {
-                $matches[$interesse->id] = 4;
+                $matches[$interesse->id] = $valor;
             }
         }
 
         $int_cor = Interesse::where('cor', $estoque->cor)->get();
         foreach ($int_cor as $interesse) {
+            $valor = isset($ordem['cor']) ? pow(2, intval($ordem['cor'])) : 2;
             if (isset($matches[$interesse->id])) {
-                $matches[$interesse->id] += 2;
+                $matches[$interesse->id] += $valor;
             } else {
-                $matches[$interesse->id] = 2;
+                $matches[$interesse->id] = $valor;
             }
         }
 
         $int_ano = Interesse::where('ano', $estoque->ano)->get();
         foreach ($int_ano as $interesse) {
+            $valor = isset($ordem['ano']) ? pow(2, intval($ordem['ano'])) : 1;
             if (isset($matches[$interesse->id])) {
-                $matches[$interesse->id] += 1;
+                $matches[$interesse->id] += $valor;
             } else {
-                $matches[$interesse->id] = 1;
+                $matches[$interesse->id] = $valor;
             }
         }
 
@@ -102,6 +117,7 @@ class Match extends Model
                 clientes.telefone,
                 carros.nome as carro,
                 marcas.nome as marca,
+                interesses.valor,
                 interesses.ano,
                 interesses.cor,
                 interesses.financiado,
@@ -114,14 +130,21 @@ class Match extends Model
 
     static public function findEstoques(Interesse $interesse)
     {
+        $regras = Regra::where('grupo', 'ordem')->get();
+        $ordem = [];
+        foreach ($regras as $regra) {
+            $ordem[$regra->nome] = $regra->valor;
+        }
+
         $matches = [];
 
         $est_carro = Estoque::where('carro_id', $interesse->carro_id)->get();
         foreach ($est_carro as $estoque) {
+            $valor = isset($ordem['carro']) ? pow(2, intval($ordem['carro'])) : 16;
             if (isset($matches[$estoque->id])) {
-                $matches[$estoque->id] += 8;
+                $matches[$estoque->id] += $valor;
             } else {
-                $matches[$estoque->id] = 8;
+                $matches[$estoque->id] = $valor;
             }
         }
 
@@ -130,28 +153,48 @@ class Match extends Model
             ->select(['estoques.id'])
             ->get();
         foreach ($est_marca as $estoque) {
+            $valor = isset($ordem['marca']) ? pow(2, intval($ordem['marca'])) : 8;
             if (isset($matches[$estoque->id])) {
-                $matches[$estoque->id] += 4;
+                $matches[$estoque->id] += $valor;
             } else {
-                $matches[$estoque->id] = 4;
+                $matches[$estoque->id] = $valor;
+            }
+        }
+
+        $regra = Regra::where([
+            ['grupo', 'valor'],
+            ['nome', 'porcentagem']
+        ])->first();
+        $porcentagem = $regra ? $regra->valor / 100 : 0.2;
+        $est_valor = Estoque::where('valor', ">", $interesse->valor - $interesse->valor * $porcentagem)
+            ->where('valor', "<", $interesse->valor + $interesse->valor * $porcentagem)
+            ->get();
+        foreach ($est_valor as $estoque) {
+            $valor = isset($ordem['valor']) ? pow(2, intval($ordem['valor'])) : 4;
+            if (isset($matches[$interesse->id])) {
+                $matches[$interesse->id] += $valor;
+            } else {
+                $matches[$interesse->id] = $valor;
             }
         }
 
         $est_cor = Estoque::where('cor', $interesse->cor)->get();
         foreach ($est_cor as $estoque) {
+            $valor = isset($ordem['cor']) ? pow(2, intval($ordem['cor'])) : 2;
             if (isset($matches[$estoque->id])) {
-                $matches[$estoque->id] += 2;
+                $matches[$estoque->id] += $valor;
             } else {
-                $matches[$estoque->id] = 2;
+                $matches[$estoque->id] = $valor;
             }
         }
 
         $est_ano = Estoque::where('ano', $interesse->ano)->get();
         foreach ($est_ano as $estoque) {
+            $valor = isset($ordem['ano']) ? pow(2, intval($ordem['ano'])) : 1;
             if (isset($matches[$estoque->id])) {
-                $matches[$estoque->id] += 1;
+                $matches[$estoque->id] += $valor;
             } else {
-                $matches[$estoque->id] = 1;
+                $matches[$estoque->id] = $valor;
             }
         }
 

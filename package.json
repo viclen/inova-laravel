@@ -29,6 +29,7 @@
         "@fortawesome/vue-fontawesome": "^0.1.9",
         "bootstrap-vue": "^2.6.1",
         "vue-select": "^3.9.4",
-        "vue-toasted": "^1.1.27"
+        "vue-toasted": "^1.1.27",
+        "vuedraggable": "^2.23.2"
     }
 }

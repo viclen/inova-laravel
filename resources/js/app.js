@@ -7,6 +7,7 @@ window.Vue = require('vue');
 Vue.component('tabela-acoes', require('./components/TabelaAcoes.vue').default);
 Vue.component('form-padrao', require('./components/FormPadrao.vue').default);
 Vue.component('test-api', require('./components/TestAPI.vue').default);
+Vue.component('regras-editor', require('./components/RegrasEditor.vue').default);
 
 import Toasted from 'vue-toasted';
 import BootstrapVue from 'bootstrap-vue';
@@ -15,6 +16,9 @@ Vue.use(Toasted);
 
 import vSelect from "vue-select";
 Vue.component("v-select", vSelect);
+
+import draggable from 'vuedraggable';
+Vue.component("draggable", draggable);
 
 // font awesome
 import { library } from '@fortawesome/fontawesome-svg-core'

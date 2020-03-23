@@ -14,11 +14,11 @@ class CreateRegrasTable extends Migration
     public function up()
     {
         Schema::create('regras', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->string('coluna_carro');
-            $table->string('coluna_interesse');
-            $table->integer('prioridade')->default(10);
-            $table->timestamps();
+            $table->string('grupo');
+            $table->string('nome');
+            $table->text('valor');
+
+            $table->unique(['grupo', 'nome']);
         });
     }
 

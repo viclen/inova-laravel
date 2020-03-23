@@ -70,6 +70,7 @@ class InteresseController extends Controller
 
         $interesse->marca = $interesse->carro->marca->nome;
         $interesse->carro = $interesse->carro->nome;
+        $interesse->valor = "R$ $interesse->valor,00";
 
         return view('pages.padrao.verdados', [
             'dados' => [

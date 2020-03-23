@@ -13,27 +13,23 @@ class RegraSeeder extends Seeder
     public function run()
     {
         $i = 1;
-        $regras = [
-            [
-                'coluna_carro' => 'carros.id',
-                'coluna_interesse' => 'carro_id',
-                'prioridade' => 50,
-            ],
-            [
-                'coluna_carro' => 'estoques.ano',
-                'coluna_interesse' => 'ano',
-                'prioridade' => 30,
-            ],
-            [
-                'coluna_carro' => 'estoques.cor',
-                'coluna_interesse' => 'cor',
-                'prioridade' => 15,
-            ],
-            // [
-            //     'coluna_carro' => 'financiado',
-            //     'coluna_interesse' => 'financiado',
-            //     'prioridade' => 5,
-            // ],
+
+        $ordem = ['ano', 'cor', 'valor', 'marca', 'carro'];
+
+        $regras = [];
+
+        foreach ($ordem as $i => $item) {
+            $regras[] = [
+                'grupo' => "ordem",
+                'nome' => "$item",
+                'valor' => "$i",
+            ];
+        }
+
+        $regras[] = [
+            'grupo' => "valor",
+            'nome' => "porcentagem",
+            'valor' => "20",
         ];
 
         Regra::insert($regras);

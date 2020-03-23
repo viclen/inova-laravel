@@ -102,6 +102,8 @@ class EstoqueController extends Controller
 
         $estoque->marca = $estoque->carro->marca->nome;
         $estoque->carro = $estoque->carro->nome;
+        $estoque->valor = "R$ $estoque->valor,00";
+        $estoque->fipe = "R$ $estoque->fipe,00";
 
         return view('pages.padrao.verdados', [
             'dados' => [

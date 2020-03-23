@@ -44,7 +44,7 @@
     </div>
     <div class="row">
       <div class="col">
-        <p class="text-center" v-if="!dadosTabela.length">Nenhum dado.</p>
+        <div class="alert alert-secondary" role="alert" v-if="!dadosTabela.length">Nenhum dado.</div>
 
         <table class="table table-responsive table-striped w-100 bg-white">
           <thead class="w-100">
@@ -305,7 +305,7 @@ export default {
     confirmDelete() {
       let id = this.deleteId;
       if (id > -1) {
-        let url = "/" + this.controller + "s/" + this.dados[id].id;
+        let url = this.getUrl() + this.dados[id].id;
         axios.delete(url).then(r => {
           if (r.data.status == "1") {
             this.dadosTabela.splice(id, 1);
@@ -334,25 +334,24 @@ export default {
       this.mostrarModalDelete = false;
     },
     editarRegistro(id) {
-      window.location =
-        "/" + this.controller + "s/" + this.dados[id].id + "/edit";
+      window.location = this.getUrl() + this.dados[id].id + "/edit";
     },
     verRegistro(id) {
-      window.location = "/" + this.controller + "s" + "/" + this.dados[id].id;
+      window.location = this.getUrl() + this.dados[id].id;
     },
     openPesquisa() {
       this.pesquisaAberta = !this.pesquisaAberta;
     },
     pesquisar() {
       if (this.pesquisa.length) {
-        window.location = `/${this.controller}s/search/${this.pesquisa}`;
+        window.location = this.getUrl() + `search/${this.pesquisa}`;
       } else {
         this.searchInvalid = true;
       }
     },
     cancelarPesquisa() {
       if (window.location.href.includes("/search/")) {
-        window.location = `/${this.controller}s`;
+        window.location = this.getUrl();
       } else {
         this.pesquisa = "";
         this.searchInvalid = false;
@@ -413,6 +412,13 @@ export default {
       }
 
       return "R$ " + saida;
+    },
+    getUrl() {
+      if (this.controller.endsWith("s")) {
+        return "/" + this.controller + "/";
+      } else {
+        return "/" + this.controller + "s/";
+      }
     }
   }
 };
