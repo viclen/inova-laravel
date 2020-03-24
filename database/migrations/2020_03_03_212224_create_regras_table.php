@@ -17,6 +17,7 @@ class CreateRegrasTable extends Migration
             $table->string('grupo');
             $table->string('nome');
             $table->text('valor');
+            $table->timestamps();
 
             $table->unique(['grupo', 'nome']);
         });

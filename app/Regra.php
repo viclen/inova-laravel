@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class Regra extends Model
 {
+    protected $fillable = ['grupo', 'nome', 'valor'];
 
     public function getTypes()
     {

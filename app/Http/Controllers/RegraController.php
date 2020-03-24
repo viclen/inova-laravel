@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Regra;
+use Exception;
 use Illuminate\Http\Request;
 
 class RegraController extends Controller
@@ -14,7 +15,7 @@ class RegraController extends Controller
      */
     public function index()
     {
-        return view('pages.regra.index',[
+        return view('pages.regra.index', [
             'dados' => Regra::all()
         ]);
     }
@@ -37,7 +38,51 @@ class RegraController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'data' => 'required'
+        ]);
+
+        try {
+            if (is_array($request['data'])) {
+                foreach ($request['data'] as $data) {
+                    if (is_array($data)) {
+                        if (isset($data['grupo']) && isset($data['nome']) && isset($data['valor'])) {
+                            Regra::where([
+                                ['grupo', $data['grupo']],
+                                ['nome', $data['nome']],
+                            ])->update([
+                                'valor' => $data['valor']
+                            ]);
+                        }
+                    } else {
+                        $data = $request['data'];
+
+                        if (isset($data['grupo']) && isset($data['nome']) && isset($data['valor'])) {
+                            Regra::where([
+                                ['grupo', $data['grupo']],
+                                ['nome', $data['nome']],
+                            ])->update([
+                                'valor' => $data['valor']
+                            ]);
+                            return [
+                                'status' => 1
+                            ];
+                        }
+                        break;
+                    }
+                }
+
+                return [
+                    'status' => 1
+                ];
+            }
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+
+        return [
+            'status' => 0
+        ];
     }
 
     /**
