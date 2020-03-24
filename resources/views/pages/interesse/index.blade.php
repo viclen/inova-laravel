@@ -9,7 +9,7 @@
 
                 <div class="card-body">
                     <tabela-acoes :mostrarid="false" :dados="{{ json_encode($dados->items()) }}" :colunas="''"
-                        :controller="'interesse'" :colunascheck="['financiado']">
+                        :controller="'interesse'" :colunascheck="['financiado']" :colunasvalor="['valor']">
                 </div>
             </div>
         </div>

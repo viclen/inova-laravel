@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Carro;
+use App\Categoria;
 use App\Marca;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +27,8 @@ class CarroController extends Controller
 
         $dados = Carro::leftJoin('estoques', 'estoques.carro_id', 'carros.id')
             ->leftJoin('marcas', 'marcas.id', 'carros.marca_id')
-            ->selectRaw("carros.*, marcas.nome as marca, avg(estoques.fipe) as fipe, count(estoques.id) as estoque")
+            ->leftJoin('categorias', 'categorias.id', 'carros.categoria_id')
+            ->selectRaw("carros.*, marcas.nome as marca, categorias.nome as categoria, avg(estoques.fipe) as fipe, count(estoques.id) as estoque")
             ->groupBy('carros.id')
             ->orderByDesc('estoque')
             ->paginate($qtd);
@@ -47,6 +49,7 @@ class CarroController extends Controller
             'tipos' => (new Carro)->getTypes(),
             'opcoes' => [
                 'marcas' => Marca::select(["id", "nome"])->get(),
+                'categorias' => Categoria::select(["id", "nome"])->get(),
             ]
         ]);
     }
@@ -62,6 +65,7 @@ class CarroController extends Controller
         $validator = Validator::make($request->all(), [
             'nome' => 'required',
             'marca_id' => 'required',
+            'categoria_id' => ''
         ]);
 
         if ($validator->fails()) {
@@ -95,6 +99,7 @@ class CarroController extends Controller
     public function show(Carro $carro)
     {
         $carro->marca = $carro->marca->nome;
+        $carro->categoria = $carro->categoria->nome;
 
         return view('pages.padrao.verdados', [
             'dados' => [
@@ -117,6 +122,7 @@ class CarroController extends Controller
             'tipos' => (new Carro)->getTypes(),
             'opcoes' => [
                 'marcas' => Marca::select(["id", "nome"])->get(),
+                'categorias' => Categoria::select(["id", "nome"])->get(),
             ],
             'dados' => $carro,
         ]);
@@ -134,6 +140,7 @@ class CarroController extends Controller
         $validator = Validator::make($request->all(), [
             'nome' => 'required',
             'marca_id' => 'required',
+            'categoria_id' => '',
         ]);
 
         if ($validator->fails()) {
@@ -144,6 +151,7 @@ class CarroController extends Controller
         } else {
             $carro->nome = $request['nome'];
             $carro->marca_id = $request['marca_id'];
+            $carro->categoria_id = $request['categoria_id'];
 
             if ($carro->save()) {
                 return [
@@ -196,9 +204,11 @@ class CarroController extends Controller
         $dados = DB::table('carros')
             ->leftJoin('estoques', 'estoques.carro_id', 'carros.id')
             ->leftJoin('marcas', 'marcas.id', 'carros.marca_id')
+            ->leftJoin('categorias', 'categorias.id', 'carros.categoria_id')
             ->where("carros.nome", "like", $search)
             ->orWhere("marcas.nome", "like", $search)
-            ->selectRaw("carros.*, marcas.nome as marca, avg(estoques.fipe) as fipe, count(estoques.id) as estoque")
+            ->orWhere("categorias.nome", "like", $search)
+            ->selectRaw("carros.*, marcas.nome as marca, categorias.nome as categoria, avg(estoques.fipe) as fipe, count(estoques.id) as estoque")
             ->groupBy('carros.id')
             ->orderByDesc('estoque')
             ->paginate($qtd);

@@ -101,7 +101,18 @@ class EstoqueController extends Controller
     {
         $matches = Match::findInteresses($estoque)->toArray();
 
-        $estoque->marca = $estoque->carro->marca ? $estoque->carro->marca->nome : "";
+        if ($estoque->carro->categoria) {
+            $estoque->categoria = $estoque->carro->categoria->nome;
+        } else {
+            unset($estoque->categoria);
+        }
+
+        if ($estoque->carro->marca) {
+            $estoque->marca = $estoque->carro->marca->nome;
+        } else {
+            unset($estoque->marca);
+        }
+
         $estoque->carro = $estoque->carro->nome;
         $estoque->valor = Formatter::valor($estoque->valor);
         $estoque->fipe = Formatter::valor($estoque->fipe);

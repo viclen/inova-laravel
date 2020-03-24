@@ -14,7 +14,7 @@ class RegraSeeder extends Seeder
     {
         $i = 1;
 
-        $ordem = ['ano', 'cor', 'valor', 'marca', 'carro'];
+        $ordem = ['ano', 'cor', 'valor', 'categoria', 'marca', 'carro'];
 
         $regras = [];
 

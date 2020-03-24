@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Carro;
+use App\Cliente;
 use App\Estoque;
 use App\Formatter;
 use App\Interesse;
 use App\Match;
 use App\Regra;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class InteresseController extends Controller
 {
@@ -44,7 +46,13 @@ class InteresseController extends Controller
      */
     public function create()
     {
-        //
+        return view('pages.interesse.create', [
+            'tipos' => (new Interesse())->getTypes(),
+            'opcoes' => [
+                'carros' => Carro::select(["id", "nome"])->get(),
+                'clientes' => Cliente::select(["id", "nome"])->get(),
+            ],
+        ]);
     }
 
     /**
@@ -55,7 +63,37 @@ class InteresseController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'carro_id' => "required",
+            'cliente_id' => "required",
+            'valor' => "",
+            'ano' => "",
+            'cor' => "",
+            'observacoes' => "",
+            'financiado' => "",
+            'origem' => "",
+        ]);
+
+        if ($validator->fails()) {
+            return [
+                'status' => 0,
+                'errors' => $validator->errors()
+            ];
+        } else {
+            $interesse = new Interesse($request->all());
+
+            if ($interesse->save()) {
+                return [
+                    'status' => 1,
+                    'data' => $interesse,
+                ];
+            }
+        }
+
+        return [
+            'status' => 0,
+            'errors' => []
+        ];
     }
 
     /**
@@ -69,7 +107,18 @@ class InteresseController extends Controller
         $interesse = Interesse::find($id);
         $matches = Match::findEstoques($interesse)->toArray();
 
-        $interesse->marca = $interesse->carro->marca ? $interesse->carro->marca->nome : "";
+        if ($interesse->carro->categoria) {
+            $interesse->categoria = $interesse->carro->categoria->nome;
+        } else {
+            unset($interesse->categoria);
+        }
+
+        if ($interesse->carro->marca) {
+            $interesse->marca = $interesse->carro->marca->nome;
+        } else {
+            unset($interesse->marca);
+        }
+
         $interesse->carro = $interesse->carro->nome;
         $interesse->valor = Formatter::valor($interesse->valor);
 
@@ -88,9 +137,18 @@ class InteresseController extends Controller
      * @param  \App\Interesse  $interesse
      * @return \Illuminate\Http\Response
      */
-    public function edit(Interesse $interesse)
+    public function edit($id)
     {
-        return $interesse;
+        $interesse = Interesse::find($id);
+
+        return view('pages.interesse.edit', [
+            'tipos' => (new Interesse())->getTypes(),
+            'opcoes' => [
+                'carros' => Carro::select(["id", "nome"])->get(),
+                'clientes' => Cliente::select(["id", "nome"])->get(),
+            ],
+            'dados' => $interesse,
+        ]);
     }
 
     /**
@@ -100,9 +158,38 @@ class InteresseController extends Controller
      * @param  \App\Interesse  $interesse
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Interesse $interesse)
+    public function update(Request $request, $id)
     {
-        return $interesse;
+        $validator = Validator::make($request->all(), [
+            'carro_id' => "required",
+            'cliente_id' => "required",
+            'valor' => "",
+            'ano' => "",
+            'cor' => "",
+            'observacoes' => "",
+            'financiado' => "",
+            'origem' => "",
+        ]);
+
+        if ($validator->fails()) {
+            return [
+                'status' => 0,
+                'errors' => $validator->errors()
+            ];
+        } else {
+            $interesse = Interesse::find($id);
+            if ($interesse->update($request->all())) {
+                return [
+                    'status' => 1,
+                    'data' => $interesse,
+                ];
+            }
+        }
+
+        return [
+            'status' => 0,
+            'errors' => []
+        ];
     }
 
     /**

@@ -14,6 +14,8 @@ class Interesse extends Model
         'financiado',
         'cliente_id',
         'carro_id',
+        'valor',
+        'origem',
     ];
 
     public function cliente()

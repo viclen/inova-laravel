@@ -13,7 +13,7 @@
         v-if="campo.nome != 'id'"
       >
         {{ campo.label }}
-        <span v-if="campo.tipo == 'valor'">(R$)</span>
+        <span v-if="campo.tipo == 'dinheiro'">(R$)</span>
       </label>
 
       <div class="col-md-6" v-if="campo.nome != 'id'">
@@ -33,6 +33,7 @@
           v-bind:id="campo.nome+'_'"
           v-bind:class="{'form-control': true, 'is-invalid': campo.error != undefined}"
           v-model="campo.valor"
+          v-on:keyup="(event) => keyEvent(event)"
         />
 
         <input
@@ -41,6 +42,7 @@
           v-bind:id="campo.nome+'_'"
           v-bind:class="{'form-control': true, 'is-invalid': campo.error != undefined}"
           v-model="campo.valor"
+          v-on:keyup="(event) => keyEvent(event)"
         />
 
         <textarea
@@ -57,15 +59,16 @@
           v-bind:class="{'form-control': true, 'is-invalid': campo.error != undefined}"
           v-model="campo.valor"
           placeholder="nome@exemplo.com"
+          v-on:keyup="(event) => keyEvent(event)"
         />
 
         <input
           type="text"
-          v-else-if="campo.tipo=='valor'"
+          v-else-if="campo.tipo=='dinheiro'"
           v-bind:id="campo.nome+'_'"
           v-bind:class="{'form-control': true, 'is-invalid': campo.error != undefined}"
           v-model="campo.valor"
-          v-on:keyup="campo.valor = formatarValor(campo.valor)"
+          v-on:keyup="campo.valor = formatarDinheiro(campo.valor)"
           placeholder="R$ 12.345,00"
         />
 
@@ -97,6 +100,15 @@
           v-model="campo.valor"
           v-on:keyup="campo.valor = formatarPlaca(campo.valor)"
           placeholder="ABC-1234"
+        />
+
+        <b-form-checkbox
+          switch
+          class="mt-2"
+          v-else-if="campo.tipo=='checkbox'"
+          v-bind:id="campo.nome+'_'"
+          v-bind:class="{'is-invalid': campo.error != undefined}"
+          v-model="campo.valor"
         />
 
         <span v-if="campo.error != undefined" class="invalid-feedback" role="alert">
@@ -178,7 +190,8 @@ export default {
         for (const nome in this.valores) {
           const valor = this.valores[nome];
 
-          this.campos.forEach((campo, i) => {
+          for (const i in this.campos) {
+            let campo = this.campos[i];
             if (campo.nome == nome) {
               if (campo.tipo == "select") {
                 for (const j in campo.opcoes) {
@@ -188,11 +201,23 @@ export default {
                     break;
                   }
                 }
+              } else if (campo.tipo == "placa") {
+                this.campos[i].valor = this.formatarPlaca(valor);
+              } else if (campo.tipo == "cpf") {
+                this.campos[i].valor = this.formatarCpf(valor);
+              } else if (campo.tipo == "dinheiro") {
+                this.campos[i].valor = this.formatarDinheiro(valor);
+              } else if (campo.tipo == "telefone") {
+                this.campos[i].valor = this.formatarTelefone(valor);
+              } else if (campo.tipo == "checkbox") {
+                this.campos[i].valor = valor ? true : false;
               } else {
                 this.campos[i].valor = valor;
               }
+
+              break;
             }
-          });
+          }
         }
       }
     });
@@ -208,7 +233,9 @@ export default {
       this.campos.forEach(campo => {
         if (campo.tipo == "select") {
           data[campo.nome] = campo.valor ? campo.valor.id : null;
-        } else if (campo.tipo == "valor") {
+        } else if (campo.tipo == "checkbox") {
+          data[campo.nome] = campo.valor ? 1 : 0;
+        } else if (campo.tipo == "dinheiro") {
           data[campo.nome] = (campo.valor + "")
             .split(".")
             .join("")
@@ -242,6 +269,8 @@ export default {
               position: "bottom-right",
               duration: 2000
             });
+
+            console.log(e);
           });
       }
     },
@@ -272,6 +301,8 @@ export default {
           position: "bottom-right",
           duration: 2000
         });
+
+        console.log(r.data);
 
         if (r.data.errors) {
           this.campos.forEach((campo, i) => {
@@ -304,13 +335,24 @@ export default {
         return "textarea";
       } else if (campo.endsWith("_id")) {
         return "select";
+      } else if (tipo.includes("tinyint(1)")) {
+        return "checkbox";
       } else if (tipo.includes("int")) {
         return "number";
       } else if (tipo.includes("float") || tipo.includes("double")) {
-        return "valor";
+        return "dinheiro";
       }
     },
-    formatarValor(entrada) {
+    formatarDinheiro(entrada) {
+      entrada = entrada + "";
+
+      if (entrada.indexOf(".") == entrada.length - 3) {
+        entrada =
+          entrada.substring(0, entrada.length - 3) +
+          "," +
+          entrada.substring(entrada.length - 2);
+      }
+
       var onlyNumbers = "";
       for (let i = entrada.length - 1; i >= 0; i--) {
         if (!isNaN(parseInt(entrada.charAt(i))) || entrada.charAt(i) == ",") {
@@ -451,6 +493,11 @@ export default {
         reversed += str.charAt(i);
       }
       return reversed;
+    },
+    keyEvent(event) {
+      if (event.keyCode == 13) {
+        this.salvar();
+      }
     }
   }
 };

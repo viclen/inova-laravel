@@ -23,7 +23,7 @@ class Formatter
                 $decimal = $decimal > 0 ? $decimal + 1 : 0;
             }
             if ($c == "," && !$decimal) {
-                $saida += $c;
+                $saida .= $c;
                 $decimal = 1;
             }
         }

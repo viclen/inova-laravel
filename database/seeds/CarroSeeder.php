@@ -1,6 +1,7 @@
 <?php
 
 use App\Carro;
+use App\Categoria;
 use App\Marca;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
@@ -19,6 +20,8 @@ class CarroSeeder extends Seeder
         echo "Carregando dados para os carros: \n";
         echo "[";
 
+        $max_categoria = Categoria::count();
+
         $carros = [];
         foreach ($this->array_carros as $i => $nome) {
             $fipe_data = $this->findFipe($nome);
@@ -33,6 +36,7 @@ class CarroSeeder extends Seeder
                 'nome' => $nome,
                 'fipe_id' => $fipe_data[1],
                 'marca_id' => $fipe_data[0],
+                'categoria_id' => random_int(1, $max_categoria),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];

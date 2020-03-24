@@ -18,11 +18,11 @@ class CreateInteressesTable extends Migration
             $table->unsignedBigInteger('cliente_id');
             $table->unsignedBigInteger('carro_id');
             $table->float('valor')->nullable();
+            $table->boolean('financiado')->default(0);
             $table->integer('ano')->nullable();
             $table->string('cor')->nullable();
-            $table->text('observacoes')->nullable();
-            $table->boolean('financiado')->default(0);
             $table->string('origem')->nullable();
+            $table->text('observacoes')->nullable();
             $table->timestamps();
         });
     }
