@@ -14,8 +14,8 @@ class CreateRegrasTable extends Migration
     public function up()
     {
         Schema::create('regras', function (Blueprint $table) {
-            $table->string('grupo');
-            $table->string('nome');
+            $table->string('grupo', 191);
+            $table->string('nome', 191);
             $table->text('valor');
             $table->timestamps();
 

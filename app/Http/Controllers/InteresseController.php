@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Carro;
 use App\Estoque;
+use App\Formatter;
 use App\Interesse;
 use App\Match;
 use App\Regra;
@@ -68,9 +69,9 @@ class InteresseController extends Controller
         $interesse = Interesse::find($id);
         $matches = Match::findEstoques($interesse)->toArray();
 
-        $interesse->marca = $interesse->carro->marca->nome;
+        $interesse->marca = $interesse->carro->marca ? $interesse->carro->marca->nome : "";
         $interesse->carro = $interesse->carro->nome;
-        $interesse->valor = "R$ $interesse->valor,00";
+        $interesse->valor = Formatter::valor($interesse->valor);
 
         return view('pages.padrao.verdados', [
             'dados' => [

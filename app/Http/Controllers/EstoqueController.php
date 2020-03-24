@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Carro;
 use App\Estoque;
+use App\Formatter;
 use App\Match;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -100,10 +101,10 @@ class EstoqueController extends Controller
     {
         $matches = Match::findInteresses($estoque)->toArray();
 
-        $estoque->marca = $estoque->carro->marca->nome;
+        $estoque->marca = $estoque->carro->marca ? $estoque->carro->marca->nome : "";
         $estoque->carro = $estoque->carro->nome;
-        $estoque->valor = "R$ $estoque->valor,00";
-        $estoque->fipe = "R$ $estoque->fipe,00";
+        $estoque->valor = Formatter::valor($estoque->valor);
+        $estoque->fipe = Formatter::valor($estoque->fipe);
 
         return view('pages.padrao.verdados', [
             'dados' => [
