@@ -17,7 +17,7 @@
       </div>
       <div class="col-12">
         <button class="btn btn-primary" v-on:click="getRoute()">Buscar</button>
-        <button class="btn btn-primary" v-on:click="testPost()">Testar post</button>
+        <!-- <button class="btn btn-primary" v-on:click="testPost()">Testar post</button> -->
       </div>
     </div>
     <div class="row">

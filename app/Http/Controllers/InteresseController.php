@@ -108,12 +108,14 @@ class InteresseController extends Controller
         $matches = Match::findEstoques($interesse)->toArray();
 
         if ($interesse->carro->categoria) {
+            $interesse->categoria_id = $interesse->carro->categoria_id;
             $interesse->categoria = $interesse->carro->categoria->nome;
         } else {
             unset($interesse->categoria);
         }
 
         if ($interesse->carro->marca) {
+            $interesse->marca_id = $interesse->carro->marca_id;
             $interesse->marca = $interesse->carro->marca->nome;
         } else {
             unset($interesse->marca);

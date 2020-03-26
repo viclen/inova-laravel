@@ -25,6 +25,7 @@ Route::resource('marcas', 'MarcaController')->middleware('auth');
 Route::resource('regras', 'RegraController')->middleware('auth');
 Route::resource('estoques', 'EstoqueController')->middleware('auth');
 Route::resource('interesses', 'InteresseController')->middleware('auth');
+Route::resource('categorias', 'CategoriaController')->middleware('auth');
 
 Route::get('/testAPI', function () {
     return view('test.api');

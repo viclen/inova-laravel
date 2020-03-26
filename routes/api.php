@@ -21,9 +21,11 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::middleware('auth:api')->resource('marcas', 'Api\MarcaController');
 Route::middleware('auth:api')->resource('carros', 'Api\CarroController');
 Route::middleware('auth:api')->resource('clientes', 'Api\ClienteController');
 Route::middleware('auth:api')->resource('estoques', 'Api\EstoqueController');
 Route::middleware('auth:api')->resource('interesses', 'Api\InteresseController');
+Route::middleware('auth:api')->resource('categorias', 'Api\CategoriaController');
 
 Route::middleware('api')->post('/login', 'Api\ApiTokenController@login');
