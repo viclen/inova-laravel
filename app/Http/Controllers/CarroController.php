@@ -112,7 +112,7 @@ class CarroController extends Controller
             $interesses[] = array_merge($interesse->dadosTabela(), ['id' => $interesse->id]);
         }
 
-        return view('pages.padrao.verdados', [
+        return view('pages.carro.show', [
             'dados' => [
                 'carro' => $carro->getAttributes(),
                 'estoques' => $estoques,

@@ -15,7 +15,7 @@ class CreateCaracteristicasTable extends Migration
     {
         Schema::create('caracteristicas', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('nome')->unique();
+            $table->string('nome', 191)->unique();
             $table->string('valor_padrao')->nullable();
             $table->tinyInteger('tipo')->comment('
                 0: texto,

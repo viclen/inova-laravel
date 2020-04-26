@@ -23,5 +23,14 @@ class UserSeeder extends Seeder
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+        User::insert([
+            'name' => 'Robson',
+            'username' => 'robson',
+            'email' => 'robson@inova.autosavestudio.com',
+            'password' => Hash::make('robson'),
+            'api_token' => Str::random('80'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }
