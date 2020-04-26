@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Caracteristica;
+use App\CaracteristicaInteresse;
 use App\Carro;
 use App\Cliente;
 use App\Estoque;
@@ -28,14 +30,150 @@ class InteresseController extends Controller
             $qtd = request()->session()->get('qtd', 10);
         }
 
-        $dados = Interesse::leftJoin('carros', 'interesses.carro_id', 'carros.id')
-            ->leftJoin('clientes', 'clientes.id', 'interesses.cliente_id')
-            ->selectRaw("clientes.nome as cliente, carros.nome as carro, interesses.*")
+        // ignorar colunas
+        $ignorar_string = request()->input('ignorar', request()->input('ref') === 'r' ? "" : request()->session()->get('ignorar'));
+        $ignorar = [];
+        foreach (explode(',', $ignorar_string) as $coluna) {
+            if (trim($coluna) && array_search($coluna, $ignorar) == false) {
+                $ignorar[] = $coluna;
+            }
+        }
+        request()->session()->put('ignorar', join(",", $ignorar));
+
+        // filtros
+        $filtros = [];
+        foreach (request()->input() as $nome => $valor) {
+            if ($nome != 'page' && $nome != 'ref' &&  $nome != 'ignorar' && $nome != 'qtd' && $valor != "") {
+                $filtros[$nome] = $valor;
+            }
+        }
+        if (count($filtros)) {
+            request()->session()->put('filtros', json_encode($filtros));
+        } elseif (request()->input('ref', '') === 'f') {
+            request()->session()->put('filtros', '');
+        } elseif (request()->session()->get('filtros', "")) {
+            $filtros = json_decode(request()->session()->get('filtros'), true);
+        }
+
+        foreach ($filtros as $nome => $valor) {
+            if (array_search($nome, $ignorar) !== false) {
+                unset($filtros[$nome]);
+            }
+        }
+
+        $resultado = null;
+        if (count($filtros)) {
+            $resultado = CaracteristicaInteresse::join('caracteristicas', 'caracteristicas.id', 'caracteristica_id')
+                ->where(function ($query) use ($filtros) {
+                    foreach ($filtros as $nome => $valor) {
+                        $query->orWhere([
+                            ['nome', $nome],
+                            ['valor', $valor],
+                        ]);
+                    }
+                })
+                ->selectRaw('interesse_id, count(*) as number')
+                ->groupBy('interesse_id')
+                ->get()
+                ->toArray();
+
+            if (isset($filtros['carro']) && $filtros['carro'] || isset($filtros['marca']) && $filtros['marca']) {
+                $ct = (isset($filtros['carro']) && $filtros['carro'] ? 1 : 0) + (isset($filtros['marca']) && $filtros['marca'] ? 1 : 0);
+
+                $ints = Interesse::join('carros', 'carros.id', 'carro_id')
+                    ->join('marcas', 'marcas.id', 'carros.marca_id')
+                    ->where(function ($query) use ($filtros) {
+                        if (isset($filtros['carro']) && $filtros['carro']) {
+                            $query->where('carros.nome', 'LIKE', "%$filtros[carro]%");
+                        }
+                        if (isset($filtros['marca']) && $filtros['marca']) {
+                            $query->where('marcas.nome', 'LIKE', "%$filtros[marca]%");
+                        }
+                    })
+                    ->select('interesses.id as interesse_id')
+                    ->get()
+                    ->toArray();
+
+                foreach ($ints as $int) {
+                    $encontrado = false;
+                    foreach ($resultado as $key => $r) {
+                        if ($r['interesse_id'] == $int['interesse_id']) {
+                            $resultado[$key]['number'] += $ct;
+                            $encontrado = true;
+                        }
+                    }
+                    if (!$encontrado) {
+                        $resultado[] = [
+                            'interesse_id' => $int['interesse_id'],
+                            'number' => $ct
+                        ];
+                    }
+                }
+            }
+        }
+
+        // select
+        $dados = Interesse::with(['caracteristicas.descricao', 'carro.marca'])
             ->orderByDesc('interesses.created_at')
+            ->where(function ($query) use ($resultado, $filtros) {
+                if ($resultado !== null) {
+                    $query->whereIn('id', array_map(function ($item) use ($filtros) {
+                        if ($item['number'] == count($filtros)) {
+                            return $item['interesse_id'];
+                        }
+                    }, $resultado));
+                } else {
+                    $query->where('id', '>', 0);
+                }
+            })
             ->paginate($qtd);
 
+        // colunas
+        $colunas = array_map(function ($coluna) use ($ignorar) {
+            if (array_search($coluna, $ignorar) === false) {
+                return is_array($coluna) ? $coluna['nome'] : $coluna;
+            }
+        }, array_merge([
+            'carro',
+            'marca'
+        ], Caracteristica::whereNotIn('caracteristicas.nome', $ignorar)
+            ->selectRaw('DISTINCT caracteristicas.nome')
+            ->get()
+            ->toArray()));
+
+        // opcoes colunas
+        $opcoes_caracteristicas = Caracteristica::with('opcoes')
+            ->whereIn('tipo', [4, 3])
+            ->whereIn('nome', $colunas)
+            ->get()
+            ->toArray();
+
+        $opcoes_colunas = [];
+        foreach ($opcoes_caracteristicas as $coluna) {
+            if ($coluna['tipo'] == 4) {
+                $opcoes_colunas[$coluna['nome']] = [
+                    [
+                        'ordem' => 0,
+                        'valor' => 'Não',
+                    ],
+                    [
+                        'ordem' => 1,
+                        'valor' => 'Sim',
+                    ],
+                ];
+            } else {
+                $opcoes_colunas[$coluna['nome']] = $coluna['opcoes'];
+            }
+        }
+
         return view('pages.interesse.index', [
+            'interesses' => $dados->items(),
+            'relacionamentos' => ['carro.marca', 'caracteristicas'],
+            'ignorar' => $ignorar,
             'dados' => $dados,
+            'colunas' => $colunas,
+            'opcoes_colunas' => $opcoes_colunas,
+            'filtros' => $filtros,
         ]);
     }
 
@@ -104,32 +242,18 @@ class InteresseController extends Controller
      */
     public function show($id)
     {
-        $interesse = Interesse::find($id);
-        $matches = Match::findEstoques($interesse)->toArray();
+        $interesse = Interesse::with(['caracteristicas.descricao', 'caracteristicas', 'carro.marca'])->find($id);
 
-        if ($interesse->carro->categoria) {
-            $interesse->categoria_id = $interesse->carro->categoria_id;
-            $interesse->categoria = $interesse->carro->categoria->nome;
-        } else {
-            unset($interesse->categoria);
-        }
+        $matches = Match::findEstoques($interesse);
 
-        if ($interesse->carro->marca) {
-            $interesse->marca_id = $interesse->carro->marca_id;
-            $interesse->marca = $interesse->carro->marca->nome;
-        } else {
-            unset($interesse->marca);
-        }
+        $ignorar = explode(',', request()->input('ignorar'));
 
-        $interesse->carro = $interesse->carro->nome;
-        $interesse->valor = Formatter::valor($interesse->valor);
-
-        return view('pages.padrao.verdados', [
-            'dados' => [
-                'interesse' => $interesse->getAttributes(),
-                'estoques' => $matches,
-            ],
+        return view('pages.interesse.show', [
+            'interesse' => $interesse,
+            'matches' => $matches,
             'highlight' => true,
+            'relacionamentos' => ['carro.marca', 'caracteristicas'],
+            'ignorar' => $ignorar,
         ]);
     }
 

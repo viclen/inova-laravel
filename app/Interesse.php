@@ -8,14 +8,34 @@ use Illuminate\Support\Facades\DB;
 class Interesse extends Model
 {
     protected $fillable = [
-        'ano',
-        'cor',
-        'observacoes',
-        'financiado',
         'cliente_id',
         'carro_id',
-        'valor',
+        'observacoes',
         'origem',
+    ];
+
+    public const ORIGENS = [
+        'Facebook',
+        'Whatsapp',
+        'Instagram',
+        'Loja',
+        'Telefone',
+        'OLX',
+        'Outro'
+    ];
+
+    public const COMPARADORES = [
+        '<' => 'Menor que',
+        '>' => 'Maior que',
+        '=' => 'Igual a',
+        '~' => 'Em torno de'
+    ];
+
+    public const COMPARADORES_TEXTO = [
+        '<' => 'Começa com',
+        '>' => 'Termina em',
+        '=' => 'Igual a',
+        '~' => 'Contém'
     ];
 
     public function cliente()
@@ -28,6 +48,59 @@ class Interesse extends Model
         return $this->belongsTo(Carro::class);
     }
 
+    public function dadosTabela(array $relacionamentos = ['carro', 'cliente', 'caracteristicas'], array $ignorar = [])
+    {
+        $dados = [];
+
+        if (count($ignorar)) {
+            if (array_search('origem', $ignorar) !== false) {
+                $dados['origem'] = Interesse::ORIGENS[$this->origem];
+            }
+        }
+
+        foreach ($relacionamentos as $relacao) {
+            if (strpos($relacao, 'carro') !== false && array_search('carro', $ignorar) === false) {
+                if ($this->carro) {
+                    $dados['carro'] = $this->carro->nome;
+                    if (strpos($relacao, '.marca') !== false && array_search('marca', $ignorar) === false) {
+                        if ($this->carro->marca_id) {
+                            $dados['marca'] = $this->carro->marca->nome;
+                        }
+                    }
+                }
+            } elseif (strpos($relacao, 'cliente') !== false && array_search('cliente', $ignorar) === false) {
+                if ($this->cliente) {
+                    $dados['cliente'] = $this->cliente->nome;
+                }
+            } elseif (strpos($relacao, 'caracteristicas') !== false && array_search('caracteristicas', $ignorar) === false) {
+                foreach ($this->caracteristicas as $caracteristica) {
+                    if (array_search($caracteristica->descricao->nome, $ignorar) === false) {
+                        $valor = $caracteristica->valor;
+                        $comparador = "";
+
+                        if ($caracteristica->descricao->tipo == 0) {
+                            $comparador = Interesse::COMPARADORES_TEXTO[$caracteristica->comparador];
+                        } elseif ($caracteristica->descricao->tipo == 1) {
+                            $comparador = Interesse::COMPARADORES[$caracteristica->comparador];
+                            $valor = Formatter::mil($valor);
+                        } elseif ($caracteristica->descricao->tipo == 2) {
+                            $valor = Formatter::valor($valor);
+                            $comparador = Interesse::COMPARADORES[$caracteristica->comparador];
+                        } elseif ($caracteristica->descricao->tipo == 3) {
+                            $valor = $caracteristica->valor_opcao->valor;
+                        } elseif ($caracteristica->descricao->tipo == 4) {
+                            $valor = Formatter::boolean($valor);
+                        }
+
+                        $dados[$caracteristica->descricao->nome] = trim("$comparador $valor");
+                    }
+                }
+            }
+        }
+
+        return $dados;
+    }
+
     public function getTypes()
     {
         $types = [];
@@ -38,5 +111,10 @@ class Interesse extends Model
         }
 
         return $types;
+    }
+
+    public function caracteristicas()
+    {
+        return $this->hasMany(CaracteristicaInteresse::class);
     }
 }

@@ -12,6 +12,10 @@ class Marca extends Model
         'fipe_id'
     ];
 
+    protected $hidden = [
+        'key'
+    ];
+
     public function carros()
     {
         return $this->hasMany(Carro::class);

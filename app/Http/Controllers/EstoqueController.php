@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Caracteristica;
+use App\CaracteristicaEstoque;
 use App\Carro;
 use App\Estoque;
 use App\Formatter;
@@ -25,13 +27,150 @@ class EstoqueController extends Controller
             $qtd = request()->session()->get('qtd', 10);
         }
 
-        $estoques = Estoque::join('carros', 'carros.id', 'carro_id')
-            ->leftJoin('marcas', 'carros.marca_id', 'marcas.id')
-            ->selectRaw('estoques.id, carros.nome as carro, marcas.nome as marca, estoques.valor, estoques.fipe, estoques.ano, estoques.placa, estoques.cor')
+        // ignorar colunas
+        $ignorar_string = request()->input('ignorar', request()->input('ref') === 'r' ? "" : request()->session()->get('ignorar'));
+        $ignorar = [];
+        foreach (explode(',', $ignorar_string) as $coluna) {
+            if (trim($coluna) && array_search($coluna, $ignorar) == false) {
+                $ignorar[] = $coluna;
+            }
+        }
+        request()->session()->put('ignorar', join(",", $ignorar));
+
+        // filtros
+        $filtros = [];
+        foreach (request()->input() as $nome => $valor) {
+            if ($nome != 'page' && $nome != 'ref' &&  $nome != 'ignorar' && $nome != 'qtd' && $valor != "") {
+                $filtros[$nome] = $valor;
+            }
+        }
+        if (count($filtros)) {
+            request()->session()->put('filtros', json_encode($filtros));
+        } elseif (request()->input('ref', '') === 'f') {
+            request()->session()->put('filtros', '');
+        } elseif (request()->session()->get('filtros', "")) {
+            $filtros = json_decode(request()->session()->get('filtros'), true);
+        }
+
+        foreach ($filtros as $nome => $valor) {
+            if (array_search($nome, $ignorar) !== false) {
+                unset($filtros[$nome]);
+            }
+        }
+
+        $resultado = null;
+        if (count($filtros)) {
+            $resultado = CaracteristicaEstoque::join('caracteristicas', 'caracteristicas.id', 'caracteristica_id')
+                ->where(function ($query) use ($filtros) {
+                    foreach ($filtros as $nome => $valor) {
+                        $query->orWhere([
+                            ['nome', $nome],
+                            ['valor', $valor],
+                        ]);
+                    }
+                })
+                ->selectRaw('estoque_id, count(*) as number')
+                ->groupBy('estoque_id')
+                ->get()
+                ->toArray();
+
+            if (isset($filtros['carro']) && $filtros['carro'] || isset($filtros['marca']) && $filtros['marca']) {
+                $ct = (isset($filtros['carro']) && $filtros['carro'] ? 1 : 0) + (isset($filtros['marca']) && $filtros['marca'] ? 1 : 0);
+
+                $ints = Estoque::join('carros', 'carros.id', 'carro_id')
+                    ->join('marcas', 'marcas.id', 'carros.marca_id')
+                    ->where(function ($query) use ($filtros) {
+                        if (isset($filtros['carro']) && $filtros['carro']) {
+                            $query->where('carros.nome', 'LIKE', "%$filtros[carro]%");
+                        }
+                        if (isset($filtros['marca']) && $filtros['marca']) {
+                            $query->where('marcas.nome', 'LIKE', "%$filtros[marca]%");
+                        }
+                    })
+                    ->select('estoques.id as estoque_id')
+                    ->get()
+                    ->toArray();
+
+                foreach ($ints as $int) {
+                    $encontrado = false;
+                    foreach ($resultado as $key => $r) {
+                        if ($r['estoque_id'] == $int['estoque_id']) {
+                            $resultado[$key]['number'] += $ct;
+                            $encontrado = true;
+                        }
+                    }
+                    if (!$encontrado) {
+                        $resultado[] = [
+                            'estoque_id' => $int['estoque_id'],
+                            'number' => $ct
+                        ];
+                    }
+                }
+            }
+        }
+
+        // select
+        $dados = Estoque::with(['caracteristicas.descricao', 'carro.marca'])
+            ->orderByDesc('estoques.created_at')
+            ->where(function ($query) use ($resultado, $filtros) {
+                if ($resultado !== null) {
+                    $query->whereIn('id', array_map(function ($item) use ($filtros) {
+                        if ($item['number'] == count($filtros)) {
+                            return $item['estoque_id'];
+                        }
+                    }, $resultado));
+                } else {
+                    $query->where('id', '>', 0);
+                }
+            })
             ->paginate($qtd);
 
+        // colunas
+        $colunas = array_map(function ($coluna) use ($ignorar) {
+            if (array_search($coluna, $ignorar) === false) {
+                return is_array($coluna) ? $coluna['nome'] : $coluna;
+            }
+        }, array_merge([
+            'carro',
+            'marca'
+        ], Caracteristica::whereNotIn('caracteristicas.nome', $ignorar)
+            ->selectRaw('DISTINCT caracteristicas.nome')
+            ->get()
+            ->toArray()));
+
+        // opcoes colunas
+        $opcoes_caracteristicas = Caracteristica::with('opcoes')
+            ->whereIn('tipo', [4, 3])
+            ->whereIn('nome', $colunas)
+            ->get()
+            ->toArray();
+
+        $opcoes_colunas = [];
+        foreach ($opcoes_caracteristicas as $coluna) {
+            if ($coluna['tipo'] == 4) {
+                $opcoes_colunas[$coluna['nome']] = [
+                    [
+                        'ordem' => 0,
+                        'valor' => 'Não',
+                    ],
+                    [
+                        'ordem' => 1,
+                        'valor' => 'Sim',
+                    ],
+                ];
+            } else {
+                $opcoes_colunas[$coluna['nome']] = $coluna['opcoes'];
+            }
+        }
+
         return view('pages.estoque.index', [
-            'dados' => $estoques,
+            'estoques' => $dados->items(),
+            'relacionamentos' => ['carro.marca', 'caracteristicas'],
+            'ignorar' => $ignorar,
+            'dados' => $dados,
+            'colunas' => $colunas,
+            'opcoes_colunas' => $opcoes_colunas,
+            'filtros' => $filtros,
         ]);
     }
 
@@ -94,37 +233,27 @@ class EstoqueController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Estoque  $estoque
+     * @param  integer  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Estoque $estoque)
+    public function show($id)
     {
-        $matches = Match::findInteresses($estoque)->toArray();
+        $estoque = Estoque::with(['caracteristicas.descricao', 'caracteristicas', 'carro.marca'])->find($id);
 
-        if ($estoque->carro->categoria) {
-            $estoque->categoria_id = $estoque->carro->categoria_id;
-            $estoque->categoria = $estoque->carro->categoria->nome;
-        } else {
-            unset($estoque->categoria);
+        foreach ($estoque->caracteristicas as $i => $_) {
+            $estoque->caracteristicas[$i]->valor_opcao;
         }
 
-        if ($estoque->carro->marca) {
-            $estoque->marca_id = $estoque->carro->marca_id;
-            $estoque->marca = $estoque->carro->marca->nome;
-        } else {
-            unset($estoque->marca);
-        }
+        $matches = Match::findInteresses($estoque);
 
-        $estoque->carro = $estoque->carro->nome;
-        $estoque->valor = Formatter::valor($estoque->valor);
-        $estoque->fipe = Formatter::valor($estoque->fipe);
+        $ignorar = explode(',', request()->input('ignorar'));
 
-        return view('pages.padrao.verdados', [
-            'dados' => [
-                'estoque' => $estoque->getAttributes(),
-                'interesses' => $matches,
-            ],
+        return view('pages.estoque.show', [
+            'estoque' => $estoque,
+            'matches' => $matches,
             'highlight' => true,
+            'relacionamentos' => ['carro.marca', 'caracteristicas'],
+            'ignorar' => $ignorar,
         ]);
     }
 

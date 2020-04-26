@@ -27,10 +27,10 @@ class CarroController extends Controller
 
         $dados = Carro::leftJoin('estoques', 'estoques.carro_id', 'carros.id')
             ->leftJoin('marcas', 'marcas.id', 'carros.marca_id')
-            ->leftJoin('categorias', 'categorias.id', 'carros.categoria_id')
-            ->selectRaw("carros.*, marcas.nome as marca, categorias.nome as categoria, avg(estoques.fipe) as fipe, count(estoques.id) as estoque")
+            ->selectRaw("carros.*, marcas.nome as marca, count(estoques.id) as estoque")
             ->groupBy('carros.id')
             ->orderByDesc('estoque')
+            ->orderBy('carros.nome')
             ->paginate($qtd);
 
         return view('pages.carro.index', [
@@ -93,19 +93,30 @@ class CarroController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Carro  $carro
+     * @param  integer  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Carro $carro)
+    public function show($id)
     {
+        $carro = Carro::find($id);
+
         $carro->marca = $carro->marca->nome;
-        $carro->categoria = $carro->categoria->nome;
+
+        $estoques = [];
+        foreach ($carro->estoques as $estoque) {
+            $estoques[] = array_merge($estoque->dadosTabela(), ['id' => $estoque->id]);
+        }
+
+        $interesses = [];
+        foreach ($carro->interesses as $interesse) {
+            $interesses[] = array_merge($interesse->dadosTabela(), ['id' => $interesse->id]);
+        }
 
         return view('pages.padrao.verdados', [
             'dados' => [
                 'carro' => $carro->getAttributes(),
-                'estoques' => $carro->estoques->toArray(),
-                'interesses' => $carro->interesses->toArray(),
+                'estoques' => $estoques,
+                'interesses' => $interesses,
             ]
         ]);
     }
@@ -204,11 +215,9 @@ class CarroController extends Controller
         $dados = DB::table('carros')
             ->leftJoin('estoques', 'estoques.carro_id', 'carros.id')
             ->leftJoin('marcas', 'marcas.id', 'carros.marca_id')
-            ->leftJoin('categorias', 'categorias.id', 'carros.categoria_id')
             ->where("carros.nome", "like", $search)
             ->orWhere("marcas.nome", "like", $search)
-            ->orWhere("categorias.nome", "like", $search)
-            ->selectRaw("carros.*, marcas.nome as marca, categorias.nome as categoria, avg(estoques.fipe) as fipe, count(estoques.id) as estoque")
+            ->selectRaw("carros.*, marcas.nome as marca, count(estoques.id) as estoque")
             ->groupBy('carros.id')
             ->orderByDesc('estoque')
             ->paginate($qtd);

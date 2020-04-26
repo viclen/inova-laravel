@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 
 class Match extends Model
@@ -16,64 +17,51 @@ class Match extends Model
         return $this->belongsTo(Estoque::class);
     }
 
-    static public function findInteresses(Estoque $estoque, $financiado = false)
+    public function getCaracteristicas()
     {
-        $regras = Regra::where('grupo', 'ordem')->get();
-        $ordem = [];
-        foreach ($regras as $regra) {
-            $ordem[$regra->nome] = $regra->valor;
+        $arr = json_decode($this->caracteristicas);
+
+        $caracteristicas = [];
+        foreach ($arr as $id) {
+            if (is_numeric($id)) {
+                $caracteristicas[] = Caracteristica::find($id)->nome;
+            } else {
+                $caracteristicas[] = $id;
+            }
         }
 
+        return $caracteristicas;
+    }
+
+    static public function findInteresses(Estoque $estoque, $financiado = false)
+    {
         $matches = [];
+        $num_caracteristicas = count($estoque->caracteristicas);
 
         $int_carro = Interesse::where('carro_id', $estoque->carro_id)->get();
         foreach ($int_carro as $interesse) {
-            $valor = isset($ordem['carro']) ? pow(2, intval($ordem['carro'])) : 32;
-            if (isset($matches[$interesse->id])) {
-                $matches[$interesse->id] += $valor;
-            } else {
-                $matches[$interesse->id] = $valor;
-            }
-
-            if (($financiado && $interesse->financiado) || (!$financiado && !$interesse->financiado)) {
-                $matches[$interesse->id]++;
-            }
+            $matches[$interesse->id] = [
+                'prioridade' => $num_caracteristicas * 2,
+                'caracteristicas' => ['carro'],
+            ];
         }
 
         if ($estoque->carro->marca_id) {
             $int_marca = Interesse::join('carros', 'carros.id', 'interesses.carro_id')
                 ->where('carros.marca_id', $estoque->carro->marca_id)
+                ->whereNotIn('interesses.id', array_keys($matches))
                 ->select(['interesses.id'])
                 ->get();
+
             foreach ($int_marca as $interesse) {
-                $valor = isset($ordem['marca']) ? pow(2, intval($ordem['marca'])) : 16;
                 if (isset($matches[$interesse->id])) {
-                    $matches[$interesse->id] += $valor;
+                    $matches[$interesse->id]['prioridade'] += ceil($num_caracteristicas / 2);
+                    $matches[$interesse->id]['caracteristicas'][] = 'marca';
                 } else {
-                    $matches[$interesse->id] = $valor;
-                }
-
-                if (($financiado && $interesse->financiado) || (!$financiado && !$interesse->financiado)) {
-                    $matches[$interesse->id]++;
-                }
-            }
-        }
-
-        if ($estoque->carro->categoria_id) {
-            $int_categoria = Interesse::join('carros', 'carros.id', 'interesses.carro_id')
-                ->where('carros.categoria_id', $estoque->carro->categoria_id)
-                ->select(['interesses.id'])
-                ->get();
-            foreach ($int_categoria as $interesse) {
-                $valor = isset($ordem['categoria']) ? pow(2, intval($ordem['categoria'])) : 8;
-                if (isset($matches[$interesse->id])) {
-                    $matches[$interesse->id] += $valor;
-                } else {
-                    $matches[$interesse->id] = $valor;
-                }
-
-                if (($financiado && $interesse->financiado) || (!$financiado && !$interesse->financiado)) {
-                    $matches[$interesse->id]++;
+                    $matches[$interesse->id] = [
+                        'caracteristicas' => ['marca'],
+                        'prioridade' => ceil($num_caracteristicas / 2)
+                    ];
                 }
             }
         }
@@ -84,120 +72,106 @@ class Match extends Model
         ])->first();
         $porcentagem = $regra ? $regra->valor / 100 : 0.2;
 
-        $int_valor = Interesse::where('valor', ">", $estoque->valor - $estoque->valor * $porcentagem)
-            ->where('valor', "<", $estoque->valor + $estoque->valor * $porcentagem)
-            ->get();
-        foreach ($int_valor as $interesse) {
-            $valor = isset($ordem['valor']) ? pow(2, intval($ordem['valor'])) : 4;
-            if (isset($matches[$interesse->id])) {
-                $matches[$interesse->id] += $valor;
-            } else {
-                $matches[$interesse->id] = $valor;
-            }
-        }
+        foreach ($estoque->caracteristicas as $caracteristica) {
+            $encontradas = CaracteristicaInteresse::where([
+                ['caracteristica_id', $caracteristica->caracteristica_id]
+            ])->where(function ($query) use ($caracteristica, $porcentagem) {
+                $query->where('valor', '=', $caracteristica->valor);
+                if ($caracteristica->tipo == 1 || $caracteristica->tipo == 2) {
+                    $query->orWhere([
+                        ['comparador', '<'],
+                        ['valor', '<=', $caracteristica->valor]
+                    ])->orWhere([
+                        ['comparador', '>'],
+                        ['valor', '<=', $caracteristica->valor]
+                    ])->orWhere([
+                        ['comparador', '~'],
+                        ['valor', '>=', $caracteristica->valor - $caracteristica->valor * $porcentagem],
+                        ['valor', '<=', $caracteristica->valor + $caracteristica->valor * $porcentagem],
+                    ]);
+                } elseif ($caracteristica->tipo == 0) {
+                    $query->orWhere([
+                        ['comparador', '<'],
+                        ['valor', 'LIKE', "$caracteristica->valor%"]
+                    ])->orWhere([
+                        ['comparador', '>'],
+                        ['valor', 'LIKE', "%$caracteristica->valor"]
+                    ])->orWhere([
+                        ['comparador', '~'],
+                        ['valor', 'LIKE', "%$caracteristica->valor%"],
+                    ]);
+                }
+            })
+                ->selectRaw('DISTINCT interesse_id, caracteristica_id')
+                ->get();
 
-        $int_cor = Interesse::where('cor', $estoque->cor)->get();
-        foreach ($int_cor as $interesse) {
-            $valor = isset($ordem['cor']) ? pow(2, intval($ordem['cor'])) : 2;
-            if (isset($matches[$interesse->id])) {
-                $matches[$interesse->id] += $valor;
-            } else {
-                $matches[$interesse->id] = $valor;
-            }
-        }
-
-        $int_ano = Interesse::where('ano', $estoque->ano)->get();
-        foreach ($int_ano as $interesse) {
-            $valor = isset($ordem['ano']) ? pow(2, intval($ordem['ano'])) : 1;
-            if (isset($matches[$interesse->id])) {
-                $matches[$interesse->id] += $valor;
-            } else {
-                $matches[$interesse->id] = $valor;
+            foreach ($encontradas as $int_car) {
+                if (isset($matches[$int_car->interesse_id])) {
+                    $matches[$int_car->interesse_id]['prioridade']++;
+                    $matches[$int_car->interesse_id]['caracteristicas'][] = $int_car->caracteristica_id;
+                } else {
+                    $matches[$int_car->interesse_id] = [
+                        'caracteristicas' => [$int_car->caracteristica_id],
+                        'prioridade' => 1
+                    ];
+                }
             }
         }
 
         $insert = [];
-        foreach ($matches as $interesse_id => $prioridade) {
-            $insert[] = [
-                'interesse_id' => $interesse_id,
-                'prioridade' => $prioridade,
-                'estoque_id' => $estoque->id,
-            ];
+        foreach ($matches as $interesse_id => $dados) {
+            if ($dados['prioridade'] > 1) {
+                $insert[] = [
+                    'interesse_id' => $interesse_id,
+                    'estoque_id' => $estoque->id,
+                    'prioridade' => $dados['prioridade'],
+                    'caracteristicas' => json_encode($dados['caracteristicas']),
+                ];
+            }
         }
 
         Match::where('estoque_id', $estoque->id)->delete();
         Match::insert($insert);
 
-        return Interesse::join('matches', 'matches.interesse_id', 'interesses.id')
-            ->join('clientes', 'clientes.id', 'interesses.cliente_id')
-            ->join('carros', 'carros.id', 'interesses.carro_id')
-            ->join('marcas', 'marcas.id', 'carros.marca_id')
-            ->leftJoin('categorias', 'categorias.id', 'carros.categoria_id')
-            ->where('matches.estoque_id', $estoque->id)
-            ->selectRaw('
-                interesses.id,
-                clientes.nome as cliente,
-                clientes.telefone,
-                carros.nome as carro,
-                marcas.nome as marca,
-                categorias.nome as categoria,
-                interesses.valor,
-                interesses.ano,
-                interesses.cor,
-                interesses.financiado,
-                interesses.created_at as data
-            ')
-            ->orderByDesc('matches.prioridade')
-            ->orderByDesc('interesses.created_at')
+        return Match::with([
+            'interesse.caracteristicas.descricao',
+            'interesse.carro.marca'
+        ])
+            ->where('estoque_id', $estoque->id)
+            ->orderByDesc('prioridade')
+            ->limit(30)
             ->get();
     }
 
     static public function findEstoques(Interesse $interesse)
     {
-        $regras = Regra::where('grupo', 'ordem')->get();
-        $ordem = [];
-        foreach ($regras as $regra) {
-            $ordem[$regra->nome] = $regra->valor;
-        }
-
         $matches = [];
+        $num_caracteristicas = count($interesse->caracteristicas);
 
         $est_carro = Estoque::where('carro_id', $interesse->carro_id)->get();
         foreach ($est_carro as $estoque) {
-            $valor = isset($ordem['carro']) ? pow(2, intval($ordem['carro'])) : 32;
-            if (isset($matches[$estoque->id])) {
-                $matches[$estoque->id] += $valor;
-            } else {
-                $matches[$estoque->id] = $valor;
-            }
+            $matches[$estoque->id] = [
+                'prioridade' => $num_caracteristicas * 2,
+                'caracteristicas' => ['carro'],
+            ];
         }
 
         if ($interesse->carro->marca_id) {
             $est_marca = Estoque::join('carros', 'carros.id', 'estoques.carro_id')
                 ->where('carros.marca_id', $interesse->carro->marca_id)
+                ->whereNotIn('estoques.id', array_keys($matches))
                 ->select(['estoques.id'])
                 ->get();
-            foreach ($est_marca as $estoque) {
-                $valor = isset($ordem['marca']) ? pow(2, intval($ordem['marca'])) : 16;
-                if (isset($matches[$estoque->id])) {
-                    $matches[$estoque->id] += $valor;
-                } else {
-                    $matches[$estoque->id] = $valor;
-                }
-            }
-        }
 
-        if ($interesse->carro->categoria_id) {
-            $est_categoria = Estoque::join('carros', 'carros.id', 'estoques.carro_id')
-                ->where('carros.categoria_id', $interesse->carro->categoria_id)
-                ->select(['estoques.id'])
-                ->get();
-            foreach ($est_categoria as $estoque) {
-                $valor = isset($ordem['categoria']) ? pow(2, intval($ordem['categoria'])) : 8;
+            foreach ($est_marca as $estoque) {
                 if (isset($matches[$estoque->id])) {
-                    $matches[$estoque->id] += $valor;
+                    $matches[$estoque->id]['prioridade'] += ceil($num_caracteristicas / 2);
+                    $matches[$estoque->id]['caracteristicas'][] = 'marca';
                 } else {
-                    $matches[$estoque->id] = $valor;
+                    $matches[$estoque->id] = [
+                        'caracteristicas' => ['marca'],
+                        'prioridade' => ceil($num_caracteristicas / 2)
+                    ];
                 }
             }
         }
@@ -207,67 +181,71 @@ class Match extends Model
             ['nome', 'porcentagem']
         ])->first();
         $porcentagem = $regra ? $regra->valor / 100 : 0.2;
-        $est_valor = Estoque::where('valor', ">=", $interesse->valor - $interesse->valor * $porcentagem)
-            ->where('valor', "<=", $interesse->valor + $interesse->valor * $porcentagem)
-            ->get();
-        foreach ($est_valor as $estoque) {
-            $valor = isset($ordem['valor']) ? pow(2, intval($ordem['valor'])) : 4;
-            if (isset($matches[$estoque->id])) {
-                $matches[$estoque->id] += $valor;
-            } else {
-                $matches[$estoque->id] = $valor;
-            }
-        }
 
-        $est_cor = Estoque::where('cor', $interesse->cor)->get();
-        foreach ($est_cor as $estoque) {
-            $valor = isset($ordem['cor']) ? pow(2, intval($ordem['cor'])) : 2;
-            if (isset($matches[$estoque->id])) {
-                $matches[$estoque->id] += $valor;
-            } else {
-                $matches[$estoque->id] = $valor;
-            }
-        }
+        foreach ($interesse->caracteristicas as $caracteristica) {
+            $encontradas = CaracteristicaEstoque::where([
+                ['caracteristica_id', $caracteristica->caracteristica_id]
+            ])->where(function ($query) use ($caracteristica, $porcentagem) {
+                $query->where('valor', '=', $caracteristica->valor);
+                if ($caracteristica->descricao->tipo == 1 || $caracteristica->descricao->tipo == 2) {
+                    if ($caracteristica->comparador == '<') {
+                        $query->orWhere('valor', '<=', $caracteristica->valor);
+                    } elseif ($caracteristica->comparador == '>') {
+                        $query->orWhere('valor', '>=', $caracteristica->valor);
+                    } elseif ($caracteristica->comparador == '~') {
+                        $query->orWhere([
+                            ['valor', '>=', $caracteristica->valor - ($caracteristica->valor * $porcentagem)],
+                            ['valor', '<=', $caracteristica->valor + ($caracteristica->valor * $porcentagem)],
+                        ]);
+                    }
+                } elseif ($caracteristica->tipo == 0) {
+                    if ($caracteristica->comparador == '<') {
+                        $query->orWhere('valor', 'LIKE', "$caracteristica->valor%");
+                    } elseif ($caracteristica->comparador == '>') {
+                        $query->orWhere('valor', 'LIKE', "%$caracteristica->valor");
+                    } elseif ($caracteristica->comparador == '~') {
+                        $query->orWhere('valor', 'LIKE', "%$caracteristica->valor%");
+                    }
+                }
+            })
+                ->selectRaw('DISTINCT estoque_id, caracteristica_id')
+                ->get();
 
-        $est_ano = Estoque::where('ano', $interesse->ano)->get();
-        foreach ($est_ano as $estoque) {
-            $valor = isset($ordem['ano']) ? pow(2, intval($ordem['ano'])) : 1;
-            if (isset($matches[$estoque->id])) {
-                $matches[$estoque->id] += $valor;
-            } else {
-                $matches[$estoque->id] = $valor;
+            foreach ($encontradas as $est_car) {
+                if (isset($matches[$est_car->estoque_id])) {
+                    $matches[$est_car->estoque_id]['prioridade']++;
+                    $matches[$est_car->estoque_id]['caracteristicas'][] = $est_car->caracteristica_id;
+                } else {
+                    $matches[$est_car->estoque_id] = [
+                        'caracteristicas' => [$est_car->caracteristica_id],
+                        'prioridade' => 1
+                    ];
+                }
             }
         }
 
         $insert = [];
-        foreach ($matches as $estoque_id => $prioridade) {
-            $insert[] = [
-                'estoque_id' => $estoque_id,
-                'prioridade' => $prioridade,
-                'interesse_id' => $interesse->id,
-            ];
+        foreach ($matches as $estoque_id => $dados) {
+            if ($dados['prioridade'] > 1) {
+                $insert[] = [
+                    'estoque_id' => $estoque_id,
+                    'interesse_id' => $interesse->id,
+                    'prioridade' => $dados['prioridade'],
+                    'caracteristicas' => json_encode($dados['caracteristicas']),
+                ];
+            }
         }
 
         Match::where('interesse_id', $interesse->id)->delete();
         Match::insert($insert);
 
-        return Estoque::join('matches', 'matches.estoque_id', 'estoques.id')
-            ->join('carros', 'carros.id', 'estoques.carro_id')
-            ->leftJoin('marcas', 'marcas.id', 'carros.marca_id')
-            ->leftJoin('categorias', 'categorias.id', 'carros.categoria_id')
-            ->where('matches.interesse_id', $interesse->id)
-            ->selectRaw('
-                estoques.id,
-                carros.nome as carro,
-                marcas.nome as marca,
-                categorias.nome as categoria,
-                estoques.valor,
-                estoques.placa,
-                estoques.ano,
-                estoques.cor
-            ')
-            ->orderByDesc('matches.prioridade')
-            ->orderBy('estoques.valor')
+        return Match::with([
+            'estoque.caracteristicas.descricao',
+            'estoque.carro.marca'
+        ])
+            ->where('interesse_id', $interesse->id)
+            ->orderByDesc('prioridade')
+            ->limit(30)
             ->get();
     }
 }

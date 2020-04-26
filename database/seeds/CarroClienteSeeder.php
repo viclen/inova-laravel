@@ -3,6 +3,7 @@
 use App\Carro;
 use App\CarroCliente;
 use App\Cliente;
+use App\Modelo;
 use Illuminate\Database\Seeder;
 
 class CarroClienteSeeder extends Seeder
@@ -16,16 +17,20 @@ class CarroClienteSeeder extends Seeder
     {
         $clientes = Cliente::all();
 
-        $max_carro = Carro::orderByDesc("id")->first()->id;
-
         $carrosclientes = [];
         foreach ($clientes as $i => $cliente) {
-            if (random_int(0, 10) > 3) {
-                $carrosclientes[] = [
-                    'cliente_id' => $cliente->id,
-                    'carro_id' => random_int(1, $max_carro),
-                    'valor' => random_int(5, 20) * 1000,
-                ];
+            if (random_int(0, 10) > 6) {
+                $carro = Carro::inRandomOrder()->first();
+                $modelo = Modelo::where('carro_id', $carro->id)->inRandomOrder()->first();
+
+                if ($modelo) {
+                    $carrosclientes[] = [
+                        'cliente_id' => $cliente->id,
+                        'carro_id' => $carro->id,
+                        'modelo_id' => $modelo->id,
+                        'valor' => random_int(5, 20) * 1000,
+                    ];
+                }
             }
         }
 

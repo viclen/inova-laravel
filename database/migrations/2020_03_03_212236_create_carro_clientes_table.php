@@ -16,6 +16,7 @@ class CreateCarroClientesTable extends Migration
         Schema::create('carro_clientes', function (Blueprint $table) {
             $table->unsignedBigInteger('carro_id');
             $table->unsignedBigInteger('cliente_id');
+            $table->unsignedBigInteger('modelo_id')->nullable();
             $table->float('valor');
 
             $table->unique(['carro_id', 'cliente_id']);

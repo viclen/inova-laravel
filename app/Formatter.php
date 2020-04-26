@@ -50,4 +50,30 @@ class Formatter
 
         return "R$ " . $saida;
     }
+
+    public static function boolean($entrada)
+    {
+        if ($entrada) {
+            return 'Sim';
+        } else {
+            return 'Não';
+        }
+    }
+
+    public static function mil($entrada)
+    {
+        $entrada = "$entrada";
+
+        $saidacomponto = "";
+        $count = 0;
+        for ($i = strlen($entrada) - 1; $i >= 0; $i--) {
+            if ($count > 2) {
+                $saidacomponto = "." . $saidacomponto;
+                $count = 0;
+            }
+            $count++;
+            $saidacomponto = substr($entrada, $i, 1) . $saidacomponto;
+        }
+        return $saidacomponto;
+    }
 }

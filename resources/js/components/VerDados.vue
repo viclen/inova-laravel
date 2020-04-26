@@ -45,7 +45,7 @@
                     <a
                       type="text"
                       :href="links[nome]"
-                      :class="{ 'form-control': true, 'btn-link': links[nome]!=undefined }"
+                      :class="{ 'form-control': true, 'bg-light': true, 'btn-link': links[nome]!=undefined }"
                     >{{item}}</a>
                   </div>
                 </div>
@@ -94,7 +94,7 @@ export default {
       console.log(msg);
     },
     isEmpty(obj) {
-      console.log(Object.keys(obj).length);
+    //   console.log(Object.keys(obj).length);
       return Object.keys(obj).length == 0;
     }
   }

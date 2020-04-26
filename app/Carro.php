@@ -11,7 +11,6 @@ class Carro extends Model
         'nome',
         'fipe_id',
         'marca_id',
-        'categoria_id'
     ];
 
     public function marca()
@@ -27,6 +26,11 @@ class Carro extends Model
     public function interesses()
     {
         return $this->hasMany(Interesse::class);
+    }
+
+    public function modelos()
+    {
+        return $this->hasMany(Modelo::class);
     }
 
     public function categoria()
