@@ -9,6 +9,8 @@ Vue.component('form-padrao', require('./components/FormPadrao.vue').default);
 Vue.component('test-api', require('./components/TestAPI.vue').default);
 Vue.component('regras-editor', require('./components/RegrasEditor.vue').default);
 Vue.component('ver-dados', require('./components/VerDados.vue').default);
+Vue.component('cadastro-interesse', require('./components/CadastroInteresse.vue').default);
+Vue.component('caracteristica-input', require('./components/CaracteristicaInput.vue').default);
 
 import Toasted from 'vue-toasted';
 import BootstrapVue from 'bootstrap-vue';

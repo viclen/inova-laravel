@@ -9,6 +9,7 @@ use App\Cliente;
 use App\Estoque;
 use App\Formatter;
 use App\Interesse;
+use App\Marca;
 use App\Match;
 use App\Regra;
 use Illuminate\Http\Request;
@@ -185,11 +186,9 @@ class InteresseController extends Controller
     public function create()
     {
         return view('pages.interesse.create', [
-            'tipos' => (new Interesse())->getTypes(),
-            'opcoes' => [
-                'carros' => Carro::select(["id", "nome"])->get(),
-                'clientes' => Cliente::select(["id", "nome"])->get(),
-            ],
+            'caracteristicas' => Caracteristica::with('opcoes')->get(),
+            'marcas' => Marca::all(),
+            'carros' => Carro::with('marca')->get(),
         ]);
     }
 
