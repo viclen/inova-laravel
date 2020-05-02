@@ -11,6 +11,7 @@ Vue.component('regras-editor', require('./components/RegrasEditor.vue').default)
 Vue.component('ver-dados', require('./components/VerDados.vue').default);
 Vue.component('cadastro-interesse', require('./components/CadastroInteresse.vue').default);
 Vue.component('caracteristica-input', require('./components/CaracteristicaInput.vue').default);
+Vue.component('number-pattern-input', require('./components/NumberPatternInput.vue').default);
 
 import Toasted from 'vue-toasted';
 import BootstrapVue from 'bootstrap-vue';
@@ -22,6 +23,9 @@ Vue.component("v-select", vSelect);
 
 import draggable from 'vuedraggable';
 Vue.component("draggable", draggable);
+
+var VueScrollTo = require('vue-scrollto');
+Vue.use(VueScrollTo);
 
 // font awesome
 import { library } from '@fortawesome/fontawesome-svg-core'

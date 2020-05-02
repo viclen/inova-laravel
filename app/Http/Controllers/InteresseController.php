@@ -189,6 +189,7 @@ class InteresseController extends Controller
             'caracteristicas' => Caracteristica::with('opcoes')->get(),
             'marcas' => Marca::all(),
             'carros' => Carro::with('marca')->get(),
+            'clientes' => Cliente::all(),
         ]);
     }
 

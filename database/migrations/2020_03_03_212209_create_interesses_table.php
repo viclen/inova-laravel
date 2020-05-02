@@ -19,7 +19,15 @@ class CreateInteressesTable extends Migration
             $table->unsignedBigInteger('carro_id')->nullable();
             $table->unsignedBigInteger('modelo_id')->nullable();
             $table->text('observacoes')->nullable();
-            $table->integer('origem')->default(0);
+            $table->integer('origem')->default(0)->comment('
+                Facebook,
+                Whatsapp,
+                Instagram,
+                Loja,
+                Telefone,
+                OLX,
+                Outro
+            ');
             $table->timestamps();
         });
     }

@@ -13,6 +13,25 @@
 
                         <div class="row mb-2">
                             <div class="col">
+                                <a href="/" class="btn btn-light">
+                                    <span>
+                                        <fa-icon icon="arrow-left" />
+                                    </span>
+                                    &nbsp;
+                                    Voltar
+                                </a>
+                                <a href="/interesses/create" class="btn btn-success float-right">
+                                    <span>
+                                        <fa-icon icon="plus" />
+                                    </span>
+                                    &nbsp;
+                                    Novo
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col">
                                 @foreach ($ignorar as $coluna)
                                 @if (trim($coluna))
                                 <a class="btn btn-light text-capitalize"
@@ -123,9 +142,9 @@
                         </div>
 
                         @if(!count($interesses))
-                            <div class="alert alert-secondary">
-                                Nenhum dado encontrado.
-                            </div>
+                        <div class="alert alert-secondary">
+                            Nenhum dado encontrado.
+                        </div>
                         @endif
                     </form>
                 </div>

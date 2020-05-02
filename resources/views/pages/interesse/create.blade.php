@@ -4,10 +4,10 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col">
-            <h1>Cadastro de Interesses</h1>
+            <h1>Cadastrar Interesses</h1>
             <b-card no-body>
                 <cadastro-interesse :caracteristicas="{{ $caracteristicas }}" :carros="{{ $carros }}"
-                    :marcas="{{ $marcas }}" />
+                    :marcas="{{ $marcas }}" :clientes="{{ $clientes }}" />
             </b-card>
         </div>
     </div>
