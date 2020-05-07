@@ -125,7 +125,7 @@
             </b-form-group>
             <b-form-group>
               <label>Observações</label>
-              <b-form-textarea :readonly="cliente != null" v-model="interesse.observacoes"></b-form-textarea>
+              <b-form-textarea v-model="interesse.observacoes"></b-form-textarea>
             </b-form-group>
           </div>
           <!-- interesse -->
@@ -153,7 +153,7 @@
             v-bind:class="{'border border-danger rounded is-invalid': false}"
             @input="selecionarCliente"
             v-model="cliente"
-            :disabled="cliente == null && dadosCliente.nome ? true : false"
+            :disabled="cliente == null && (dadosCliente.nome || dadosCliente.telefone) ? true : false"
           >
             <div slot="no-options">Nenhum resultado.</div>
           </v-select>
@@ -272,6 +272,15 @@
         Salvar
       </b-button>
 
+      <b-button
+        variant="danger"
+        @click="limparDadosCliente"
+        v-if="tabIndex == 1 && (dadosCliente.nome || dadosCliente.telefone)"
+      >
+        <fa-icon icon="times" />&nbsp;
+        Limpar
+      </b-button>
+
       <b-button @click="proximaTab" variant="secondary" :disabled="tabIndex >= 2">
         Proximo&nbsp;
         <fa-icon icon="arrow-right" />
@@ -364,6 +373,7 @@ export default {
     },
     proximaTab() {
       if (
+        this.tabIndex == 0 &&
         !this.interesses[0].carro &&
         !this.interesses[0].caracteristicasSelecionadas.length
       ) {
@@ -564,36 +574,103 @@ export default {
       }
     },
     salvar() {
-      let dados = [];
-      dados.interesses = this.interesses.map(interesse => {
+      let dados = {};
+
+      dados.interesses = this.interesses.map((interesse, i) => {
         let valido = true;
 
         interesse.caracteristicasSelecionadas.forEach(caracteristica => {
           if (caracteristica.valor === "") {
             valido = false;
+            this.interesses[i].erro = true;
+            this.tabIndex = 0;
           }
         });
 
-        if (valido && !interesse.carro.id) {
+        if (valido && !interesse.carro) {
           valido = false;
+          this.interesses[i].erro = true;
+          this.tabIndex = 0;
         }
 
         if (valido) {
-          return interesse;
+          return {
+            carro_id: interesse.carro.id,
+            caracteristicas: interesse.caracteristicasSelecionadas.map(
+              caracteristica => ({
+                id: caracteristica.id,
+                valor: caracteristica.valor
+              })
+            ),
+            origem: interesse.origem,
+            observacoes: interesse.observacoes || ""
+          };
         }
       });
-      dados.cliente = this.dadosCliente;
-      dados.troca = this.troca;
+
+      if (this.tabIndex == 0) {
+        return;
+      }
+
+      if (this.validarCliente()) {
+        dados.cliente = this.dadosCliente;
+      } else {
+        return;
+      }
+
+      if (this.troca.carro) {
+        dados.troca = {
+          carro_id: this.troca.carro.id,
+          caracteristicas: this.troca.caracteristicasSelecionadas.map(
+            caracteristica => ({
+              id: caracteristica.id,
+              valor: caracteristica.valor.valor
+            })
+          ),
+          origem: this.troca.origem,
+          observacoes: this.troca.observacoes
+        };
+      }
 
       console.log(dados);
+      let url = "/interesses";
+      axios
+        .post(url, dados)
+        .then(r => {
+          if (r.data.status == "1") {
+            let toast = this.$toasted.success("Interesses salvos!", {
+              theme: "toasted-primary",
+              position: "bottom-right",
+              duration: 5000
+            });
+            window.location.href = "/interesses/" + r.data.id;
+          } else {
+            let toast = this.$toasted.error("Houve algum erro.", {
+              theme: "toasted-primary",
+              position: "bottom-right",
+              duration: 5000
+            });
+            console.log(r.data);
+          }
+        });
+    },
+    limparDadosCliente() {
+      this.cliente = null;
+      this.selecionarCliente(null);
+      this.$forceUpdate();
     },
     validarCliente() {
-      if (!this.dadosCliente.nome || !this.dadosCliente.telefone) {
+      if (
+        !this.cliente &&
+        (!this.dadosCliente.nome || !this.dadosCliente.telefone)
+      ) {
         this.erroCliente = true;
         this.$forceUpdate();
+        this.tabIndex = 1;
         return false;
       }
       this.erroCliente = false;
+      this.$forceUpdate();
       return true;
     }
   }

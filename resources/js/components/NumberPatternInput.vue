@@ -35,13 +35,26 @@ export default {
   data() {
     return {
       inputValue: "",
+      oldValue: ""
     };
   },
   mounted() {
     if (this.value) {
+      this.oldValue = this.value;
       this.inputValue = this.value;
+      this.run();
     }
-    this.run();
+  },
+  watch: {
+    $props: {
+      handler() {
+        if (this.inputValue != this.value) {
+          this.inputValue = this.value;
+        }
+      },
+      deep: true,
+      immediate: true
+    }
   },
   methods: {
     run() {
@@ -63,8 +76,8 @@ export default {
           }
         }
         this.inputValue = finalValue;
-        this.updateValue();
       }
+      this.updateValue();
     },
     updateValue() {
       this.$emit("input", this.inputValue);

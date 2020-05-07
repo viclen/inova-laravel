@@ -14,6 +14,7 @@ use App\Match;
 use App\Regra;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Throwable;
 
 class InteresseController extends Controller
 {
@@ -201,36 +202,68 @@ class InteresseController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'carro_id' => "required",
-            'cliente_id' => "required",
-            'valor' => "",
-            'ano' => "",
-            'cor' => "",
-            'observacoes' => "",
-            'financiado' => "",
-            'origem' => "",
+        $request->validate([
+            'interesses' => 'array',
+            'cliente' => 'required',
+            'troca' => '',
         ]);
 
-        if ($validator->fails()) {
-            return [
-                'status' => 0,
-                'errors' => $validator->errors()
-            ];
-        } else {
-            $interesse = new Interesse($request->all());
+        try {
+            $cliente = $request['cliente'];
 
-            if ($interesse->save()) {
-                return [
-                    'status' => 1,
-                    'data' => $interesse,
-                ];
+            if (!isset($cliente['id']) || !$cliente['id']) {
+                if (!isset($cliente['nome']) || !isset($cliente['telefone']) || !$cliente['nome'] || !$cliente['telefone']) {
+                    return [
+                        'status' => 0
+                    ];
+                }
+
+                $cliente = new Cliente([
+                    'nome' => $cliente['nome'],
+                    'telefone' => $cliente['telefone'],
+                    'endereco' => isset($cliente['endereco']) ? $cliente['endereco'] : '',
+                    'cidade' => isset($cliente['cidade']) ? $cliente['cidade'] : '',
+                    'email' => isset($cliente['email']) ? $cliente['email'] : '',
+                    'cpf' => isset($cliente['cpf']) ? $cliente['cpf'] : ''
+                ]);
+
+                $cliente->save();
             }
+            $cliente = json_decode(json_encode($cliente), true);
+
+            $id = null;
+
+            foreach ($request['interesses'] as $interesse) {
+                $int = new Interesse([
+                    'cliente_id' => $cliente['id'],
+                    'carro_id' => $interesse['carro_id'],
+                    'observacoes' => $interesse['observacoes'],
+                    'origem' => $interesse['origem'],
+                ]);
+                $int->save();
+
+                if (!$id) {
+                    $id = $int->id;
+                }
+
+                $cis = [];
+                foreach ($interesse['caracteristicas'] as $caracteristica) {
+                    $cis[] = [
+                        'caracteristica_id' => $caracteristica['id'],
+                        'interesse_id' => $int->id,
+                        'valor' => $caracteristica['valor']['valor'],
+                        'comparador' => $caracteristica['valor']['comparador'],
+                    ];
+                }
+                CaracteristicaInteresse::insert($cis);
+            }
+        } catch (Throwable $th) {
+            return [$th->getMessage()];
         }
 
         return [
-            'status' => 0,
-            'errors' => []
+            'status' => 1,
+            'id' => $id,
         ];
     }
 

@@ -18,6 +18,11 @@ class Cliente extends Model
         'cpf'
     ];
 
+    protected $hidden = [
+        'created_at',
+        'updated_at'
+    ];
+
     public function carros()
     {
         return $this->belongsToMany(Carro::class, 'carro_clientes');
