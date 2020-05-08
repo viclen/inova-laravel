@@ -17,7 +17,6 @@ class CreateInteressesTable extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('cliente_id');
             $table->unsignedBigInteger('carro_id')->nullable();
-            $table->unsignedBigInteger('modelo_id')->nullable();
             $table->text('observacoes')->nullable();
             $table->integer('origem')->default(0)->comment('
                 Facebook,

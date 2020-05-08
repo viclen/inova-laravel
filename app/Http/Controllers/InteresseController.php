@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Caracteristica;
+use App\CaracteristicaCarroCliente;
 use App\CaracteristicaInteresse;
 use App\Carro;
+use App\CarroCliente;
 use App\Cliente;
 use App\Estoque;
 use App\Formatter;
@@ -256,6 +258,24 @@ class InteresseController extends Controller
                     ];
                 }
                 CaracteristicaInteresse::insert($cis);
+            }
+
+            if ($request['troca']) {
+                $troca = $request['troca'];
+                $carro_cliente_id = CarroCliente::insertGetId([
+                    'cliente_id' => $cliente['id'],
+                    'carro_id' => $troca['carro_id'],
+                ]);
+
+                $cccs = [];
+                foreach ($troca['caracteristicas'] as $caracteristica) {
+                    $cccs[] = [
+                        'caracteristica_id' => $caracteristica['id'],
+                        'carro_cliente_id' => $carro_cliente_id,
+                        'valor' => $caracteristica['valor'],
+                    ];
+                }
+                CaracteristicaCarroCliente::insert($cccs);
             }
         } catch (Throwable $th) {
             return [$th->getMessage()];

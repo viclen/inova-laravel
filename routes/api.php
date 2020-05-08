@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::middleware('api')->post('/login', 'Api\ApiTokenController@login');
+
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -26,5 +28,3 @@ Route::middleware('auth:api')->resource('estoques', 'Api\EstoqueController');
 Route::middleware('auth:api')->resource('interesses', 'Api\InteresseController');
 Route::middleware('auth:api')->resource('categorias', 'Api\CategoriaController');
 Route::middleware('auth:api')->resource('match', 'Api\MatchController');
-
-Route::middleware('api')->post('/login', 'Api\ApiTokenController@login');

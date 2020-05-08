@@ -28,14 +28,6 @@ Route::resource('estoques', 'EstoqueController')->middleware('auth');
 Route::resource('interesses', 'InteresseController')->middleware('auth');
 Route::resource('categorias', 'CategoriaController')->middleware('auth');
 
-Route::get('/testAPI', function () {
-    return view('test.api');
-});
-
-Auth::routes();
-
-Route::get('/home', 'HomeController@index')->name('home');
-
 // search
 Route::get('/clientes/search/{search}', 'ClienteController@search')->middleware('auth');
 Route::get('/carros/search/{search}', 'CarroController@search')->middleware('auth');

@@ -7,6 +7,11 @@ use Illuminate\Support\Facades\DB;
 
 class CarroCliente extends Model
 {
+    protected $fillable = [
+        'carro_id',
+        'cliente_id'
+    ];
+
     public function getTypes()
     {
         $types = [];

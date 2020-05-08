@@ -21,6 +21,11 @@ class CarroController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'nome' => 'required',
+            'marca_id' => 'required',
+        ]);
+
         $data = new Carro($request->all());
         if ($data->save()) {
             return [
@@ -46,6 +51,11 @@ class CarroController extends Controller
 
     public function update(Request $request, int $id)
     {
+        $request->validate([
+            'nome' => 'required',
+            'marca_id' => 'required',
+        ]);
+
         if (count($request->all())) {
             $data = Carro::find($id);
             $data->update($request->all());

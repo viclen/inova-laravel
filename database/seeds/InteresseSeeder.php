@@ -25,12 +25,9 @@ class InteresseSeeder extends Seeder
         foreach ($clientes as $cliente) {
             $carro = Carro::inRandomOrder()->first();
 
-            $modelo = Modelo::where('carro_id', $carro->id)->inRandomOrder()->first();
-
             $interesses[] = [
                 'cliente_id' => $cliente->id,
                 'carro_id' => $carro->id,
-                'modelo_id' => $modelo ? $modelo->id : null,
                 'origem' => random_int(0, count(Interesse::ORIGENS) - 1),
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -40,7 +37,6 @@ class InteresseSeeder extends Seeder
             $interesses[] = [
                 'cliente_id' => $cliente->id,
                 'carro_id' => $estoque->carro_id,
-                'modelo_id' => null,
                 'origem' => random_int(0, count(Interesse::ORIGENS) - 1),
                 'created_at' => now(),
                 'updated_at' => now(),
