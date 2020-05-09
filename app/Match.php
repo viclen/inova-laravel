@@ -33,7 +33,7 @@ class Match extends Model
         return $caracteristicas;
     }
 
-    static public function findInteresses(Estoque $estoque, $financiado = false)
+    static public function findInteresses(Estoque $estoque, $quantidade = 30)
     {
         $matches = [];
         $num_caracteristicas = count($estoque->caracteristicas);
@@ -46,7 +46,7 @@ class Match extends Model
             ];
         }
 
-        if ($estoque->carro->marca_id) {
+        if ($estoque->carro && $estoque->carro->marca_id) {
             $int_marca = Interesse::join('carros', 'carros.id', 'interesses.carro_id')
                 ->where('carros.marca_id', $estoque->carro->marca_id)
                 ->whereNotIn('interesses.id', array_keys($matches))
@@ -139,7 +139,7 @@ class Match extends Model
         ])
             ->where('estoque_id', $estoque->id)
             ->orderByDesc('prioridade')
-            ->limit(30)
+            ->limit($quantidade)
             ->get();
     }
 
@@ -156,7 +156,7 @@ class Match extends Model
             ];
         }
 
-        if ($interesse->carro->marca_id) {
+        if ($interesse->carro && $interesse->carro->marca_id) {
             $est_marca = Estoque::join('carros', 'carros.id', 'estoques.carro_id')
                 ->where('carros.marca_id', $interesse->carro->marca_id)
                 ->whereNotIn('estoques.id', array_keys($matches))

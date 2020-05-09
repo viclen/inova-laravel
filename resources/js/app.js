@@ -28,11 +28,14 @@ var VueScrollTo = require('vue-scrollto');
 Vue.use(VueScrollTo);
 
 // font awesome
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { fas } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { fas } from '@fortawesome/free-solid-svg-icons';
+import { faWhatsapp, faWhatsappSquare } from '@fortawesome/fontawesome-free-brands';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
-library.add(fas)
+library.add(fas);
+library.add(faWhatsapp);
+library.add(faWhatsappSquare);
 Vue.component('fa-icon', FontAwesomeIcon)
 
 const app = new Vue({

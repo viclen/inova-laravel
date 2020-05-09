@@ -210,6 +210,8 @@ class InteresseController extends Controller
             'troca' => '',
         ]);
 
+        $resultados = [];
+
         try {
             $cliente = $request['cliente'];
 
@@ -233,8 +235,6 @@ class InteresseController extends Controller
             }
             $cliente = json_decode(json_encode($cliente), true);
 
-            $id = null;
-
             foreach ($request['interesses'] as $interesse) {
                 $int = new Interesse([
                     'cliente_id' => $cliente['id'],
@@ -243,10 +243,6 @@ class InteresseController extends Controller
                     'origem' => $interesse['origem'],
                 ]);
                 $int->save();
-
-                if (!$id) {
-                    $id = $int->id;
-                }
 
                 $cis = [];
                 foreach ($interesse['caracteristicas'] as $caracteristica) {
@@ -258,6 +254,13 @@ class InteresseController extends Controller
                     ];
                 }
                 CaracteristicaInteresse::insert($cis);
+
+                $int->load(['caracteristicas.descricao', 'carro.marca']);
+                $matches = Match::findEstoques($int, 1);
+                if (count($matches)) {
+                    $matches[0]->interesse = $int;
+                    $resultados[] = $matches[0];
+                }
             }
 
             if ($request['troca']) {
@@ -283,7 +286,7 @@ class InteresseController extends Controller
 
         return [
             'status' => 1,
-            'id' => $id,
+            'resultados' => $resultados
         ];
     }
 
@@ -295,7 +298,7 @@ class InteresseController extends Controller
      */
     public function show($id)
     {
-        $interesse = Interesse::with(['caracteristicas.descricao', 'caracteristicas', 'carro.marca'])->find($id);
+        $interesse = Interesse::with(['caracteristicas.descricao', 'caracteristicas', 'carro.marca', 'cliente'])->find($id);
 
         $matches = Match::findEstoques($interesse);
 

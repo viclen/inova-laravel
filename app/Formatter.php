@@ -4,6 +4,21 @@ namespace App;
 
 class Formatter
 {
+    public static function soNumeros($entrada)
+    {
+        $permitido = "1234567890";
+        $saida = "";
+
+        for ($i = 0; $i < strlen($entrada); $i++) {
+            $c = substr($entrada, $i, 1);
+            if (strpos($permitido, $c) !== false) {
+                $saida .= $c;
+            }
+        }
+
+        return $saida;
+    }
+
     public static function valor($entrada)
     {
         if (!$entrada) {

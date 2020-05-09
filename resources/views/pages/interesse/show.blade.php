@@ -8,6 +8,20 @@
                 <div class="card-header">Interesse</div>
 
                 <div class="card-body">
+                    <div class="form-group row">
+                        <label for="" class="text-capitalize col-md-4 col-form-label text-md-right">
+                            Cliente
+                        </label>
+                        <div class="col-md-6">
+                            <a href="http://wa.me/55{{ \App\Formatter::soNumeros($interesse->cliente->telefone) }}"
+                                class="form-control bg-light btn-link">
+                                {{ $interesse->cliente->nome }}
+                                <span>
+                                    <fa-icon :icon="['fab', 'whatsapp']" />
+                                </span>
+                            </a>
+                        </div>
+                    </div>
                     @foreach ($interesse->dadosTabela($relacionamentos) as $nome => $item)
                     <div class="form-group row">
                         <label for="{{ $nome . "_" }}" class="text-capitalize col-md-4 col-form-label text-md-right">

@@ -260,6 +260,94 @@
         </b-dropdown>
       </b-tab>
       <!-- troca -->
+      <!-- resultado -->
+      <b-tab title="Resultados" v-if="resultados !== null">
+        <div>
+          <b-alert
+            v-if="resultados.length"
+            variant="success"
+            class="text-center"
+            dismissible
+            show
+          >Encontramos os seguintes carros em estoque para os interesses cadastrados!</b-alert>
+          <b-alert
+            v-else
+            variant="danger"
+            class="text-center"
+            show
+            dismissible
+          >Nenhum carro encontrado.</b-alert>
+        </div>
+
+        <b-card
+          v-for="(match, i) in resultados"
+          :key="i"
+          :header="match.estoque.carro ? match.estoque.carro.nome : '' "
+          :header-bg-variant="
+            match.prioridade < match.interesse.caracteristicas.length ?
+                    'light'
+                :
+                    'info'
+            "
+          :header-text-variant="match.prioridade < match.interesse.caracteristicas.length ? 'dark' : 'white'"
+          class="mb-2"
+        >
+          <div class="row mb-1">
+            <div class="col">Prioridade</div>
+            <div class="col">
+              <span
+                class="text-secondary"
+                v-if="match.prioridade < match.interesse.caracteristicas.length"
+              >Baixa</span>
+              <span
+                class="text-danger"
+                v-else-if="match.prioridade > match.interesse.caracteristicas.length * 2"
+              >Muito Alta</span>
+              <span class="text-dark" v-else>Alta</span>
+            </div>
+          </div>
+          <div
+            :class="{
+                'row mb-1': true,
+                'text-success': match.caracteristicas.includes(`carro`)
+            }"
+            v-if="match.estoque.carro"
+          >
+            <div class="col">Carro</div>
+            <div class="col">
+              <a :href="'/carros/' + match.estoque.carro.id">{{ match.estoque.carro.nome }}</a>
+            </div>
+          </div>
+          <div
+            :class="{
+                'row mb-1': true,
+                'text-success': match.caracteristicas.includes(`marca`)
+            }"
+            v-if="match.estoque.carro && match.estoque.carro.marca"
+          >
+            <div class="col">Marca</div>
+            <div class="col">
+              <a
+                :href="'/marcas/' + match.estoque.carro.marca.id"
+              >{{ match.estoque.carro.marca.nome }}</a>
+            </div>
+          </div>
+          <div
+            v-for="(caracteristica, j) in match.estoque.caracteristicas"
+            :class="{
+                'row mb-1': true,
+                'text-success': match.caracteristicas.replace('[', ' ').replace(']', ' ').replace(',', ' ').includes(` ${caracteristica.caracteristica_id} `)
+            }"
+            :key="j"
+          >
+            <div class="col text-capitalize">{{ caracteristica.descricao.nome }}</div>
+            <div
+              class="col text-capitalize"
+            >{{ getValorCaracteristica(getCaracteristica(caracteristica.caracteristica_id), caracteristica.valor) }}</div>
+          </div>
+        </b-card>
+      </b-tab>
+      <!-- resultado -->
     </b-tabs>
     <b-card-footer class="d-flex justify-content-between">
       <b-button @click="tabIndex--" variant="secondary" :disabled="tabIndex == 0">
@@ -267,7 +355,7 @@
         Voltar
       </b-button>
 
-      <b-button variant="primary" v-if="tabIndex >= 2" @click="salvar">
+      <b-button variant="primary" v-if="tabIndex == 2" @click="salvar">
         <fa-icon icon="save" />&nbsp;
         Salvar
       </b-button>
@@ -301,6 +389,7 @@ export default {
       opcoesMarcas: [],
       erros: [],
       tabIndex: 0,
+      resultados: null,
       interesses: [
         {
           opcoesCarros: [],
@@ -322,6 +411,8 @@ export default {
     };
   },
   mounted() {
+    console.log(this.caracteristicas);
+
     let opcoesMarcas = [];
     this.marcas.forEach(marca => {
       opcoesMarcas.push({
@@ -418,7 +509,7 @@ export default {
           if (!marca || carro.marca.id == marca.id) {
             opcoesCarros.push({
               id: carro.id,
-              label: carro.nome + " - " + carro.marca.nome
+              label: carro.nome + " | " + carro.marca.nome
             });
           }
         });
@@ -454,7 +545,7 @@ export default {
           valor: "",
           comparador: "="
         };
-        caracteristicasSelecionadas.push(caracteristica);
+        caracteristicasSelecionadas.push({ ...caracteristica });
 
         this.troca.caracteristicasSelecionadas = caracteristicasSelecionadas;
       } else {
@@ -469,7 +560,7 @@ export default {
           valor: "",
           comparador: "="
         };
-        caracteristicasSelecionadas.push(caracteristica);
+        caracteristicasSelecionadas.push({ ...caracteristica });
 
         interesse.caracteristicasSelecionadas = caracteristicasSelecionadas;
         this.interesses[int_index] = interesse;
@@ -482,7 +573,7 @@ export default {
 
         this.troca.caracteristicasSelecionadas.forEach(caracteristica => {
           if (caracteristica.id != id) {
-            caracteristicasSelecionadas.push(caracteristica);
+            caracteristicasSelecionadas.push({ ...caracteristica });
           }
         });
 
@@ -494,7 +585,7 @@ export default {
 
         interesse.caracteristicasSelecionadas.forEach(caracteristica => {
           if (caracteristica.id != id) {
-            caracteristicasSelecionadas.push(caracteristica);
+            caracteristicasSelecionadas.push({ ...caracteristica });
           }
         });
 
@@ -520,7 +611,7 @@ export default {
             }
           }
           if (!achou) {
-            opcoesCaracteristicas.push(c);
+            opcoesCaracteristicas.push({ ...c });
           }
         });
 
@@ -543,7 +634,7 @@ export default {
             }
           }
           if (!achou) {
-            opcoesCaracteristicas.push(c);
+            opcoesCaracteristicas.push({ ...c });
           }
         });
 
@@ -587,15 +678,9 @@ export default {
           }
         });
 
-        if (valido && !interesse.carro) {
-          valido = false;
-          this.interesses[i].erro = true;
-          this.tabIndex = 0;
-        }
-
         if (valido) {
           return {
-            carro_id: interesse.carro.id,
+            carro_id: interesse.carro ? interesse.carro.id : null,
             caracteristicas: interesse.caracteristicasSelecionadas.map(
               caracteristica => ({
                 id: caracteristica.id,
@@ -634,25 +719,29 @@ export default {
 
       console.log(dados);
       let url = "/interesses";
-      axios
-        .post(url, dados)
-        .then(r => {
-          if (r.data.status == "1") {
-            let toast = this.$toasted.success("Interesses salvos!", {
-              theme: "toasted-primary",
-              position: "bottom-right",
-              duration: 5000
-            });
-            window.location.href = "/interesses/" + r.data.id;
-          } else {
-            let toast = this.$toasted.error("Houve algum erro.", {
-              theme: "toasted-primary",
-              position: "bottom-right",
-              duration: 5000
-            });
-            console.log(r.data);
-          }
-        });
+      axios.post(url, dados).then(r => {
+        if (r.data.status == "1") {
+          let toast = this.$toasted.success("Interesses salvos!", {
+            theme: "toasted-primary",
+            position: "bottom-right",
+            duration: 5000
+          });
+          this.resultados = r.data.resultados;
+          this.resultados.sort((a, b) => b.prioridade - a.prioridade);
+          console.log(this.resultados);
+          setTimeout(() => {
+            this.tabIndex = 3;
+            this.$forceUpdate();
+          }, 500);
+        } else {
+          let toast = this.$toasted.error("Houve algum erro.", {
+            theme: "toasted-primary",
+            position: "bottom-right",
+            duration: 5000
+          });
+          console.log(r.data);
+        }
+      });
     },
     limparDadosCliente() {
       this.cliente = null;
@@ -672,6 +761,28 @@ export default {
       this.erroCliente = false;
       this.$forceUpdate();
       return true;
+    },
+    getCaracteristica(id) {
+      for (const i in this.caracteristicas) {
+        const c = this.caracteristicas[i];
+        if (c.id == id) {
+          return c;
+        }
+      }
+    },
+    getValorCaracteristica(caracteristica, valor) {
+      if (caracteristica.tipo == 3) {
+        for (const i in caracteristica.opcoes) {
+          const opcao = caracteristica.opcoes[i];
+          if (opcao.ordem == valor) {
+            return opcao.valor;
+          }
+        }
+      } else if (caracteristica.tipo == 4) {
+        return valor ? "Sim" : "Não";
+      } else {
+        return valor;
+      }
     }
   }
 };

@@ -81,6 +81,8 @@ export default {
           if (nome.includes("_id")) {
             nome = nome.replace("_id", "");
             this.links[nome] = "/" + nome + "s/" + item;
+          } else if (nome.toLowerCase().includes("telefone")) {
+            this.links[nome] = "http://wa.me/55" + this.soNumeros(item);
           }
         }
       }
@@ -94,8 +96,19 @@ export default {
       console.log(msg);
     },
     isEmpty(obj) {
-    //   console.log(Object.keys(obj).length);
+      //   console.log(Object.keys(obj).length);
       return Object.keys(obj).length == 0;
+    },
+    soNumeros(entrada) {
+      entrada = entrada + "";
+      let permitido = "1234567890";
+      let saida = "";
+      for (let i = 0; i < entrada.length; i++) {
+        if (permitido.includes(entrada.charAt(i))) {
+          saida += entrada.charAt(i);
+        }
+      }
+      return saida;
     }
   }
 };

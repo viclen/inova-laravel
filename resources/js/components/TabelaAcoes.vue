@@ -76,6 +76,20 @@
                       icon="times"
                       v-bind:class="{ 'text-danger': !(highlight && i==0) }"
                     />
+                    <span v-else-if="j=='telefone'">
+                      <a
+                        :href="'http://wa.me/55' + soNumeros(coluna)"
+                        class="text-success mr-1"
+                        style="font-size: 20px"
+                        target="_blank"
+                      >
+                        <fa-icon :icon="['fab','whatsapp-square']" />
+                      </a>
+                      <a :href="'tel:+55' + soNumeros(coluna)" target="_blank">
+                        <fa-icon icon="phone-square" style="font-size: 20px" />
+                      </a>
+                      {{ coluna }}
+                    </span>
                     <span v-else>{{ coluna }}</span>
                   </td>
                 </template>
@@ -412,6 +426,17 @@ export default {
       }
 
       return "R$ " + saida;
+    },
+    soNumeros(entrada) {
+      entrada = entrada + "";
+      let permitido = "1234567890";
+      let saida = "";
+      for (let i = 0; i < entrada.length; i++) {
+        if (permitido.includes(entrada.charAt(i))) {
+          saida += entrada.charAt(i);
+        }
+      }
+      return saida;
     },
     getUrl() {
       if (this.controller.endsWith("s")) {

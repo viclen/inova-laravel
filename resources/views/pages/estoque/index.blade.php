@@ -121,7 +121,7 @@
     </div>
 
     <div class="row">
-        <div class="col-md-10 mt-2 text-center">
+        <div class="col-md-10 mt-2 text-center overflow-auto">
             {{ $dados->links() }}
         </div>
         <div class="col-md-2 mt-2">
