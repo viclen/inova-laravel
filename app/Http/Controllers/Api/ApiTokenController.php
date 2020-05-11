@@ -39,6 +39,7 @@ class ApiTokenController extends Controller
             return [
                 'status' => 1,
                 'token' => $token,
+                'nome' => $user->name
             ];
         }
 

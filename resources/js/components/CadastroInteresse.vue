@@ -1,8 +1,8 @@
 <template>
   <div @keyup="checkEnter">
-    <b-tabs card v-model="tabIndex">
+    <b-tabs pills card v-model="tabIndex">
       <!-- interesses -->
-      <b-tab title="Interesses" active>
+      <b-tab title="Interesses" :disabled="resultados !== null || passo != 0" active>
         <b-card
           v-for="(interesse, index) in interesses"
           :key="index"
@@ -143,7 +143,7 @@
       </b-tab>
       <!-- interesses -->
       <!-- cliente -->
-      <b-tab title="Cliente">
+      <b-tab title="Cliente" :disabled="resultados !== null || passo != 1">
         <h4>Existente?</h4>
         <b-form-group>
           <label>Pesquisar</label>
@@ -159,8 +159,11 @@
           </v-select>
         </b-form-group>
         <hr />
-        <div v-if="erroCliente" class="text-danger">
-          <hr />Por favor, selecione o cliente ou complete os dados para continuar.
+        <div v-if="erroCliente">
+          <b-alert
+            show
+            variant="danger"
+          >Por favor, selecione o cliente ou complete os dados para continuar.</b-alert>
         </div>
         <div>
           <b-form-group>
@@ -200,7 +203,7 @@
       </b-tab>
       <!-- cliente -->
       <!-- troca -->
-      <b-tab title="Troca">
+      <b-tab title="Troca" :disabled="resultados !== null || passo != 2">
         <b-form-group>
           <label>Marca</label>
           <v-select
@@ -345,12 +348,31 @@
               class="col text-capitalize"
             >{{ getValorCaracteristica(getCaracteristica(caracteristica.caracteristica_id), caracteristica.valor) }}</div>
           </div>
+
+          <template v-slot:footer>
+            <a :href="'/interesses' + match.interesse_id" class="btn btn-sm btn-secondary">
+              <fa-icon icon="eye" />&nbsp;
+              Ver
+            </a>
+            <a :href="'/' + match.interesse_id" class="btn btn-sm btn-success">
+              <fa-icon :icon="['fab', 'whatsapp']" />&nbsp;
+              Whatsapp
+            </a>
+            <a :href="'/' + match.interesse_id" class="btn btn-sm btn-primary">
+              <fa-icon icon="phone" />&nbsp;
+              Ligar
+            </a>
+          </template>
         </b-card>
       </b-tab>
       <!-- resultado -->
     </b-tabs>
     <b-card-footer class="d-flex justify-content-between">
-      <b-button @click="tabIndex--" variant="secondary" :disabled="tabIndex == 0">
+      <b-button
+        @click="() => mudarTab(tabIndex-1)"
+        variant="secondary"
+        :disabled="tabIndex == 0 || tabIndex > 2"
+      >
         <fa-icon icon="arrow-left" />&nbsp;
         Voltar
       </b-button>
@@ -362,14 +384,13 @@
 
       <b-button
         variant="danger"
-        @click="limparDadosCliente"
         v-if="tabIndex == 1 && (dadosCliente.nome || dadosCliente.telefone)"
       >
         <fa-icon icon="times" />&nbsp;
         Limpar
       </b-button>
 
-      <b-button @click="proximaTab" variant="secondary" :disabled="tabIndex >= 2">
+      <b-button @click="() => mudarTab(tabIndex+1)" variant="secondary" :disabled="tabIndex >= 2">
         Proximo&nbsp;
         <fa-icon icon="arrow-right" />
       </b-button>
@@ -389,6 +410,7 @@ export default {
       opcoesMarcas: [],
       erros: [],
       tabIndex: 0,
+      passo: 0,
       resultados: null,
       interesses: [
         {
@@ -455,22 +477,15 @@ export default {
         }
         this.interesses[int_index].mostrar = true;
 
-        this.$nextTick(() =>
+        this.$nextTick(() => {
           this.$nextTick(() => {
             this.$scrollTo("#interesse_" + int_index);
-          })
-        );
+          });
+        });
       }
     },
-    proximaTab() {
-      if (
-        this.tabIndex == 0 &&
-        !this.interesses[0].carro &&
-        !this.interesses[0].caracteristicasSelecionadas.length
-      ) {
-        this.interesses[0].erro = true;
-        this.$forceUpdate();
-
+    mudarTab(index) {
+      if (this.tabIndex == 0 && this.validarInteresses() === false) {
         return;
       }
 
@@ -478,7 +493,15 @@ export default {
         return;
       }
 
-      this.tabIndex++;
+      if (index >= 0) {
+        this.passo = index;
+        this.$forceUpdate();
+        this.$nextTick(() => {
+          this.$nextTick(() => {
+            this.tabIndex = index;
+          });
+        });
+      }
     },
     checkEnter(event) {
       if (event.code == "Enter") {
@@ -664,21 +687,28 @@ export default {
         this.interesses[i].index = i;
       }
     },
-    salvar() {
+    validarInteresses() {
       let dados = {};
 
+      let valido = true;
       dados.interesses = this.interesses.map((interesse, i) => {
-        let valido = true;
-
-        interesse.caracteristicasSelecionadas.forEach(caracteristica => {
-          if (caracteristica.valor === "") {
-            valido = false;
-            this.interesses[i].erro = true;
-            this.tabIndex = 0;
-          }
-        });
+        if (
+          !this.interesses[i].carro &&
+          !this.interesses[i].caracteristicasSelecionadas.length
+        ) {
+          valido = false;
+          this.interesses[i].erro = true;
+        } else {
+          interesse.caracteristicasSelecionadas.forEach(caracteristica => {
+            if (!caracteristica.valor || caracteristica.valor.valor === "") {
+              valido = false;
+              this.interesses[i].erro = true;
+            }
+          });
+        }
 
         if (valido) {
+          this.interesses[i].erro = false;
           return {
             carro_id: interesse.carro ? interesse.carro.id : null,
             caracteristicas: interesse.caracteristicasSelecionadas.map(
@@ -693,7 +723,18 @@ export default {
         }
       });
 
-      if (this.tabIndex == 0) {
+      if (!valido) {
+        this.tabIndex = 0;
+        this.$forceUpdate();
+        return false;
+      }
+
+      return dados;
+    },
+    salvar() {
+      let dados = this.validarInteresses();
+
+      if (dados === false) {
         return;
       }
 
@@ -783,6 +824,17 @@ export default {
       } else {
         return valor;
       }
+    },
+    soNumeros(entrada) {
+      entrada = entrada + "";
+      let permitido = "1234567890";
+      let saida = "";
+      for (let i = 0; i < entrada.length; i++) {
+        if (permitido.includes(entrada.charAt(i))) {
+          saida += entrada.charAt(i);
+        }
+      }
+      return saida;
     }
   }
 };

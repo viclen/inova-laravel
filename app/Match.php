@@ -33,16 +33,16 @@ class Match extends Model
         return $caracteristicas;
     }
 
-    static public function findInteresses(Estoque $estoque, $quantidade = 30)
+    static public function findInteresses(Estoque $estoque, $quantidade = 20)
     {
         $matches = [];
-        $num_caracteristicas = count($estoque->caracteristicas);
+        $num_caracteristicas = count($estoque->caracteristicas) ?: 1;
 
         $int_carro = Interesse::where('carro_id', $estoque->carro_id)->get();
         foreach ($int_carro as $interesse) {
             $matches[$interesse->id] = [
                 'prioridade' => $num_caracteristicas * 2,
-                'caracteristicas' => ['carro'],
+                'caracteristicas' => ['carro', 'marca'],
             ];
         }
 
@@ -77,29 +77,29 @@ class Match extends Model
                 ['caracteristica_id', $caracteristica->caracteristica_id]
             ])->where(function ($query) use ($caracteristica, $porcentagem) {
                 $query->where('valor', '=', $caracteristica->valor);
-                if ($caracteristica->tipo == 1 || $caracteristica->tipo == 2) {
+                if ($caracteristica->descricao->tipo == 1 || $caracteristica->tipo == 2) {
                     $query->orWhere([
                         ['comparador', '<'],
                         ['valor', '<=', $caracteristica->valor]
                     ])->orWhere([
                         ['comparador', '>'],
-                        ['valor', '<=', $caracteristica->valor]
+                        ['valor', '>=', $caracteristica->valor]
                     ])->orWhere([
                         ['comparador', '~'],
                         ['valor', '>=', $caracteristica->valor - $caracteristica->valor * $porcentagem],
                         ['valor', '<=', $caracteristica->valor + $caracteristica->valor * $porcentagem],
                     ]);
-                } elseif ($caracteristica->tipo == 0) {
-                    $query->orWhere([
-                        ['comparador', '<'],
-                        ['valor', 'LIKE', "$caracteristica->valor%"]
-                    ])->orWhere([
-                        ['comparador', '>'],
-                        ['valor', 'LIKE', "%$caracteristica->valor"]
-                    ])->orWhere([
-                        ['comparador', '~'],
-                        ['valor', 'LIKE', "%$caracteristica->valor%"],
-                    ]);
+                } elseif ($caracteristica->descricao->tipo == 0) {
+                    $query->orWhereRaw("
+                        comparador = '<'
+                        AND '$caracteristica->valor' LIKE CONCAT(`valor`, '%')
+                    ")->orWhereRaw("
+                        comparador = '>'
+                        AND '$caracteristica->valor' LIKE CONCAT('%', `valor`)
+                    ")->orWhereRaw("
+                        comparador = '~'
+                        AND '$caracteristica->valor' LIKE CONCAT('%', `valor`, '%')
+                    ");
                 }
             })
                 ->selectRaw('DISTINCT interesse_id, caracteristica_id')
@@ -120,14 +120,12 @@ class Match extends Model
 
         $insert = [];
         foreach ($matches as $interesse_id => $dados) {
-            if ($dados['prioridade'] > 1) {
-                $insert[] = [
-                    'interesse_id' => $interesse_id,
-                    'estoque_id' => $estoque->id,
-                    'prioridade' => $dados['prioridade'],
-                    'caracteristicas' => json_encode($dados['caracteristicas']),
-                ];
-            }
+            $insert[] = [
+                'interesse_id' => $interesse_id,
+                'estoque_id' => $estoque->id,
+                'prioridade' => $dados['prioridade'],
+                'caracteristicas' => json_encode($dados['caracteristicas']),
+            ];
         }
 
         Match::where('estoque_id', $estoque->id)->delete();
@@ -143,16 +141,16 @@ class Match extends Model
             ->get();
     }
 
-    static public function findEstoques(Interesse $interesse)
+    static public function findEstoques(Interesse $interesse, $quantidade = 20)
     {
         $matches = [];
-        $num_caracteristicas = count($interesse->caracteristicas);
+        $num_caracteristicas = count($interesse->caracteristicas) ?: 1;
 
         $est_carro = Estoque::where('carro_id', $interesse->carro_id)->get();
         foreach ($est_carro as $estoque) {
             $matches[$estoque->id] = [
                 'prioridade' => $num_caracteristicas * 2,
-                'caracteristicas' => ['carro'],
+                'caracteristicas' => ['carro', 'marca'],
             ];
         }
 
@@ -226,14 +224,12 @@ class Match extends Model
 
         $insert = [];
         foreach ($matches as $estoque_id => $dados) {
-            if ($dados['prioridade'] > 1) {
-                $insert[] = [
-                    'estoque_id' => $estoque_id,
-                    'interesse_id' => $interesse->id,
-                    'prioridade' => $dados['prioridade'],
-                    'caracteristicas' => json_encode($dados['caracteristicas']),
-                ];
-            }
+            $insert[] = [
+                'estoque_id' => $estoque_id,
+                'interesse_id' => $interesse->id,
+                'prioridade' => $dados['prioridade'],
+                'caracteristicas' => json_encode($dados['caracteristicas']),
+            ];
         }
 
         Match::where('interesse_id', $interesse->id)->delete();
@@ -245,7 +241,7 @@ class Match extends Model
         ])
             ->where('interesse_id', $interesse->id)
             ->orderByDesc('prioridade')
-            ->limit(30)
+            ->limit($quantidade)
             ->get();
     }
 }

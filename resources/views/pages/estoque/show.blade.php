@@ -66,7 +66,7 @@
                             </thead>
                             <tbody>
                                 @foreach ($matches as $match)
-                                <tr @if ($match->prioridade >= count($estoque->caracteristicas)*2) class="bg-info
+                                <tr @if ($match->prioridade > count($estoque->caracteristicas)*2) class="bg-info
                                     text-white" @endif>
                                     <td>
                                         {{ $match->interesse->cliente->nome }}
@@ -78,7 +78,8 @@
                                         $int_coluna
                                         => $int_valor)
                                         @if ($int_coluna == $est_coluna)
-                                        <span @if ($int_valor==$est_valor) class="text-danger" @endif>
+                                        <span @if (array_search($est_coluna, $match->getCaracteristicas())!==false)
+                                            class="text-danger" @endif>
                                             {{ $int_valor }}
                                         </span>
                                         @endif

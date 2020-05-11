@@ -32,5 +32,14 @@ class UserSeeder extends Seeder
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+        User::insert([
+            'name' => 'Kaue',
+            'username' => 'kaue',
+            'email' => 'kaue@autosavestudio.com',
+            'password' => Hash::make('kaue123'),
+            'api_token' => Str::random('80'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }
