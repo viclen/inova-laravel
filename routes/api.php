@@ -27,4 +27,5 @@ Route::middleware('auth:api')->resource('clientes', 'Api\ClienteController');
 Route::middleware('auth:api')->resource('estoques', 'Api\EstoqueController');
 Route::middleware('auth:api')->resource('interesses', 'Api\InteresseController');
 Route::middleware('auth:api')->resource('categorias', 'Api\CategoriaController');
+Route::middleware('auth:api')->resource('caracteristicas', 'Api\CaracteristicaController');
 Route::middleware('auth:api')->resource('match', 'Api\MatchController');

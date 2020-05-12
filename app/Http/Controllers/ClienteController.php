@@ -89,18 +89,34 @@ class ClienteController extends Controller
     public function show(Cliente $cliente)
     {
         $carros = $cliente->carros->toArray();
-        $this->delete_col($carros, 'pivot');
+        // $this->delete_col($carros, 'pivot');
+        $cliente->load('interesses.caracteristicas.descricao');
 
-        return view('pages.padrao.verdados', [
+        $ignorar = explode(',', request()->input('ignorar'));
+
+        $interesses = $cliente->interesses;
+        $caracteristicas = [];
+        foreach ($interesses as $interesse) {
+            foreach ($interesse->caracteristicas as $caracteristica) {
+                if (!isset($caracteristicas[$caracteristica->caracteristica_id]) && array_search($caracteristica->descricao->nome, $ignorar) === false) {
+                    $caracteristicas[$caracteristica->caracteristica_id] = $caracteristica->descricao->nome;
+                }
+            }
+        }
+
+        return view('pages.cliente.show', [
             'dados' => [
                 'cliente' => $cliente->getAttributes(),
                 'carros' => $carros,
-                'interesses' => $cliente->interesses->toArray(),
-            ]
+            ],
+            'caracteristicas' => $caracteristicas,
+            'interesses' => $interesses,
+            'ignorar' => $ignorar,
         ]);
     }
 
-    public function delete_col(&$array, $key) {
+    public function delete_col(&$array, $key)
+    {
         return array_walk($array, function (&$v) use ($key) {
             unset($v[$key]);
         });

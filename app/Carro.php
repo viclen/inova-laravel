@@ -13,6 +13,10 @@ class Carro extends Model
         'marca_id',
     ];
 
+    protected $hidden = [
+        'pivot'
+    ];
+
     public function marca()
     {
         return $this->belongsTo(Marca::class);
