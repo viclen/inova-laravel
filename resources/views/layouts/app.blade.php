@@ -36,7 +36,7 @@
 
 <body>
     <div id="app">
-        <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
+        {{-- <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/') }}">
                     {{ config('app.name', 'Inova') }}
@@ -93,32 +93,34 @@
                     </ul>
                 </div>
             </div>
-        </nav>
+        </nav> --}}
 
         <main class="py-4">
-            <div class="container">
-                <div class="row">
-                    <div class="col">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                @foreach (explode(".", Route::currentRouteName()) as $i => $item)
-                                <li class="breadcrumb-item text-capitalize" aria-current="page">
-                                    @if ($i == 0 && Route::has($item . '.index'))
-                                    <a href="{{ route($item . '.index') }}">
+            <sidebar>
+                <div class="container">
+                    <div class="row">
+                        <div class="col">
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb">
+                                    @foreach (explode(".", Route::currentRouteName()) as $i => $item)
+                                    <li class="breadcrumb-item text-capitalize" aria-current="page">
+                                        @if ($i == 0 && Route::has($item . '.index'))
+                                        <a href="{{ route($item . '.index') }}">
+                                            {{ __($item) }}
+                                        </a>
+                                        @else
                                         {{ __($item) }}
-                                    </a>
-                                    @else
-                                    {{ __($item) }}
-                                    @endif
-                                </li>
-                                @endforeach
-                            </ol>
-                        </nav>
+                                        @endif
+                                    </li>
+                                    @endforeach
+                                </ol>
+                            </nav>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            @yield('content')
+                @yield('content')
+            </sidebar>
         </main>
     </div>
 

@@ -12,6 +12,7 @@ Vue.component('ver-dados', require('./components/VerDados.vue').default);
 Vue.component('cadastro-interesse', require('./components/CadastroInteresse.vue').default);
 Vue.component('caracteristica-input', require('./components/CaracteristicaInput.vue').default);
 Vue.component('number-pattern-input', require('./components/NumberPatternInput.vue').default);
+Vue.component('sidebar', require('./components/Sidebar.vue').default);
 
 import Toasted from 'vue-toasted';
 import BootstrapVue from 'bootstrap-vue';
