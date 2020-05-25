@@ -95,7 +95,7 @@ export default {
           text: opcao.valor
         });
       });
-      this.valor = opcoes[0].value;
+      this.valor = this.value.valor || opcoes[0].value;
     } else if (this.dados.tipo == 4) {
       opcoes = [
         {
@@ -107,7 +107,7 @@ export default {
           text: "Não"
         }
       ];
-      this.valor = opcoes[0].value;
+      this.valor = this.value.value || opcoes[0].value;
     }
 
     if (this.mostrarcomparador === false) {

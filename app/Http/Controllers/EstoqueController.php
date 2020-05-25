@@ -7,6 +7,7 @@ use App\CaracteristicaEstoque;
 use App\Carro;
 use App\Estoque;
 use App\Formatter;
+use App\Marca;
 use App\Match;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -182,10 +183,9 @@ class EstoqueController extends Controller
     public function create()
     {
         return view('pages.estoque.create', [
-            'tipos' => (new Estoque())->getTypes(),
-            'opcoes' => [
-                'carros' => Carro::select(["id", "nome"])->get(),
-            ]
+            'caracteristicas' => Caracteristica::with('opcoes')->get(),
+            'marcas' => Marca::all(),
+            'carros' => Carro::with('marca')->get(),
         ]);
     }
 
@@ -197,36 +197,31 @@ class EstoqueController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'valor' => "required",
-            'carro_id' => "required",
-            'fipe' => "",
-            'placa' => "",
-            'ano' => "",
-            'cor' => "",
-            'chassi' => "",
-            'observacoes' => "",
+        $request->validate([
+            'caracteristicas' => 'array',
+            'carro_id' => 'required',
+            'observacoes' => ''
         ]);
 
-        if ($validator->fails()) {
-            return [
-                'status' => 0,
-                'errors' => $validator->errors()
-            ];
-        } else {
-            $estoque = new Estoque($request->all());
+        $estoque = new Estoque([
+            'carro_id' => $request['carro_id'],
+            'observacoes' => $request['observacoes']
+        ]);
+        $estoque->save();
 
-            if ($estoque->save()) {
-                return [
-                    'status' => 1,
-                    'data' => $estoque,
-                ];
-            }
+        $caracteristicas = [];
+        foreach ($request['caracteristicas'] as $caracteristica) {
+            $caracteristicas[] = [
+                'caracteristica_id' => $caracteristica['id'],
+                'estoque_id' => $estoque->id,
+                'valor' => $caracteristica['valor'],
+            ];
         }
+        CaracteristicaEstoque::insert($caracteristicas);
 
         return [
-            'status' => 0,
-            'errors' => []
+            'status' => 1,
+            'estoque' => $estoque
         ];
     }
 

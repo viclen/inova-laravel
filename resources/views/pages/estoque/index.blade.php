@@ -8,6 +8,25 @@
                 <div class="card-header">Estoques</div>
 
                 <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col">
+                            <a href="/" class="btn btn-light">
+                                <span>
+                                    <fa-icon icon="arrow-left" />
+                                </span>
+                                &nbsp;
+                                Voltar
+                            </a>
+                            <a href="/estoques/create" class="btn btn-success float-right">
+                                <span>
+                                    <fa-icon icon="plus" />
+                                </span>
+                                &nbsp;
+                                Novo
+                            </a>
+                        </div>
+                    </div>
+
                     <form action="" method="get" id="filtros">
                         <input type="hidden" name="ref" value="f">
 
@@ -110,9 +129,9 @@
                         </div>
 
                         @if(!count($estoques))
-                            <div class="alert alert-secondary">
-                                Nenhum dado encontrado.
-                            </div>
+                        <div class="alert alert-secondary">
+                            Nenhum dado encontrado.
+                        </div>
                         @endif
                     </form>
                 </div>

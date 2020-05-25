@@ -433,8 +433,6 @@ export default {
     };
   },
   mounted() {
-    console.log(this.caracteristicas);
-
     let opcoesMarcas = [];
     this.marcas.forEach(marca => {
       opcoesMarcas.push({
@@ -565,7 +563,7 @@ export default {
         ];
 
         caracteristica.valor = {
-          valor: "",
+          valor: caracteristica.valor_padrao || "",
           comparador: "="
         };
         caracteristicasSelecionadas.push({ ...caracteristica });
@@ -580,7 +578,7 @@ export default {
         ];
 
         caracteristica.valor = {
-          valor: "",
+          valor: caracteristica.valor_padrao || "",
           comparador: "="
         };
         caracteristicasSelecionadas.push({ ...caracteristica });
@@ -758,7 +756,7 @@ export default {
         };
       }
 
-      console.log(dados);
+    //   console.log(dados);
       let url = "/interesses";
       axios.post(url, dados).then(r => {
         if (r.data.status == "1") {
