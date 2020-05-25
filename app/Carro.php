@@ -37,11 +37,6 @@ class Carro extends Model
         return $this->hasMany(Modelo::class);
     }
 
-    public function categoria()
-    {
-        return $this->belongsTo(Categoria::class);
-    }
-
     public function getTypes()
     {
         $types = [];

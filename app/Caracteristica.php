@@ -8,7 +8,8 @@ class Caracteristica extends Model
 {
     protected $fillable = [
         'nome',
-        'valor_padrao'
+        'valor_padrao',
+        'tipo'
     ];
 
     public function opcaos()

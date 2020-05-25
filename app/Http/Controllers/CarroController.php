@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Carro;
-use App\Categoria;
 use App\Marca;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -49,7 +48,6 @@ class CarroController extends Controller
             'tipos' => (new Carro)->getTypes(),
             'opcoes' => [
                 'marcas' => Marca::select(["id", "nome"])->get(),
-                'categorias' => Categoria::select(["id", "nome"])->get(),
             ]
         ]);
     }
@@ -65,7 +63,6 @@ class CarroController extends Controller
         $validator = Validator::make($request->all(), [
             'nome' => 'required',
             'marca_id' => 'required',
-            'categoria_id' => ''
         ]);
 
         if ($validator->fails()) {
@@ -133,7 +130,6 @@ class CarroController extends Controller
             'tipos' => (new Carro)->getTypes(),
             'opcoes' => [
                 'marcas' => Marca::select(["id", "nome"])->get(),
-                'categorias' => Categoria::select(["id", "nome"])->get(),
             ],
             'dados' => $carro,
         ]);
@@ -151,7 +147,6 @@ class CarroController extends Controller
         $validator = Validator::make($request->all(), [
             'nome' => 'required',
             'marca_id' => 'required',
-            'categoria_id' => '',
         ]);
 
         if ($validator->fails()) {
@@ -162,7 +157,6 @@ class CarroController extends Controller
         } else {
             $carro->nome = $request['nome'];
             $carro->marca_id = $request['marca_id'];
-            $carro->categoria_id = $request['categoria_id'];
 
             if ($carro->save()) {
                 return [
