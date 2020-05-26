@@ -115,12 +115,41 @@
                                         </td>
                                         @endif
                                         @endforeach
+
                                         <td>
-                                            <a href="/estoques/{{ $estoque->id }}"
-                                                class="btn btn-secondary btn-sm text-nowrap">
-                                                Ver
-                                                <i class="fas fa-eye"></i>
-                                            </a>
+                                            <div class="dropdown">
+                                                <button class="btn btn-secondary btn-sm dropdown-toggle text-nowrap"
+                                                    type="button" data-toggle="dropdown" aria-haspopup="true"
+                                                    aria-expanded="false">
+                                                    <span>
+                                                        <fa-icon icon="cog" />
+                                                    </span>
+                                                    &nbsp;Ações
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    <a href="/estoques/{{ $estoque->id }}"
+                                                        class="dropdown-item text-success" v-on:click="verRegistro(i)">
+                                                        <span>
+                                                            <fa-icon icon="eye" />
+                                                        </span>
+                                                        &nbsp;Ver
+                                                    </a>
+                                                    <a href="/estoques/{{ $estoque->id }}/edit"
+                                                        class="dropdown-item text-dark">
+                                                        <span>
+                                                            <fa-icon icon="edit" />
+                                                        </span>
+                                                        &nbsp;Editar
+                                                    </a>
+                                                    {{-- <button type="button" class="dropdown-item text-danger"
+                                                        onclick="excluirRegistro({{ $estoque->id }})">
+                                                        <span>
+                                                            <fa-icon icon="trash" />
+                                                        </span>
+                                                        &nbsp;Excluir
+                                                    </button> --}}
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                     @endforeach

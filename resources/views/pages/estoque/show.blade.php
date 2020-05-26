@@ -10,17 +10,25 @@
                 <div class="card-body">
                     @foreach ($estoque->dadosTabela($relacionamentos) as $nome => $item)
                     <div class="form-group row">
-                        <label for="{{ $nome . "_" }}" class="text-capitalize col-md-4 col-form-label text-md-right">
+                        <label class="text-capitalize col-md-4 col-form-label text-md-right">
                             {{ $nome }}
                         </label>
                         <div class="col-md-6">
                             <a @if ($estoque[$nome . "_id" ]) href="/{{ $nome }}s/{{ $estoque[$nome . "_id"] }}" @endif
-                                type="text" id="{{ $nome . "_" }}" class="form-control btn-link bg-light">
+                                id="{{ $nome . "_" }}" class="form-control btn-link bg-light">
                                 {{ $item }}
                             </a>
                         </div>
                     </div>
                     @endforeach
+                    <div class="form-group row">
+                        <label class="text-capitalize col-md-4 col-form-label text-md-right">
+                            Observações
+                        </label>
+                        <div class="col-md-6">
+                            <textarea class="form-control bg-light" readonly>{{ $estoque->observacoes }}</textarea>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

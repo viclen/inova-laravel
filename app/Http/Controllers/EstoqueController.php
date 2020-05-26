@@ -200,13 +200,22 @@ class EstoqueController extends Controller
         $request->validate([
             'caracteristicas' => 'array',
             'carro_id' => 'required',
-            'observacoes' => ''
+            'observacoes' => '',
+            'id' => ''
         ]);
 
-        $estoque = new Estoque([
-            'carro_id' => $request['carro_id'],
-            'observacoes' => $request['observacoes']
-        ]);
+        if (isset($request['id']) && $request['id']) {
+            $estoque = Estoque::find($request['id']);
+            $estoque->carro_id = $request['carro_id'];
+            $estoque->observacoes = $request['observacoes'];
+
+            CaracteristicaEstoque::where('estoque_id', $estoque->id)->delete();
+        } else {
+            $estoque = new Estoque([
+                'carro_id' => $request['carro_id'],
+                'observacoes' => $request['observacoes']
+            ]);
+        }
         $estoque->save();
 
         $caracteristicas = [];
@@ -258,13 +267,14 @@ class EstoqueController extends Controller
      * @param  \App\Estoque  $estoque
      * @return \Illuminate\Http\Response
      */
-    public function edit(Estoque $estoque)
+    public function edit(int $id)
     {
+        $estoque = Estoque::with('caracteristicas')->find($id);
+
         return view('pages.estoque.edit', [
-            'tipos' => (new Estoque())->getTypes(),
-            'opcoes' => [
-                'carros' => Carro::select(["id", "nome"])->get(),
-            ],
+            'caracteristicas' => Caracteristica::with('opcoes')->get(),
+            'marcas' => Marca::all(),
+            'carros' => Carro::with('marca')->get(),
             'dados' => $estoque,
         ]);
     }

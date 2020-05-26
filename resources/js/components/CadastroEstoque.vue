@@ -90,7 +90,7 @@
 
 <script>
 export default {
-  props: ["caracteristicas", "carros", "marcas"],
+  props: ["caracteristicas", "carros", "marcas", "dados"],
   data() {
     return {
       opcoesMarcas: [],
@@ -124,6 +124,29 @@ export default {
 
     this.carregarCaracteristicas();
     this.selecionarMarca(null);
+
+    if (this.dados) {
+      this.dados.caracteristicas.forEach(car => {
+        let caracteristica = this.getCaracteristica(car.caracteristica_id);
+        this.caracteristicasSelecionadas.push({
+          ...caracteristica,
+          valor: {
+            valor: car.valor,
+            comparador: "="
+          }
+        });
+      });
+
+      this.observacoes = this.dados.observacoes;
+      for (const i in this.opcoesCarros) {
+        const carro = this.opcoesCarros[i];
+        if (carro.id == this.dados.carro_id) {
+          this.carro = { ...carro };
+        }
+      }
+
+      this.carregarCaracteristicas();
+    }
   },
   methods: {
     selecionarMarca(marca) {
@@ -201,6 +224,10 @@ export default {
         observacoes: this.observacoes,
         carro_id: this.carro.id
       };
+
+      if (this.dados) {
+        dados.id = this.dados.id;
+      }
 
       let url = "/estoques";
       axios.post(url, dados).then(r => {
