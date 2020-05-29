@@ -280,53 +280,17 @@ class EstoqueController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Estoque  $estoque
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Estoque $estoque)
-    {
-        $validator = Validator::make($request->all(), [
-            'valor' => "required",
-            'carro_id' => "required",
-            'fipe' => "",
-            'placa' => "",
-            'ano' => "",
-            'cor' => "",
-            'chassi' => "",
-            'observacoes' => "",
-        ]);
-
-        if ($validator->fails()) {
-            return [
-                'status' => 0,
-                'errors' => $validator->errors()
-            ];
-        } else {
-            if ($estoque->update($request->all())) {
-                return [
-                    'status' => 1,
-                    'data' => $estoque,
-                ];
-            }
-        }
-
-        return [
-            'status' => 0,
-            'errors' => []
-        ];
-    }
-
-    /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Estoque  $estoque
+     * @param  integer  $estoque
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Estoque $estoque)
+    public function destroy(int $id)
     {
+        $estoque = Estoque::find($id);
+
+        CaracteristicaEstoque::where('estoque_id', $id)->delete();
+
         if ($estoque->delete()) {
             return [
                 'status' => 1

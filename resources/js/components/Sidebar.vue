@@ -60,7 +60,7 @@
           <a @click="go('/clientes')" :class="{ 'menu-item': true, 'active': isRoute('clientes') }">
             <fa-icon icon="users" class="item-icon" />Clientes
           </a>
-          <a @click="go('/carros')" :class="{ 'menu-item': true, 'active': isRoute('carros') }">
+          <a @click="go('/carros')" :class="{ 'menu-item': true, 'active': isRoute('carros') && !isRoute('clientes') }">
             <fa-icon icon="car" class="item-icon" />Carros
           </a>
           <a @click="go('/marcas')" :class="{ 'menu-item': true, 'active': isRoute('marcas') }">

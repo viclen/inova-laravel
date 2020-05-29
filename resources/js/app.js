@@ -11,6 +11,7 @@ Vue.component('regras-editor', require('./components/RegrasEditor.vue').default)
 Vue.component('ver-dados', require('./components/VerDados.vue').default);
 Vue.component('cadastro-interesse', require('./components/CadastroInteresse.vue').default);
 Vue.component('cadastro-estoque', require('./components/CadastroEstoque.vue').default);
+Vue.component('cadastro-carro-cliente', require('./components/CadastroCarroCliente.vue').default);
 Vue.component('caracteristica-input', require('./components/CaracteristicaInput.vue').default);
 Vue.component('number-pattern-input', require('./components/NumberPatternInput.vue').default);
 Vue.component('sidebar', require('./components/Sidebar.vue').default);

@@ -20,6 +20,7 @@ Route::get('/', 'HomeController@index')->name('home');
 Route::get('/home', 'HomeController@index')->name('home');
 
 Route::resource('clientes', 'ClienteController')->middleware('auth');
+Route::resource('clientes.carros', 'CarroClienteController')->middleware('auth');
 Route::resource('carros', 'CarroController')->middleware('auth');
 Route::resource('modelos', 'ModeloController')->middleware('auth');
 Route::resource('marcas', 'MarcaController')->middleware('auth');

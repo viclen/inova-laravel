@@ -54,6 +54,86 @@
         @endforeach
 
         <div class="col-12 mb-3">
+            <div class="card" id="carros">
+                <div class="card-header text-capitalize">
+                    Carros para troca
+
+                    <span class="float-right">
+                        <a href="{{ url()->current() }}/carros/create" class="btn btn-success btn-sm">
+                            <span>
+                                <fa-icon icon="plus" />
+                            </span>
+                            Novo
+                        </a>
+                    </span>
+                </div>
+                <div class="card-body">
+                    @if (count($carros))
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Carro</th>
+                                    <th>Marca</th>
+                                    @foreach ($caracteristicas_carros as $nome)
+                                    <th class="text-capitalize text-nowrap">
+                                        {{ $nome }}
+                                    </th>
+                                    @endforeach
+                                    <th style="width: 5px;">
+                                        Ações
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($carros as $carro)
+                                <tr>
+                                    <td>
+                                        {{ $carro->carro->nome }}
+                                    </td>
+                                    <td>
+                                        {{ $carro->carro->marca->nome }}
+                                    </td>
+                                    @foreach ($caracteristicas_carros as $coluna)
+                                    <td class="text-capitalize">
+                                        @foreach ($carro->dadosTabela(['carro.marca', 'caracteristicas'],
+                                        $ignorar) as $car_coluna => $car_valor)
+                                        @if ($coluna == $car_coluna)
+                                        <span>
+                                            {{ $car_valor }}
+                                        </span>
+                                        @endif
+                                        @endforeach
+                                    </td>
+                                    @endforeach
+                                    <td class="text-nowrap">
+                                        <a href="{{ url()->current() }}/carros/{{ $carro->id }}/edit"
+                                            class="btn btn-primary btn-sm text-nowrap">
+                                            <span>
+                                                <fa-icon icon="edit" />
+                                            </span>
+                                            Editar
+                                        </a>
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                            onclick="mostrarExcluir({{ $carro->id }})">
+                                            <span>
+                                                <fa-icon icon="trash" />
+                                            </span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @else
+                    Nenhum carro
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 mb-3">
             <div class="card" id="interesses">
                 <div class="card-header text-capitalize">
                     Interesses
@@ -130,4 +210,63 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="modalDelete" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <h3>Tem certeza que deseja excluir o registro?</h3>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <b-button class="float-right" variant="outline-secondary" onclick="cancelDelete()">
+                        <span>
+                            <fa-icon icon="times" />
+                        </span>
+                        Cancelar
+                    </b-button>
+                    <b-button class="float-right mr-2" variant="outline-danger" onclick="excluirRegistro()">
+                        <span>
+                            <fa-icon icon="trash" />
+                        </span>
+                        Excluir
+                    </b-button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+@section('scripts')
+<script type="text/javascript">
+    var idExcluir = 0;
+
+    function mostrarExcluir(id){
+        $("#modalDelete").modal('show');
+        idExcluir = id;
+    }
+
+    function cancelDelete(){
+        $("#modalDelete").modal('hide');
+        idExcluir = 0;
+    }
+
+    function excluirRegistro(){
+        if(!idExcluir){
+            $("#modalDelete").modal('hide');
+            return;
+        }
+
+        $.ajax({
+            url: window.location.href + '/carros/' + idExcluir,
+            method: 'delete',
+            data : {
+                "_token": $('meta[name="csrf-token"]').attr('content')  //pass the CSRF_TOKEN()
+            }
+        }).done((r) => {
+            $("#modalDelete").modal('hide');
+            window.location = window.location.href;
+        });
+    }
+</script>
 @endsection

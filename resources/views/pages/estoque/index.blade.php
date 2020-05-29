@@ -141,13 +141,13 @@
                                                         </span>
                                                         &nbsp;Editar
                                                     </a>
-                                                    {{-- <button type="button" class="dropdown-item text-danger"
-                                                        onclick="excluirRegistro({{ $estoque->id }})">
+                                                    <button type="button" class="dropdown-item text-danger"
+                                                        onclick="mostrarExcluir({{ $estoque->id }})">
                                                         <span>
                                                             <fa-icon icon="trash" />
                                                         </span>
                                                         &nbsp;Excluir
-                                                    </button> --}}
+                                                    </button>
                                                 </div>
                                             </div>
                                         </td>
@@ -185,6 +185,33 @@
             </form>
         </div>
     </div>
+
+    <div class="modal fade" id="modalDelete" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <h3>Tem certeza que deseja excluir o registro?</h3>
+                </div>
+                <div class="modal-footer">
+                    <div class="w-100">
+                        <b-button class="float-right" variant="outline-secondary" onclick="cancelDelete()">
+                            <span>
+                                <fa-icon icon="times" />
+                            </span>
+                            Cancelar
+                        </b-button>
+                        <b-button class="float-right mr-2" variant="outline-danger" onclick="excluirRegistro()">
+                            <span>
+                                <fa-icon icon="trash" />
+                            </span>
+                            Excluir
+                        </b-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -204,6 +231,36 @@
                 document.querySelector("form#filtros").submit();
             });
         }
+    }
+
+    var idExcluir = 0;
+
+    function mostrarExcluir(id){
+        $("#modalDelete").modal('show');
+        idExcluir = id;
+    }
+
+    function cancelDelete(){
+        $("#modalDelete").modal('hide');
+        idExcluir = 0;
+    }
+
+    function excluirRegistro(){
+        if(!idExcluir){
+            $("#modalDelete").modal('hide');
+            return;
+        }
+
+        $.ajax({
+            url: '/estoques/' + idExcluir,
+            method: 'delete',
+            data : {
+                "_token": $('meta[name="csrf-token"]').attr('content')  //pass the CSRF_TOKEN()
+            }
+        }).done((r) => {
+            $("#modalDelete").modal('hide');
+            window.location = window.location.href;
+        });
     }
 </script>
 @endsection

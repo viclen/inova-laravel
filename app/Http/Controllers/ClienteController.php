@@ -86,11 +86,19 @@ class ClienteController extends Controller
      * @param  \App\Cliente  $cliente
      * @return \Illuminate\Http\Response
      */
-    public function show(Cliente $cliente)
+    public function show($id)
     {
-        $carros = $cliente->carros->toArray();
-        // $this->delete_col($carros, 'pivot');
-        $cliente->load('interesses.caracteristicas.descricao');
+        $cliente = Cliente::with(['interesses.caracteristicas.descricao', 'carros.caracteristicas.descricao'])->find($id);
+
+        $carros = $cliente->carros;
+        $caracteristicas_carros = [];
+        foreach ($carros as $carro) {
+            foreach ($carro->caracteristicas as $caracteristica) {
+                if (!isset($caracteristicas_carros[$caracteristica->caracteristica_id])) {
+                    $caracteristicas_carros[$caracteristica->caracteristica_id] = $caracteristica->descricao->nome;
+                }
+            }
+        }
 
         $ignorar = explode(',', request()->input('ignorar'));
 
@@ -107,11 +115,12 @@ class ClienteController extends Controller
         return view('pages.cliente.show', [
             'dados' => [
                 'cliente' => $cliente->getAttributes(),
-                'carros' => $carros,
             ],
             'caracteristicas' => $caracteristicas,
             'interesses' => $interesses,
             'ignorar' => $ignorar,
+            'caracteristicas_carros' => $caracteristicas_carros,
+            'carros' => $carros,
         ]);
     }
 
