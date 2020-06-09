@@ -12,11 +12,17 @@ class EstoqueController extends Controller
 
     public function index()
     {
-        if (request()->input($this->with)) {
-            return Estoque::with(request()->input($this->with))->get();
+        $qtd = request()->input('qtd', 100000);
+
+        $with = request()->input($this->with);
+        if ($with) {
+            $relations = explode(",", $with);
+            $dados = Estoque::with($relations)->paginate($qtd);
+        } else {
+            $dados = Estoque::paginate($qtd);
         }
 
-        return Estoque::all();
+        return $dados->items();
     }
 
     public function store(Request $request)
@@ -37,11 +43,21 @@ class EstoqueController extends Controller
 
     public function show(int $id)
     {
-        if (request()->input($this->with)) {
-            return Estoque::with(request()->input($this->with))->find($id);
+        $with = request()->input($this->with);
+        if ($with) {
+            $relations = explode(",", $with);
+            $estoque = Estoque::with($relations)->find($id);
+        } else {
+            $estoque = Estoque::find($id);
         }
 
-        return Estoque::find($id);
+        if (strpos($with, "caracteristicas") !== false) {
+            foreach ($estoque->caracteristicas as $i => $_) {
+                $estoque->caracteristicas[$i]->valor_opcao;
+            }
+        }
+
+        return $estoque;
     }
 
     public function update(Request $request, int $id)

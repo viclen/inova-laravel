@@ -12,18 +12,17 @@ class ClienteController extends Controller
 
     public function index()
     {
-        if (request()->input($this->with)) {
-            try {
-                return Cliente::with(request()->input($this->with))->get();
-            } catch (\Throwable $th) {
-                return [
-                    'status' => 0,
-                    'message' => 'Relacao nao encontrada',
-                ];
-            }
+        $qtd = request()->input('qtd', 100000);
+
+        $with = request()->input($this->with);
+        if ($with) {
+            $relations = explode(",", $with);
+            $dados = Cliente::with($relations)->paginate($qtd);
+        } else {
+            $dados = Cliente::paginate($qtd);
         }
 
-        return Cliente::all();
+        return $dados->items();
     }
 
     public function store(Request $request)
@@ -44,11 +43,15 @@ class ClienteController extends Controller
 
     public function show(int $id)
     {
-        if (request()->input($this->with)) {
-            return Cliente::with(request()->input($this->with))->find($id);
+        $with = request()->input($this->with);
+        if ($with) {
+            $relations = explode(",", $with);
+            $cliente = Cliente::with($relations)->find($id);
+        } else {
+            $cliente = Cliente::find($id);
         }
 
-        return Cliente::find($id);
+        return $cliente;
     }
 
     public function update(Request $request, int $id)
