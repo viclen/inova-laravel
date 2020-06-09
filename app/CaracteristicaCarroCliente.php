@@ -2,7 +2,6 @@
 
 namespace App;
 
-use Exception;
 use Illuminate\Database\Eloquent\Model;
 
 class CaracteristicaCarroCliente extends Model

@@ -25,6 +25,7 @@ class CarroClienteSeeder extends Seeder
                 $carrosclientes[] = [
                     'cliente_id' => $cliente->id,
                     'carro_id' => $carro->id,
+                    'created_at' => now(),
                 ];
             }
         }

@@ -77,4 +77,32 @@ class ClienteController extends Controller
             'status' => 0,
         ];
     }
+
+    public function search()
+    {
+        $q = request()->input('q', false);
+
+        if ($q) {
+            $query = Cliente::whereRaw("
+                nome LIKE '%$q%' OR
+                telefone LIKE '%$q%' OR
+                email LIKE '%$q%' OR
+                cidade LIKE '%$q%'
+            ");
+
+            $qtd = request()->input('qtd', 100000);
+
+            $with = request()->input($this->with);
+            if ($with) {
+                $relations = explode(",", $with);
+                $dados = $query->with($relations)->paginate($qtd);
+            } else {
+                $dados = $query->paginate($qtd);
+            }
+
+            return $dados->items();
+        } else {
+            return abort(422);
+        }
+    }
 }
