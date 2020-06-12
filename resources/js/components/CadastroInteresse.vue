@@ -756,7 +756,6 @@ export default {
         };
       }
 
-    //   console.log(dados);
       let url = "/interesses";
       axios.post(url, dados).then(r => {
         if (r.data.status == "1") {

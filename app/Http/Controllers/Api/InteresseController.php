@@ -3,10 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Caracteristica;
+use App\CaracteristicaCarroCliente;
 use App\CaracteristicaInteresse;
+use App\CarroCliente;
+use App\Cliente;
 use App\Interesse;
 use App\Http\Controllers\Controller;
+use App\Match;
 use Illuminate\Http\Request;
+use Throwable;
 
 class InteresseController extends Controller
 {
@@ -29,17 +34,89 @@ class InteresseController extends Controller
 
     public function store(Request $request)
     {
-        $data = new Interesse($request->all());
-        if ($data->save()) {
-            return [
-                'status' => 1,
-                'data' => $data,
-            ];
+        $request->validate([
+            'interesses' => 'array',
+            'cliente' => 'required',
+            'troca' => '',
+        ]);
+
+        $resultados = [];
+
+        try {
+            $cliente = $request['cliente'];
+
+            if (!isset($cliente['id']) || !$cliente['id']) {
+                if (!isset($cliente['nome']) || !isset($cliente['telefone']) || !$cliente['nome'] || !$cliente['telefone']) {
+                    return [
+                        'status' => 0
+                    ];
+                }
+
+                $cliente = new Cliente([
+                    'nome' => $cliente['nome'],
+                    'telefone' => $cliente['telefone'],
+                    'endereco' => isset($cliente['endereco']) ? $cliente['endereco'] : '',
+                    'cidade' => isset($cliente['cidade']) ? $cliente['cidade'] : '',
+                    'email' => isset($cliente['email']) ? $cliente['email'] : '',
+                    'cpf' => isset($cliente['cpf']) ? $cliente['cpf'] : ''
+                ]);
+
+                $cliente->save();
+            }
+            $cliente = json_decode(json_encode($cliente), true);
+
+            foreach ($request['interesses'] as $interesse) {
+                $int = new Interesse([
+                    'cliente_id' => $cliente['id'],
+                    'carro_id' => $interesse['carro_id'],
+                    'observacoes' => $interesse['observacoes'],
+                    'origem' => $interesse['origem'],
+                ]);
+                $int->save();
+
+                $cis = [];
+                foreach ($interesse['caracteristicas'] as $caracteristica) {
+                    $cis[] = [
+                        'caracteristica_id' => $caracteristica['id'],
+                        'interesse_id' => $int->id,
+                        'valor' => $caracteristica['valor']['valor'],
+                        'comparador' => $caracteristica['valor']['comparador'],
+                    ];
+                }
+                CaracteristicaInteresse::insert($cis);
+
+                $int->load(['caracteristicas.descricao', 'carro.marca']);
+                $matches = Match::findEstoques($int, 1);
+                if (count($matches)) {
+                    $matches[0]->interesse = $int;
+                    $resultados[] = $matches[0];
+                }
+            }
+
+            if ($request['troca']) {
+                $troca = $request['troca'];
+                $carro_cliente_id = CarroCliente::insertGetId([
+                    'cliente_id' => $cliente['id'],
+                    'carro_id' => $troca['carro_id'],
+                ]);
+
+                $cccs = [];
+                foreach ($troca['caracteristicas'] as $caracteristica) {
+                    $cccs[] = [
+                        'caracteristica_id' => $caracteristica['id'],
+                        'carro_cliente_id' => $carro_cliente_id,
+                        'valor' => $caracteristica['valor'],
+                    ];
+                }
+                CaracteristicaCarroCliente::insert($cccs);
+            }
+        } catch (Throwable $th) {
+            return [$th->getMessage()];
         }
 
         return [
-            'status' => 0,
-            'data' => null,
+            'status' => 1,
+            'resultados' => $resultados
         ];
     }
 
@@ -84,5 +161,36 @@ class InteresseController extends Controller
         return [
             'status' => 0,
         ];
+    }
+
+    public function search()
+    {
+        $q = request()->input('q', false);
+
+        if ($q) {
+            $query = Interesse::whereHas('carro', function ($query) use ($q) {
+                $query->whereRaw("
+                    nome LIKE '%$q%'
+                ");
+            })->orWhereHas('cliente', function ($query) use ($q) {
+                $query->whereRaw("
+                    nome LIKE '%$q%' OR
+                    cidade LIKE '%$q%'
+                ");
+            });
+
+            $qtd = request()->input('qtd', 100000);
+
+            $with = request()->input($this->with);
+            if ($with) {
+                $relations = explode(",", $with);
+                $dados = $query->with($relations)->paginate($qtd);
+            } else {
+                $dados = $query->paginate($qtd);
+            }
+
+            return $dados->items();
+        }
+        return abort(422);
     }
 }

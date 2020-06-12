@@ -83,4 +83,30 @@ class EstoqueController extends Controller
             'status' => 0,
         ];
     }
+
+    public function search()
+    {
+        $q = request()->input('q', false);
+
+        if ($q) {
+            $query = Estoque::whereHas('carro', function ($query) use ($q) {
+                $query->whereRaw("
+                    nome LIKE '%$q%'
+                ");
+            });
+
+            $qtd = request()->input('qtd', 100000);
+
+            $with = request()->input($this->with);
+            if ($with) {
+                $relations = explode(",", $with);
+                $dados = $query->with($relations)->paginate($qtd);
+            } else {
+                $dados = $query->paginate($qtd);
+            }
+
+            return $dados->items();
+        }
+        return abort(422);
+    }
 }
