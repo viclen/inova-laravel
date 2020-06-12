@@ -202,4 +202,12 @@ class InteresseController extends Controller
         }
         return abort(422);
     }
+
+    public function match(int $id)
+    {
+        $int = Interesse::with(['caracteristicas.descricao', 'carro.marca'])->find($id);
+        $matches = Match::findEstoques($int, 10);
+
+        return $matches;
+    }
 }

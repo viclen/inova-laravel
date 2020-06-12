@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Estoque;
 use App\Http\Controllers\Controller;
+use App\Match;
 use Illuminate\Http\Request;
 
 class EstoqueController extends Controller
@@ -108,5 +109,13 @@ class EstoqueController extends Controller
             return $dados->items();
         }
         return abort(422);
+    }
+
+    public function match(int $id)
+    {
+        $est = Estoque::with(['caracteristicas.descricao', 'carro.marca'])->find($id);
+        $matches = Match::findInteresses($est, 10);
+
+        return $matches;
     }
 }

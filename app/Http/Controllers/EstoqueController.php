@@ -242,7 +242,7 @@ class EstoqueController extends Controller
      */
     public function show($id)
     {
-        $estoque = Estoque::with(['caracteristicas.descricao', 'caracteristicas', 'carro.marca'])->find($id);
+        $estoque = Estoque::with(['caracteristicas.descricao', 'carro.marca'])->find($id);
 
         foreach ($estoque->caracteristicas as $i => $_) {
             $estoque->caracteristicas[$i]->valor_opcao;
