@@ -19,8 +19,6 @@ class CreateCarroClientesTable extends Migration
             $table->unsignedBigInteger('cliente_id');
             $table->text('observacoes')->nullable();
             $table->timestamps();
-
-            $table->unique(['carro_id', 'cliente_id']);
         });
     }
 

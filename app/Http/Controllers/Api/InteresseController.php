@@ -11,6 +11,7 @@ use App\Interesse;
 use App\Http\Controllers\Controller;
 use App\Match;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class InteresseController extends Controller
@@ -43,6 +44,8 @@ class InteresseController extends Controller
         $resultados = [];
 
         try {
+            DB::beginTransaction();
+
             $cliente = $request['cliente'];
 
             if (!isset($cliente['id']) || !$cliente['id']) {
@@ -65,7 +68,7 @@ class InteresseController extends Controller
             }
             $cliente = json_decode(json_encode($cliente), true);
 
-            foreach ($request['interesses'] as $interesse) {
+            foreach ($request['interesses'] as $i => $interesse) {
                 $int = new Interesse([
                     'cliente_id' => $cliente['id'],
                     'carro_id' => $interesse['carro_id'],
@@ -110,8 +113,14 @@ class InteresseController extends Controller
                 }
                 CaracteristicaCarroCliente::insert($cccs);
             }
+
+            DB::commit();
         } catch (Throwable $th) {
-            return [$th->getMessage()];
+            return [
+                'message' => $th->getMessage(),
+                'request' => $request->toArray(),
+                'i' => $i
+            ];
         }
 
         return [
