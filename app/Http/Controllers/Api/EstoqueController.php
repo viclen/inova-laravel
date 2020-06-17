@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\CaracteristicaEstoque;
 use App\Estoque;
 use App\Http\Controllers\Controller;
 use App\Match;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class EstoqueController extends Controller
 {
@@ -18,9 +21,9 @@ class EstoqueController extends Controller
         $with = request()->input($this->with);
         if ($with) {
             $relations = explode(",", $with);
-            $dados = Estoque::with($relations)->paginate($qtd);
+            $dados = Estoque::with($relations)->orderByDesc('id')->paginate($qtd);
         } else {
-            $dados = Estoque::paginate($qtd);
+            $dados = Estoque::orderByDesc('id')->paginate($qtd);
         }
 
         return $dados->items();
@@ -28,17 +31,46 @@ class EstoqueController extends Controller
 
     public function store(Request $request)
     {
-        $data = new Estoque($request->all());
-        if ($data->save()) {
+        $request->validate([
+            'caracteristicas' => 'array',
+            'carro_id' => 'required',
+            'observacoes' => '',
+        ]);
+
+        $resultados = [];
+        try {
+            DB::beginTransaction();
+
+            $est = new Estoque([
+                'carro_id' => $request['carro_id'],
+                'observacoes' => $request['observacoes'],
+            ]);
+            $est->save();
+
+            $ces = [];
+            foreach ($request['caracteristicas'] as $caracteristica) {
+                $ces[] = [
+                    'caracteristica_id' => $caracteristica['id'],
+                    'estoque_id' => $est->id,
+                    'valor' => $caracteristica['valor'],
+                ];
+            }
+            CaracteristicaEstoque::insert($ces);
+
+            $est->load(['caracteristicas.descricao', 'carro.marca']);
+            $resultados = Match::findInteresses($est, 10);
+
+            DB::commit();
+        } catch (Throwable $th) {
             return [
-                'status' => 1,
-                'data' => $data,
+                'message' => $th->getMessage(),
+                'request' => $request->toArray(),
             ];
         }
 
         return [
-            'status' => 0,
-            'data' => null,
+            'status' => 1,
+            'resultados' => $resultados
         ];
     }
 
@@ -63,18 +95,48 @@ class EstoqueController extends Controller
 
     public function update(Request $request, int $id)
     {
-        if (count($request->all())) {
-            $data = Estoque::find($id);
-            $data->update($request->all());
+        $request->validate([
+            'caracteristicas' => 'array',
+            'carro_id' => 'required',
+            'observacoes' => '',
+        ]);
+
+        $resultados = [];
+        try {
+            DB::beginTransaction();
+
+            $est = Estoque::find($id);
+            $est->update([
+                'carro_id' => $request['carro_id'],
+                'observacoes' => $request['observacoes'],
+            ]);
+            $est->save();
+
+            $ces = [];
+            foreach ($request['caracteristicas'] as $caracteristica) {
+                $ces[] = [
+                    'caracteristica_id' => $caracteristica['id'],
+                    'estoque_id' => $est->id,
+                    'valor' => $caracteristica['valor'],
+                ];
+            }
+            CaracteristicaEstoque::where('estoque_id', $est->id)->delete();
+            CaracteristicaEstoque::insert($ces);
+
+            $est->load(['caracteristicas.descricao', 'carro.marca']);
+            $resultados = Match::findInteresses($est, 5);
+
+            DB::commit();
+        } catch (Throwable $th) {
             return [
-                'status' => 1,
-                'data' => $data,
+                'message' => $th->getMessage(),
+                'request' => $request->toArray(),
             ];
         }
 
         return [
-            'status' => 0,
-            'data' => null,
+            'status' => 1,
+            'resultados' => $resultados
         ];
     }
 
@@ -101,9 +163,9 @@ class EstoqueController extends Controller
             $with = request()->input($this->with);
             if ($with) {
                 $relations = explode(",", $with);
-                $dados = $query->with($relations)->paginate($qtd);
+                $dados = $query->with($relations)->orderByDesc('id')->paginate($qtd);
             } else {
-                $dados = $query->paginate($qtd);
+                $dados = $query->orderByDesc('id')->paginate($qtd);
             }
 
             return $dados->items();

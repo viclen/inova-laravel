@@ -133,7 +133,8 @@ class Match extends Model
 
         return Match::with([
             'interesse.caracteristicas.descricao',
-            'interesse.carro.marca'
+            'interesse.carro.marca',
+            'interesse.cliente'
         ])
             ->where('estoque_id', $estoque->id)
             ->orderByDesc('prioridade')

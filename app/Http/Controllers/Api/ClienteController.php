@@ -17,9 +17,9 @@ class ClienteController extends Controller
         $with = request()->input($this->with);
         if ($with) {
             $relations = explode(",", $with);
-            $dados = Cliente::with($relations)->paginate($qtd);
+            $dados = Cliente::with($relations)->orderBy('nome')->paginate($qtd);
         } else {
-            $dados = Cliente::paginate($qtd);
+            $dados = Cliente::orderBy('nome')->paginate($qtd);
         }
 
         return $dados->items();
@@ -95,9 +95,9 @@ class ClienteController extends Controller
             $with = request()->input($this->with);
             if ($with) {
                 $relations = explode(",", $with);
-                $dados = $query->with($relations)->paginate($qtd);
+                $dados = $query->with($relations)->orderBy('nome')->paginate($qtd);
             } else {
-                $dados = $query->paginate($qtd);
+                $dados = $query->orderBy('nome')->paginate($qtd);
             }
 
             return $dados->items();

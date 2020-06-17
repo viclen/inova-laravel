@@ -13,7 +13,7 @@ class CarroController extends Controller
     public function index()
     {
         if (request()->input($this->with)) {
-            return Carro::with(request()->input($this->with))->get();
+            return Carro::with(request()->input($this->with))->orderBy('nome')->get();
         }
 
         return Carro::all();

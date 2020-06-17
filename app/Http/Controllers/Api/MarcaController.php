@@ -13,7 +13,7 @@ class MarcaController extends Controller
     public function index()
     {
         if (request()->input($this->with)) {
-            return Marca::with(request()->input($this->with))->get();
+            return Marca::with(request()->input($this->with))->orderBy('nome')->get();
         }
 
         return Marca::all();

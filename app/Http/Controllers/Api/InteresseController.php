@@ -25,9 +25,9 @@ class InteresseController extends Controller
         $with = request()->input($this->with);
         if ($with) {
             $relations = explode(",", $with);
-            $dados = Interesse::with($relations)->paginate($qtd);
+            $dados = Interesse::with($relations)->orderByDesc('id')->paginate($qtd);
         } else {
-            $dados = Interesse::paginate($qtd);
+            $dados = Interesse::orderByDesc('id')->paginate($qtd);
         }
 
         return $dados->items();
@@ -150,19 +150,6 @@ class InteresseController extends Controller
 
     public function update(Request $request, int $id)
     {
-        if (count($request->all())) {
-            $data = Interesse::find($id);
-            $data->update($request->all());
-            return [
-                'status' => 1,
-                'data' => $data,
-            ];
-        }
-
-        return [
-            'status' => 0,
-            'data' => null,
-        ];
     }
 
     public function destroy(int $id)
@@ -193,9 +180,9 @@ class InteresseController extends Controller
             $with = request()->input($this->with);
             if ($with) {
                 $relations = explode(",", $with);
-                $dados = $query->with($relations)->paginate($qtd);
+                $dados = $query->with($relations)->orderByDesc('id')->paginate($qtd);
             } else {
-                $dados = $query->paginate($qtd);
+                $dados = $query->orderByDesc('id')->paginate($qtd);
             }
 
             return $dados->items();
