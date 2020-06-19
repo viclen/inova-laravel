@@ -17,6 +17,7 @@ class CreateCarrosTable extends Migration
             $table->bigIncrements('id');
             $table->string('nome');
             $table->unsignedBigInteger('marca_id')->nullable();
+            $table->integer('uso')->default(0);
             $table->timestamps();
         });
     }

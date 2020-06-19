@@ -40,6 +40,7 @@ class EstoqueController extends Controller
         $resultados = [];
         try {
             DB::beginTransaction();
+            DB::table('carros')->where('id', $request['carro_id'])->update(['uso' => DB::raw('uso + 1')]);
 
             $est = new Estoque([
                 'carro_id' => $request['carro_id'],
@@ -142,8 +143,15 @@ class EstoqueController extends Controller
 
     public function destroy(int $id)
     {
+        DB::beginTransaction();
+
+        CaracteristicaEstoque::where('estoque_id', $id)->delete();
+        Estoque::where('id', $id)->delete();
+
+        DB::commit();
+
         return [
-            'status' => 0,
+            'status' => 1,
         ];
     }
 

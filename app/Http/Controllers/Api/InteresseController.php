@@ -94,6 +94,8 @@ class InteresseController extends Controller
                     $matches[0]->interesse = $int;
                     $resultados[] = $matches[0];
                 }
+
+                DB::table('carros')->where('id', $interesse['carro_id'])->update(['uso' => DB::raw('uso + 1')]);
             }
 
             if ($request['troca']) {
@@ -112,6 +114,8 @@ class InteresseController extends Controller
                     ];
                 }
                 CaracteristicaCarroCliente::insert($cccs);
+
+                DB::table('carros')->where('id', $troca['carro_id'])->update(['uso' => DB::raw('uso + 1')]);
             }
 
             DB::commit();

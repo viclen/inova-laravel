@@ -15,6 +15,7 @@ use App\Marca;
 use App\Match;
 use App\Regra;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Throwable;
 
@@ -255,6 +256,8 @@ class InteresseController extends Controller
                 }
                 CaracteristicaInteresse::insert($cis);
 
+                DB::table('carros')->where('id', $interesse['carro_id'])->update(['uso' => DB::raw('uso + 1')]);
+
                 $int->load(['caracteristicas.descricao', 'carro.marca']);
                 $matches = Match::findEstoques($int, 1);
                 if (count($matches)) {
@@ -279,6 +282,8 @@ class InteresseController extends Controller
                     ];
                 }
                 CaracteristicaCarroCliente::insert($cccs);
+
+                DB::table('carros')->where('id', $troca['carro_id'])->update(['uso' => DB::raw('uso + 1')]);
             }
         } catch (Throwable $th) {
             return [$th->getMessage()];

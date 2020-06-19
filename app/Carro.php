@@ -14,7 +14,8 @@ class Carro extends Model
     ];
 
     protected $hidden = [
-        'pivot'
+        'pivot',
+        'uso'
     ];
 
     public function marca()

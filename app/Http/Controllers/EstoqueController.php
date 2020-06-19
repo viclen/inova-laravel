@@ -10,6 +10,7 @@ use App\Formatter;
 use App\Marca;
 use App\Match;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class EstoqueController extends Controller
@@ -208,6 +209,8 @@ class EstoqueController extends Controller
             $estoque = Estoque::find($request['id']);
             $estoque->carro_id = $request['carro_id'];
             $estoque->observacoes = $request['observacoes'];
+
+            DB::table('carros')->where('id', $request['carro_id'])->update(['uso' => DB::raw('uso + 1')]);
 
             CaracteristicaEstoque::where('estoque_id', $estoque->id)->delete();
         } else {

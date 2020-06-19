@@ -28,6 +28,7 @@ class CarroController extends Controller
             ->leftJoin('marcas', 'marcas.id', 'carros.marca_id')
             ->selectRaw("carros.*, marcas.nome as marca, count(estoques.id) as estoque")
             ->groupBy('carros.id')
+            ->orderByDesc('carros.uso')
             ->orderByDesc('estoque')
             ->orderBy('carros.nome')
             ->paginate($qtd);
@@ -213,6 +214,7 @@ class CarroController extends Controller
             ->orWhere("marcas.nome", "like", $search)
             ->selectRaw("carros.*, marcas.nome as marca, count(estoques.id) as estoque")
             ->groupBy('carros.id')
+            ->orderByDesc('uso')
             ->orderByDesc('estoque')
             ->paginate($qtd);
 
