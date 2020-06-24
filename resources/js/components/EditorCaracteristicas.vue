@@ -40,6 +40,15 @@
                 type="text"
                 v-model="caracteristica.nome"
               />
+              <template v-slot:append>
+                <label class="input-group-text">
+                  <b-checkbox
+                    v-model="caracteristica.exclusoria"
+                    value="1"
+                    @change="salvarCaracteristica(caracteristica)"
+                  />Exclusória
+                </label>
+              </template>
             </b-input-group>
 
             <b-input-group

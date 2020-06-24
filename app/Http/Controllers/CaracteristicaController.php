@@ -8,6 +8,8 @@ use App\CaracteristicaEstoque;
 use App\CaracteristicaInteresse;
 use App\OpcaoCaracteristica;
 use Illuminate\Http\Request;
+use SebastianBergmann\Environment\Console;
+use Throwable;
 
 class CaracteristicaController extends Controller
 {
@@ -49,6 +51,7 @@ class CaracteristicaController extends Controller
             "valor_padrao" => '',
             "tipo" => 'integer',
             "opcoes" => 'array',
+            "exclusoria" => 'boolean'
         ]);
 
         if (isset($request['id']) && $request['id']) {
@@ -57,6 +60,7 @@ class CaracteristicaController extends Controller
             $caracteristica->nome = $request['nome'];
             $caracteristica->valor_padrao = $request['valor_padrao'];
             $caracteristica->tipo = $request['tipo'];
+            $caracteristica->exclusoria = $request['exclusoria'] ?: 0;
             $caracteristica->save();
 
             if ($caracteristica->tipo == 3) {

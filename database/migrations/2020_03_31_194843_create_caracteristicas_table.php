@@ -24,6 +24,7 @@ class CreateCaracteristicasTable extends Migration
                 3: opcao,
                 4: boolean
             ');
+            $table->boolean('exclusoria')->default(0);
             $table->timestamps();
         });
     }

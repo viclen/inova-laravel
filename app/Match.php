@@ -55,12 +55,12 @@ class Match extends Model
 
             foreach ($int_marca as $interesse) {
                 if (isset($matches[$interesse->id])) {
-                    $matches[$interesse->id]['prioridade'] += ceil($num_caracteristicas / 2);
+                    $matches[$interesse->id]['prioridade'] += 1;
                     $matches[$interesse->id]['caracteristicas'][] = 'marca';
                 } else {
                     $matches[$interesse->id] = [
                         'caracteristicas' => ['marca'],
-                        'prioridade' => ceil($num_caracteristicas / 2)
+                        'prioridade' => 1
                     ];
                 }
             }
@@ -116,6 +116,21 @@ class Match extends Model
                     ];
                 }
             }
+
+            if ($caracteristica->exclusoria) {
+                foreach ($matches as $id => $_) {
+                    $encontrou = false;
+                    foreach ($encontradas as $int_car) {
+                        if ($int_car->interesse_id == $id) {
+                            $encontrou = true;
+                            break;
+                        }
+                    }
+                    if (!$encontrou) {
+                        $matches[$id]--;
+                    }
+                }
+            }
         }
 
         $insert = [];
@@ -164,12 +179,12 @@ class Match extends Model
 
             foreach ($est_marca as $estoque) {
                 if (isset($matches[$estoque->id])) {
-                    $matches[$estoque->id]['prioridade'] += ceil($num_caracteristicas / 2);
+                    $matches[$estoque->id]['prioridade']++;
                     $matches[$estoque->id]['caracteristicas'][] = 'marca';
                 } else {
                     $matches[$estoque->id] = [
                         'caracteristicas' => ['marca'],
-                        'prioridade' => ceil($num_caracteristicas / 2)
+                        'prioridade' => 1
                     ];
                 }
             }
@@ -219,6 +234,21 @@ class Match extends Model
                         'caracteristicas' => [$est_car->caracteristica_id],
                         'prioridade' => 1
                     ];
+                }
+            }
+
+            if ($caracteristica->exclusoria) {
+                foreach ($matches as $id => $_) {
+                    $encontrou = false;
+                    foreach ($encontradas as $est_car) {
+                        if ($est_car->estoque_id == $id) {
+                            $encontrou = true;
+                            break;
+                        }
+                    }
+                    if (!$encontrou) {
+                        $matches[$id]--;
+                    }
                 }
             }
         }
