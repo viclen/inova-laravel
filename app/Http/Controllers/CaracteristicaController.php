@@ -7,6 +7,7 @@ use App\CaracteristicaCarroCliente;
 use App\CaracteristicaEstoque;
 use App\CaracteristicaInteresse;
 use App\OpcaoCaracteristica;
+use App\Regra;
 use Illuminate\Http\Request;
 use SebastianBergmann\Environment\Console;
 use Throwable;
@@ -23,7 +24,8 @@ class CaracteristicaController extends Controller
         $caracteristicas = Caracteristica::with('opcoes')->get();
 
         return view('pages.caracteristicas.index', [
-            'caracteristicas' => $caracteristicas
+            'caracteristicas' => $caracteristicas,
+            'regras' => Regra::all(),
         ]);
     }
 

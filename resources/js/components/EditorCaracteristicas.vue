@@ -6,6 +6,12 @@
       </div>
     </div>
     <div class="row justify-content-center">
+      <div class="col-12 my-2">
+        <b-checkbox
+          v-model="match_marca"
+          @change="matchMarca(match_marca)"
+        >Habilitar ligação de estoque e interesse por marca.</b-checkbox>
+      </div>
       <div class="col-12">
         <b-card
           v-for="(caracteristica, i) in caracteristicas"
@@ -155,18 +161,50 @@
 
 <script>
 export default {
-  props: ["dados"],
+  props: ["dados", "regras"],
   data() {
     return {
-      caracteristicas: []
+      caracteristicas: [],
+      match_marca: false
     };
   },
   mounted() {
     if (this.dados) {
       this.caracteristicas = this.dados;
     }
+
+    if (this.regras) {
+      for (const i in this.regras) {
+        if (this.regras.hasOwnProperty(i)) {
+          const regra = this.regras[i];
+          if (regra.grupo == "match" && regra.nome == "marca") {
+            this.match_marca = regra.valor == "1";
+          }
+        }
+      }
+    }
   },
   methods: {
+    matchMarca(m) {
+      let data = [
+        {
+          grupo: "match",
+          nome: "marca",
+          valor: !this.match_marca ? 1 : 0
+        }
+      ];
+      axios
+        .post("/regras", {
+          data
+        })
+        .then(r => {
+          this.$toasted.success("Salva", {
+            theme: "toasted-primary",
+            position: "bottom-right",
+            duration: 2000
+          });
+        });
+    },
     mostrar(i) {
       this.caracteristicas[i].mostrar = !this.caracteristicas[i].mostrar;
       this.$forceUpdate();

@@ -39,7 +39,7 @@ class RegraController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'data' => 'required'
+            'data' => 'required|array'
         ]);
 
         try {
@@ -47,23 +47,13 @@ class RegraController extends Controller
                 foreach ($request['data'] as $data) {
                     if (is_array($data)) {
                         if (isset($data['grupo']) && isset($data['nome']) && isset($data['valor'])) {
-                            Regra::where([
-                                ['grupo', $data['grupo']],
-                                ['nome', $data['nome']],
-                            ])->update([
-                                'valor' => $data['valor']
-                            ]);
+                            $this->updateOrCreate($data);
                         }
                     } else {
                         $data = $request['data'];
 
                         if (isset($data['grupo']) && isset($data['nome']) && isset($data['valor'])) {
-                            Regra::where([
-                                ['grupo', $data['grupo']],
-                                ['nome', $data['nome']],
-                            ])->update([
-                                'valor' => $data['valor']
-                            ]);
+                            $this->updateOrCreate($data);
                             return [
                                 'status' => 1
                             ];
@@ -83,6 +73,32 @@ class RegraController extends Controller
         return [
             'status' => 0
         ];
+    }
+
+    function updateOrCreate($data)
+    {
+        $existe = Regra::where([
+            ['grupo', $data['grupo']],
+            ['nome', $data['nome']],
+        ])->first();
+
+        if ($existe) {
+            Regra::where([
+                ['grupo', $data['grupo']],
+                ['nome', $data['nome']],
+            ])->update([
+                'valor' => $data['valor']
+            ]);
+            return 1;
+        } else {
+            $r = new Regra();
+            $r->grupo = $data['grupo'];
+            $r->nome = $data['nome'];
+            $r->valor = $data['valor'];
+            $r->save();
+        }
+
+        return 0;
     }
 
     /**
