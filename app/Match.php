@@ -46,7 +46,12 @@ class Match extends Model
             ];
         }
 
-        if ($estoque->carro && $estoque->carro->marca_id) {
+        $regra_marca = Regra::where([
+            ['grupo', 'match'],
+            ['nome', 'marca']
+        ])->first();
+        $match_marca = $regra_marca ? $regra_marca->valor : 1;
+        if ($match_marca && $estoque->carro && $estoque->carro->marca_id) {
             $int_marca = Interesse::join('carros', 'carros.id', 'interesses.carro_id')
                 ->where('carros.marca_id', $estoque->carro->marca_id)
                 ->whereNotIn('interesses.id', array_keys($matches))
