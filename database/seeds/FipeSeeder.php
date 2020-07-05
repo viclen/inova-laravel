@@ -1,13 +1,10 @@
 <?php
 
 use App\Carro;
-use App\Estoque;
-use App\FipeCarro;
-use App\FipeMarca;
-use App\FipeModelo;
+use App\Marca;
+use App\Modelo;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class FipeSeeder extends Seeder
 {
@@ -18,39 +15,47 @@ class FipeSeeder extends Seeder
      */
     public function run()
     {
-        $nao_existem = json_decode(Storage::get('naoexistem.json'));
+        echo "Inicio: " . now() . "\r\n\r\n";
 
-        echo count($nao_existem);
-
-        return;
         $max_erros = 3;
 
-        $data = Storage::get('marcas_carros.json');
-
-        $array_marcas = json_decode($data, true);
+        $url = "http://fipeapi.appspot.com/api/1/carros/marcas.json";
+        $array_marcas = json_decode(file_get_contents($url), true);
+        sleep(1);
 
         foreach ($array_marcas as $dados_marca) {
-            $marca = new FipeMarca([
-                'id' => $dados_marca['id'],
-                'key' => $dados_marca['key'],
-                'nome' => $dados_marca['fipe_name'],
-            ]);
+            $marca = Marca::find($dados_marca['id']);
+            $msg = "";
+            if (!$marca) {
+                $marca = new Marca();
+                $marca->id = $dados_marca['id'];
+                $marca->key = $dados_marca['key'];
+                $msg = ": Nova";
+            }
+            $marca->nome = $dados_marca['fipe_name'];
             $marca->save();
 
-            echo $this->tab(0) . $marca->nome . "\r\n";
-
-            $carros = $dados_marca['carros'];
+            echo $this->tab(0) . $marca->nome . "$msg\r\n";
+            $url = "http://fipeapi.appspot.com/api/1/carros/veiculos/$marca->id.json";
+            $carros = json_decode(file_get_contents($url), true);
+            sleep(1);
 
             $erros_carro = 0;
-            foreach ($carros as $carro_id => $carro_nome) {
-                $carro = new FipeCarro([
-                    'id' => $carro_id,
-                    'nome' => $carro_nome,
-                    'fipe_marca_id' => $marca->id
-                ]);
+            foreach ($carros as $carro_fipe) {
+                $carro_id = $carro_fipe['id'];
+
+                $carro = Carro::find($carro_id);
+                $msg = "";
+                if (!$carro) {
+                    $carro = new Carro();
+                    $carro->id = $carro_id;
+                    $carro->marca_id = $marca->id;
+                    $msg = ": Novo";
+                }
+                $carro->nome = $carro_fipe['name'];
                 $carro->save();
 
-                echo $this->tab(1) . $carro->nome . "\r\n";
+                echo $this->tab(1) . $carro->nome . "$msg\r\n";
 
                 try {
                     $url = "http://fipeapi.appspot.com/api/1/carros/veiculo/$marca->id/$carro->id.json";
@@ -66,28 +71,38 @@ class FipeSeeder extends Seeder
                                 $modelo_id = $dados['id'];
 
                                 if (array_search($modelo_id, $modelos_buscados) === false) {
-                                    echo $this->tab(2) . $modelo_id . "\r\n";
-
                                     $url = "http://fipeapi.appspot.com/api/1/carros/veiculo/$marca->id/$carro->id/$modelo_id.json";
                                     $json = file_get_contents($url);
                                     $dados_modelo = json_decode($json, true);
                                     $dados_modelo['preco'] = $this->onlyNumbers($dados_modelo['preco']);
-                                    $modelo = new FipeModelo([
-                                        'fipe_id' => $modelo_id,
-                                        'preco' => $this->onlyNumbers($dados_modelo['preco']),
-                                        'ano' => $dados_modelo['ano_modelo'],
-                                        'combustivel' => substr($dados_modelo['combustivel'], 0, 1),
-                                        'dados' => $json,
-                                        'fipe_carro_id' => $carro->id,
-                                    ]);
+
+                                    $modelo = Modelo::where([['fipe_id', $modelo_id], ['carro_id', $carro->id]])->first();
+                                    $msg = "";
+                                    if (!$modelo) {
+                                        $modelo = new Modelo();
+                                        $modelo->ano = $dados_modelo['ano_modelo'];
+                                        $modelo->combustivel = substr($dados_modelo['combustivel'], 0, 1);
+                                        $modelo->carro_id = $carro->id;
+                                        $modelo->fipe_id = $modelo_id;
+                                        $modelo->preco = 0;
+                                        $msg = ": Novo";
+                                    }
+                                    if ($modelo->preco != $dados_modelo['preco']) {
+                                        if (!$msg)
+                                            $msg = ": Atualizado | $modelo->preco -> $dados_modelo[preco]";
+                                        $modelo->preco = $dados_modelo['preco'];
+                                    }
                                     $modelo->save();
 
                                     $erros_modelo = 0;
-                                    $modelos_buscados[] = $modelo_id;
+                                    $modelos_buscados[] = $modelo->fipe_id;
 
                                     sleep(1);
+
+                                    echo $this->tab(2) . $modelo->fipe_id . "$msg \r\n";
                                 }
                             } catch (\Throwable $th) {
+                                throw $th;
                                 echo $this->tab(3) . "Erro " . ($erros_modelo + 1) . "/$max_erros: $url";
 
                                 if (strpos($th->getMessage(), "403")) {
@@ -116,6 +131,8 @@ class FipeSeeder extends Seeder
                 }
             }
         }
+
+        echo "\r\nFim: " . now() . "\r\n";
     }
 
     public function onlyNumbers($in)

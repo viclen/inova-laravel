@@ -154,12 +154,51 @@ class InteresseController extends Controller
 
     public function update(Request $request, int $id)
     {
+        $request->validate([
+            'caracteristicas' => 'array',
+            'carro_id' => 'required',
+            'observacoes' => '',
+        ]);
+
+        DB::beginTransaction();
+        Interesse::where('id', $id)->update([
+            'carro_id' => $request['carro_id'],
+            'observacoes' => $request['observacoes'],
+            'origem' => $request['origem'],
+        ]);
+
+        CaracteristicaInteresse::where('interesse_id', $id)->delete();
+
+        $cis = [];
+        foreach ($request['caracteristicas'] as $caracteristica) {
+            $cis[] = [
+                'caracteristica_id' => $caracteristica['id'],
+                'interesse_id' => $id,
+                'valor' => $caracteristica['valor']['valor'],
+                'comparador' => $caracteristica['valor']['comparador'],
+            ];
+        }
+        CaracteristicaInteresse::insert($cis);
+
+        DB::commit();
+
+        return [
+            'status' => 1,
+        ];
     }
 
     public function destroy(int $id)
     {
+        DB::beginTransaction();
+
+        CaracteristicaInteresse::where('interesse_id', $id)->delete();
+        Match::where('interesse_id', $id)->delete();
+        Interesse::where('id', $id)->delete();
+
+        DB::commit();
+
         return [
-            'status' => 0,
+            'status' => 1,
         ];
     }
 

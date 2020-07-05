@@ -146,6 +146,7 @@ class EstoqueController extends Controller
         DB::beginTransaction();
 
         CaracteristicaEstoque::where('estoque_id', $id)->delete();
+        Match::where('estoque_id', $id)->delete();
         Estoque::where('id', $id)->delete();
 
         DB::commit();

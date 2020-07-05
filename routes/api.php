@@ -30,7 +30,7 @@ Route::get('/interesses/search', 'Api\InteresseController@search')->middleware('
 // resources
 Route::middleware('auth:api')->resource('marcas', 'Api\MarcaController');
 Route::middleware('auth:api')->resource('carros', 'Api\CarroController');
-Route::middleware('auth:api')->resource('modelos', 'Api\ModeloController');
+Route::middleware('auth:api')->resource('carros.modelos', 'Api\ModeloController');
 Route::middleware('auth:api')->resource('clientes', 'Api\ClienteController');
 Route::middleware('auth:api')->resource('carroclientes', 'Api\CarroClienteController');
 Route::middleware('auth:api')->resource('estoques', 'Api\EstoqueController');
