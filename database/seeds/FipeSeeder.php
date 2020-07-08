@@ -3,8 +3,10 @@
 use App\Carro;
 use App\Marca;
 use App\Modelo;
+use Illuminate\Contracts\Cache\Store;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class FipeSeeder extends Seeder
 {
@@ -15,6 +17,9 @@ class FipeSeeder extends Seeder
      */
     public function run()
     {
+        $ultima_marca = Storage::get("ultima_marca.txt");
+        $ultimo_carro = Storage::get("ultimo_carro.txt");
+
         echo "Inicio: " . now() . "\r\n\r\n";
 
         $max_erros = 3;
@@ -22,6 +27,17 @@ class FipeSeeder extends Seeder
         $url = "http://fipeapi.appspot.com/api/1/carros/marcas.json";
         $array_marcas = json_decode(file_get_contents($url), true);
         sleep(1);
+
+        if ($ultima_marca) {
+            foreach ($array_marcas as $i => $dados_marca) {
+                if ($i < count($array_marcas) - 1) {
+                    if ($dados_marca['id'] == $ultima_marca) {
+                        $array_marcas = array_splice($array_marcas, $i);
+                        break;
+                    }
+                }
+            }
+        }
 
         foreach ($array_marcas as $dados_marca) {
             $marca = Marca::find($dados_marca['id']);
@@ -35,10 +51,21 @@ class FipeSeeder extends Seeder
             $marca->nome = $dados_marca['fipe_name'];
             $marca->save();
 
-            echo $this->tab(0) . $marca->nome . "$msg\r\n";
+            echo $this->tab(0) . $marca->nome . " $marca->id" . "$msg\r\n";
             $url = "http://fipeapi.appspot.com/api/1/carros/veiculos/$marca->id.json";
             $carros = json_decode(file_get_contents($url), true);
             sleep(1);
+
+            if ($ultimo_carro) {
+                foreach ($carros as $i => $carro_fipe) {
+                    if ($i < count($carros) - 1) {
+                        if ($carro_fipe['id'] == $ultimo_carro) {
+                            $carros = array_splice($carros, $i + 1);
+                            break;
+                        }
+                    }
+                }
+            }
 
             $erros_carro = 0;
             foreach ($carros as $carro_fipe) {
@@ -119,6 +146,8 @@ class FipeSeeder extends Seeder
                             }
                         }
                     }
+
+                    Storage::put("ultimo_carro.txt", $carro->id);
                 } catch (Exception $e) {
                     echo $this->tab(3) . "Erro " . ($erros_carro + 1) . "/$max_erros: " . str_replace(['file_get_contents', '(', ')'], '', $th->getMessage());
                     if ($erros_carro + 1 < $max_erros) {
@@ -130,6 +159,8 @@ class FipeSeeder extends Seeder
                     }
                 }
             }
+
+            Storage::put("ultima_marca.txt", $marca->id);
         }
 
         echo "\r\nFim: " . now() . "\r\n";
