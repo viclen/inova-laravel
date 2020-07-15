@@ -53,7 +53,8 @@ class CaracteristicaController extends Controller
             "valor_padrao" => '',
             "tipo" => 'integer',
             "opcoes" => 'array',
-            "exclusoria" => 'boolean'
+            "exclusoria" => 'boolean',
+            "peso" => '',
         ]);
 
         if (isset($request['id']) && $request['id']) {
@@ -63,6 +64,7 @@ class CaracteristicaController extends Controller
             $caracteristica->valor_padrao = $request['valor_padrao'];
             $caracteristica->tipo = $request['tipo'];
             $caracteristica->exclusoria = $request['exclusoria'] ?: 0;
+            $caracteristica->peso = $request['peso'];
             $caracteristica->save();
 
             if ($caracteristica->tipo == 3) {

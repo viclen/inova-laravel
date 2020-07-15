@@ -60,7 +60,7 @@ class Match extends Model
 
             foreach ($int_marca as $interesse) {
                 if (isset($matches[$interesse->id])) {
-                    $matches[$interesse->id]['prioridade'] += 1;
+                    $matches[$interesse->id]['prioridade']++;
                     $matches[$interesse->id]['caracteristicas'][] = 'marca';
                 } else {
                     $matches[$interesse->id] = [
@@ -112,7 +112,7 @@ class Match extends Model
 
             foreach ($encontradas as $int_car) {
                 if (isset($matches[$int_car->interesse_id])) {
-                    $matches[$int_car->interesse_id]['prioridade']++;
+                    $matches[$int_car->interesse_id]['prioridade'] += $caracteristica->peso;
                     $matches[$int_car->interesse_id]['caracteristicas'][] = $int_car->caracteristica_id;
                 } else {
                     $matches[$int_car->interesse_id] = [
@@ -238,7 +238,7 @@ class Match extends Model
 
             foreach ($encontradas as $est_car) {
                 if (isset($matches[$est_car->estoque_id])) {
-                    $matches[$est_car->estoque_id]['prioridade']++;
+                    $matches[$est_car->estoque_id]['prioridade'] += $caracteristica->peso;
                     $matches[$est_car->estoque_id]['caracteristicas'][] = $est_car->caracteristica_id;
                 } else {
                     $matches[$est_car->estoque_id] = [

@@ -25,6 +25,7 @@ class CreateCaracteristicasTable extends Migration
                 4: boolean
             ');
             $table->boolean('exclusoria')->default(0);
+            $table->integer('peso')->default(1);
             $table->timestamps();
         });
     }

@@ -57,19 +57,28 @@
               </template>
             </b-input-group>
 
-            <b-input-group
-              prepend="Tipo"
-              class="mt-2"
-              @change="salvarCaracteristica(caracteristica)"
-            >
-              <b-select v-model="caracteristica.tipo">
-                <b-select-option value="0">Texto</b-select-option>
-                <b-select-option value="1">Número</b-select-option>
-                <b-select-option value="2">Valor decimal (R$)</b-select-option>
-                <b-select-option value="3">Opção</b-select-option>
-                <b-select-option value="4">Sim e não</b-select-option>
-              </b-select>
-            </b-input-group>
+            <div class="row mt-2">
+              <div class="col pr-0">
+                <b-input-group prepend="Tipo" @change="salvarCaracteristica(caracteristica)">
+                  <b-select v-model="caracteristica.tipo">
+                    <b-select-option value="0">Texto</b-select-option>
+                    <b-select-option value="1">Número</b-select-option>
+                    <b-select-option value="2">Valor decimal (R$)</b-select-option>
+                    <b-select-option value="3">Opção</b-select-option>
+                    <b-select-option value="4">Sim e não</b-select-option>
+                  </b-select>
+                </b-input-group>
+              </div>
+              <div class="col pl-0">
+                <b-input-group prepend="Peso">
+                  <b-form-input
+                    type="number"
+                    v-model="caracteristica.peso"
+                    @change="salvarCaracteristica(caracteristica)"
+                  />
+                </b-input-group>
+              </div>
+            </div>
 
             <div class="mt-2" v-if="caracteristica.tipo == 3">
               <div
