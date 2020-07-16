@@ -73,8 +73,10 @@ class ClienteController extends Controller
 
     public function destroy(int $id)
     {
+        Cliente::find($id)->delete();
+
         return [
-            'status' => 0,
+            'status' => 1,
         ];
     }
 
