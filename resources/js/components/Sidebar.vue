@@ -75,6 +75,9 @@
           >
             <fa-icon icon="project-diagram" class="item-icon" />Características
           </a>
+          <a @click="go('/usuarios')" :class="{ 'menu-item': true, 'active': isRoute('usuarios') }">
+            <fa-icon icon="user" class="item-icon" />Usuários
+          </a>
         </div>
         <div class="footer">
           Desenvolvido por
