@@ -238,6 +238,10 @@ class InteresseController extends Controller
         $int = Interesse::with(['caracteristicas.descricao', 'carro.marca'])->find($id);
         $matches = Match::findEstoques($int, 10);
 
+        foreach ($matches as $i => $match) {
+            $matches[$i]->caracteristicas = Caracteristica::whereIn('id', json_decode($match->caracteristicas))->select(['id', 'nome'])->get();
+        }
+
         return $matches;
     }
 }

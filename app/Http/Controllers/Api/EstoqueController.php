@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Caracteristica;
 use App\CaracteristicaEstoque;
 use App\Estoque;
 use App\Http\Controllers\Controller;
@@ -186,6 +187,10 @@ class EstoqueController extends Controller
     {
         $est = Estoque::with(['caracteristicas.descricao', 'carro.marca'])->find($id);
         $matches = Match::findInteresses($est, 10);
+
+        foreach ($matches as $i => $match) {
+            $matches[$i]->caracteristicas = Caracteristica::whereIn('id', json_decode($match->caracteristicas))->select(['id', 'nome'])->get();
+        }
 
         return $matches;
     }
