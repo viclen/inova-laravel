@@ -22,6 +22,8 @@ class CreateModelosTable extends Migration
             $table->string('fipe_id', 10);
             $table->unsignedBigInteger('carro_id');
             $table->timestamps();
+
+            $table->foreign('carro_id')->references('id')->on('carros')->onDelete('cascade');
         });
     }
 

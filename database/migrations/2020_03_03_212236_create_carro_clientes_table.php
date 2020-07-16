@@ -19,6 +19,9 @@ class CreateCarroClientesTable extends Migration
             $table->unsignedBigInteger('cliente_id');
             $table->text('observacoes')->nullable();
             $table->timestamps();
+
+            $table->foreign('carro_id')->references('id')->on('carros')->onDelete('cascade');
+            $table->foreign('cliente_id')->references('id')->on('clientes')->onDelete('cascade');
         });
     }
 

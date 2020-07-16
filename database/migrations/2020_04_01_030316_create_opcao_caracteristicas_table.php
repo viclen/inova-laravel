@@ -18,6 +18,8 @@ class CreateOpcaoCaracteristicasTable extends Migration
             $table->integer("ordem");
             $table->string("valor");
             $table->primary(["caracteristica_id", "ordem"]);
+
+            $table->foreign('caracteristica_id')->references('id')->on('caracteristicas')->onDelete('cascade');
         });
     }
 

@@ -28,6 +28,9 @@ class CreateInteressesTable extends Migration
                 Outro
             ');
             $table->timestamps();
+
+            $table->foreign('carro_id')->references('id')->on('carros')->onDelete('cascade');
+            $table->foreign('cliente_id')->references('id')->on('clientes')->onDelete('cascade');
         });
     }
 

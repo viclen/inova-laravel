@@ -28,6 +28,7 @@ Route::resource('regras', 'RegraController')->middleware('auth');
 Route::resource('estoques', 'EstoqueController')->middleware('auth');
 Route::resource('interesses', 'InteresseController')->middleware('auth');
 Route::resource('caracteristicas', 'CaracteristicaController')->middleware('auth');
+Route::resource('usuarios', 'UserController')->middleware('auth')->name('index', 'users');
 
 // search
 Route::get('/clientes/search/{search}', 'ClienteController@search')->middleware('auth');

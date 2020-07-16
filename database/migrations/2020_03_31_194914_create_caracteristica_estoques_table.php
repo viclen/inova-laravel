@@ -18,6 +18,9 @@ class CreateCaracteristicaEstoquesTable extends Migration
             $table->unsignedBigInteger('estoque_id');
             $table->string("valor");
             $table->primary(['caracteristica_id', 'estoque_id']);
+
+            $table->foreign('caracteristica_id')->references('id')->on('caracteristicas')->onDelete('cascade');
+            $table->foreign('estoque_id')->references('id')->on('estoques')->onDelete('cascade');
         });
     }
 

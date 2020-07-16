@@ -24,6 +24,9 @@ class CreateCaracteristicaInteressesTable extends Migration
                 ~: perto
             ")->default("1");
             $table->primary(['caracteristica_id', 'interesse_id']);
+
+            $table->foreign('caracteristica_id')->references('id')->on('caracteristicas')->onDelete('cascade');
+            $table->foreign('interesse_id')->references('id')->on('interesses')->onDelete('cascade');
         });
     }
 

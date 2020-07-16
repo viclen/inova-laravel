@@ -20,6 +20,9 @@ class CreateMatchesTable extends Migration
             $table->json('caracteristicas');
 
             $table->primary(['interesse_id', 'estoque_id']);
+
+            $table->foreign('interesse_id')->references('id')->on('interesses')->onDelete('cascade');
+            $table->foreign('estoque_id')->references('id')->on('estoques')->onDelete('cascade');
         });
     }
 

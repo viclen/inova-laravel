@@ -13,12 +13,16 @@ class CreateCarrosTable extends Migration
      */
     public function up()
     {
+        Schema::disableForeignKeyConstraints();
+
         Schema::create('carros', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('nome');
             $table->unsignedBigInteger('marca_id')->nullable();
             $table->integer('uso')->default(0);
             $table->timestamps();
+
+            $table->foreign('marca_id')->references('id')->on('marcas')->onDelete('cascade');
         });
     }
 

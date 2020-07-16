@@ -18,6 +18,9 @@ class CreateCaracteristicaCarroClientesTable extends Migration
             $table->unsignedBigInteger('carro_cliente_id');
             $table->string("valor");
             $table->primary(['caracteristica_id', 'carro_cliente_id'], 'caracteristica_carro_cliente_id_primary');
+
+            $table->foreign('caracteristica_id')->references('id')->on('caracteristicas')->onDelete('cascade');
+            $table->foreign('carro_cliente_id')->references('id')->on('carro_clientes')->onDelete('cascade');
         });
     }
 
