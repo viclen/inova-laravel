@@ -55,7 +55,6 @@ class ClienteController extends Controller
             'endereco' => '',
             'cidade' => '',
             'email' => '',
-            'cpf' => '',
         ]);
 
         if ($validator->fails()) {
@@ -160,7 +159,6 @@ class ClienteController extends Controller
             'endereco' => '',
             'cidade' => '',
             'email' => '',
-            'cpf' => '',
         ]);
 
         if ($validator->fails()) {
@@ -225,14 +223,12 @@ class ClienteController extends Controller
             ->orWhere("clientes.telefone", "like", $search)
             ->orWhere("clientes.cidade", "like", $search)
             ->orWhere("clientes.email", "like", $search)
-            ->orWhere("clientes.cpf", "like", $search)
             ->selectRaw('
                 clientes.id,
                 clientes.nome,
                 clientes.email,
                 clientes.telefone,
-                clientes.cidade,
-                clientes.cpf
+                clientes.cidade
             ')
             ->orderBy('clientes.nome')
             ->paginate($qtd);
