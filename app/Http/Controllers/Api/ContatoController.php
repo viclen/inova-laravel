@@ -67,6 +67,8 @@ class ContatoController extends Controller
         $carros = [];
         $caracteristicas = [];
 
+        $caracteristicas_usadas = [];
+
         $usadas = [];
 
         foreach ($palavras as $i => $palavra) {
@@ -98,14 +100,18 @@ class ContatoController extends Controller
 
                             if ($unidade) {
                                 $caracteristica = Caracteristica::where('nome', 'valor')->first();
-                                $caracteristica_int = new CaracteristicaInteresse([
-                                    'caracteristica_id' => $caracteristica->id,
-                                    'interesse_id' => $interesse->id,
-                                    'valor' => $valor,
-                                    'comparador' => "<",
-                                ]);
-                                $caracteristica_int->caracteristica = $caracteristica;
-                                $caracteristicas[] = $caracteristica_int;
+
+                                if (array_search($caracteristica->id, $caracteristicas_usadas) == false) {
+                                    $caracteristicas_usadas[] = $caracteristica->id;
+                                    $caracteristica_int = new CaracteristicaInteresse([
+                                        'caracteristica_id' => $caracteristica->id,
+                                        'interesse_id' => $interesse->id,
+                                        'valor' => $valor,
+                                        'comparador' => "<",
+                                    ]);
+                                    $caracteristica_int->caracteristica = $caracteristica;
+                                    $caracteristicas[] = $caracteristica_int;
+                                }
 
                                 $usadas[] = $palavra;
                             }
@@ -114,54 +120,67 @@ class ContatoController extends Controller
                 } elseif (is_numeric($palavra) && $i >= count($palavras) - 1 && ((strlen($palavra) == 4 && $palavra <= date('Y') && $palavra > 1900) || strlen($palavra) == 2)) { // ano
                     if (strlen($palavra) == 2) {
                         if ($palavra <= date('Y')) {
-                            $palavra += 2000;
+                            $valor = $palavra + 2000;
                         } else {
-                            $palavra += 1900;
+                            $valor = $palavra + 1900;
                         }
                     }
 
                     $caracteristica = Caracteristica::where('nome', 'ano')->first();
-                    $caracteristica_int = new CaracteristicaInteresse([
-                        'caracteristica_id' => $caracteristica->id,
-                        'interesse_id' => $interesse->id,
-                        'valor' => $palavra,
-                        'comparador' => "~",
-                    ]);
-                    $caracteristica_int->caracteristica = $caracteristica;
-                    $caracteristicas[] = $caracteristica_int;
+                    if (array_search($caracteristica->id, $caracteristicas_usadas) == false) {
+                        $caracteristicas_usadas[] = $caracteristica->id;
+                        $caracteristica_int = new CaracteristicaInteresse([
+                            'caracteristica_id' => $caracteristica->id,
+                            'interesse_id' => $interesse->id,
+                            'valor' => $valor,
+                            'comparador' => "~",
+                        ]);
+                        $caracteristica_int->caracteristica = $caracteristica;
+                        $caracteristicas[] = $caracteristica_int;
+                        $usadas[] = $palavra;
+                    }
                 } elseif ($palavra == "NOVO") {
                     $caracteristica = Caracteristica::where('nome', 'km')->first();
-                    $caracteristica_int = new CaracteristicaInteresse([
-                        'caracteristica_id' => $caracteristica->id,
-                        'interesse_id' => $interesse->id,
-                        'valor' => 0,
-                        'comparador' => "=",
-                    ]);
-                    $caracteristica_int->caracteristica = $caracteristica;
-                    $caracteristicas[] = $caracteristica_int;
-                    $usadas[] = $palavra;
+                    if (array_search($caracteristica->id, $caracteristicas_usadas) == false) {
+                        $caracteristicas_usadas[] = $caracteristica->id;
+                        $caracteristica_int = new CaracteristicaInteresse([
+                            'caracteristica_id' => $caracteristica->id,
+                            'interesse_id' => $interesse->id,
+                            'valor' => 0,
+                            'comparador' => "=",
+                        ]);
+                        $caracteristica_int->caracteristica = $caracteristica;
+                        $caracteristicas[] = $caracteristica_int;
+                        $usadas[] = $palavra;
+                    }
                 } elseif ($palavra == "FINANCIADO" || $palavra == "100%") {
                     $caracteristica = Caracteristica::where('nome', 'financiado')->first();
-                    $caracteristica_int = new CaracteristicaInteresse([
-                        'caracteristica_id' => $caracteristica->id,
-                        'interesse_id' => $interesse->id,
-                        'valor' => 1,
-                        'comparador' => "=",
-                    ]);
-                    $caracteristica_int->caracteristica = $caracteristica;
-                    $caracteristicas[] = $caracteristica_int;
-                    $usadas[] = $palavra;
+                    if (array_search($caracteristica->id, $caracteristicas_usadas) == false) {
+                        $caracteristicas_usadas[] = $caracteristica->id;
+                        $caracteristica_int = new CaracteristicaInteresse([
+                            'caracteristica_id' => $caracteristica->id,
+                            'interesse_id' => $interesse->id,
+                            'valor' => 1,
+                            'comparador' => "=",
+                        ]);
+                        $caracteristica_int->caracteristica = $caracteristica;
+                        $caracteristicas[] = $caracteristica_int;
+                        $usadas[] = $palavra;
+                    }
                 } elseif ($opcao = OpcaoCaracteristica::where('valor', $palavra)->first()) {
                     $caracteristica = Caracteristica::find($opcao->caracteristica_id);
-                    $caracteristica_int = new CaracteristicaInteresse([
-                        'caracteristica_id' => $caracteristica->id,
-                        'interesse_id' => $interesse->id,
-                        'valor' => $opcao->ordem,
-                        'comparador' => "=",
-                    ]);
-                    $caracteristica_int->caracteristica = $caracteristica;
-                    $caracteristicas[] = $caracteristica_int;
-                    $usadas[] = $palavra;
+                    if (array_search($caracteristica->id, $caracteristicas_usadas) == false) {
+                        $caracteristicas_usadas[] = $caracteristica->id;
+                        $caracteristica_int = new CaracteristicaInteresse([
+                            'caracteristica_id' => $caracteristica->id,
+                            'interesse_id' => $interesse->id,
+                            'valor' => $opcao->ordem,
+                            'comparador' => "=",
+                        ]);
+                        $caracteristica_int->caracteristica = $caracteristica;
+                        $caracteristicas[] = $caracteristica_int;
+                        $usadas[] = $palavra;
+                    }
                 } elseif (intval($palavra) > 0 && array_search($palavra, $usadas) === false) {
                     $valor = intval($palavra);
                     $unidade = str_replace($valor, "", $palavra);
@@ -179,15 +198,15 @@ class ContatoController extends Controller
 
                     if ($unidade) {
                         $caracteristica = Caracteristica::where('nome', 'valor')->first();
-                        $caracteristica_int = new CaracteristicaInteresse([
-                            'caracteristica_id' => $caracteristica->id,
-                            'interesse_id' => $interesse->id,
-                            'valor' => $valor,
-                            'comparador' => "~",
-                        ]);
-                        $caracteristica_int->caracteristica = $caracteristica;
-
-                        if (array_search($caracteristica_int, $caracteristicas) === false) {
+                        if (array_search($caracteristica->id, $caracteristicas_usadas) == false) {
+                            $caracteristicas_usadas[] = $caracteristica->id;
+                            $caracteristica_int = new CaracteristicaInteresse([
+                                'caracteristica_id' => $caracteristica->id,
+                                'interesse_id' => $interesse->id,
+                                'valor' => $valor,
+                                'comparador' => "~",
+                            ]);
+                            $caracteristica_int->caracteristica = $caracteristica;
                             $caracteristicas[] = $caracteristica_int;
                             $usadas[] = $palavra;
                         }
