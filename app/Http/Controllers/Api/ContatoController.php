@@ -8,6 +8,8 @@ use App\Carro;
 use App\Cliente;
 use App\Http\Controllers\Controller;
 use App\Interesse;
+use App\OpcaoCaracteristica;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -36,15 +38,23 @@ class ContatoController extends Controller
         ]);
         $interesse->save();
 
-        $palavras = explode(" ", strtolower($nome));
-        [$carros, $caracteristicas] = ContatoController::parse($palavras, $interesse);
+        $ignorar = [
+            "INT",
+            "MODELO"
+        ];
+
+        $palavras = explode(" ", str_replace($ignorar, "", strtoupper($nome)));
+
+        [$carros, $caracteristicas, $nao_encontradas, $usadas] = ContatoController::parse($palavras, $interesse);
 
         DB::rollback();
 
         return [
             'cliente' => $cliente,
             'caracteristicas' => $caracteristicas,
-            'carros' => $carros
+            'carros' => $carros,
+            'nao_encontradas' => $nao_encontradas,
+            'usadas' => $usadas
         ];
     }
 
@@ -57,40 +67,31 @@ class ContatoController extends Controller
         $carros = [];
         $caracteristicas = [];
 
-        foreach ($palavras as $i => $palavra) {
-            if ($palavra !== 'int') {
-                $cars = Carro::where('nome', 'like', "%$palavra%")->select(['id'])->get();
-                foreach ($cars as $car) {
-                    $carros[] = $car->id;
-                }
-            }
-        }
-
-        $carros = Carro::whereIn('id', $carros)->get()->toArray();
+        $usadas = [];
 
         foreach ($palavras as $i => $palavra) {
-            if ($palavra !== 'int') {
-                $cars = Carro::where('nome', 'like', "%$palavra%")->get()->toArray();
-                foreach ($cars as $car) {
-                    $carros[] = $car;
-                }
-
-                if ($palavra === 'até' || $palavra === 'ate') { // valor até
+            if ($palavra) {
+                if ($palavra == 'ATÉ' || $palavra == 'ATE' || strtolower($palavra) == 'até' || strtolower($palavra) == 'ate') { // valor até
                     if ($i + 1 < count($palavras)) {
                         $palavra_valor = $palavras[$i + 1];
 
                         $valor = intval($palavra_valor);
 
                         if ($valor > 0) {
+                            $usadas[] = $palavras[$i + 1];
+
                             $unidade = str_replace($valor, "", $palavra_valor);
 
                             if (strlen($unidade) < 1 && $i + 2 < count($palavras)) {
                                 $unidade = $palavras[$i + 2];
+                                if ($unidade) {
+                                    $usadas[] = $palavras[$i + 2];
+                                }
                             }
 
                             switch ($unidade) {
-                                case "k":
-                                case "mil":
+                                case "K":
+                                case "MIL":
                                     $valor *= 1000;
                                     break;
                             }
@@ -103,8 +104,10 @@ class ContatoController extends Controller
                                     'valor' => $valor,
                                     'comparador' => "<",
                                 ]);
-                                $caracteristica_int->save();
+                                $caracteristica_int->caracteristica = $caracteristica;
                                 $caracteristicas[] = $caracteristica_int;
+
+                                $usadas[] = $palavra;
                             }
                         }
                     }
@@ -124,15 +127,124 @@ class ContatoController extends Controller
                         'valor' => $palavra,
                         'comparador' => "~",
                     ]);
-                    $caracteristica_int->save();
+                    $caracteristica_int->caracteristica = $caracteristica;
                     $caracteristicas[] = $caracteristica_int;
+                } elseif ($palavra == "NOVO") {
+                    $caracteristica = Caracteristica::where('nome', 'km')->first();
+                    $caracteristica_int = new CaracteristicaInteresse([
+                        'caracteristica_id' => $caracteristica->id,
+                        'interesse_id' => $interesse->id,
+                        'valor' => 0,
+                        'comparador' => "=",
+                    ]);
+                    $caracteristica_int->caracteristica = $caracteristica;
+                    $caracteristicas[] = $caracteristica_int;
+                    $usadas[] = $palavra;
+                } elseif ($palavra == "FINANCIADO" || $palavra == "100%") {
+                    $caracteristica = Caracteristica::where('nome', 'financiado')->first();
+                    $caracteristica_int = new CaracteristicaInteresse([
+                        'caracteristica_id' => $caracteristica->id,
+                        'interesse_id' => $interesse->id,
+                        'valor' => 1,
+                        'comparador' => "=",
+                    ]);
+                    $caracteristica_int->caracteristica = $caracteristica;
+                    $caracteristicas[] = $caracteristica_int;
+                    $usadas[] = $palavra;
+                } elseif ($opcao = OpcaoCaracteristica::where('valor', $palavra)->first()) {
+                    $caracteristica = Caracteristica::find($opcao->caracteristica_id);
+                    $caracteristica_int = new CaracteristicaInteresse([
+                        'caracteristica_id' => $caracteristica->id,
+                        'interesse_id' => $interesse->id,
+                        'valor' => $opcao->ordem,
+                        'comparador' => "=",
+                    ]);
+                    $caracteristica_int->caracteristica = $caracteristica;
+                    $caracteristicas[] = $caracteristica_int;
+                    $usadas[] = $palavra;
+                } elseif (intval($palavra) > 0 && array_search($palavra, $usadas) === false) {
+                    $valor = intval($palavra);
+                    $unidade = str_replace($valor, "", $palavra);
+
+                    if (strlen($unidade) < 1 && $i + 1 < count($palavras)) {
+                        $unidade = $palavras[$i + 1];
+                    }
+
+                    switch ($unidade) {
+                        case "K":
+                        case "MIL":
+                            $valor *= 1000;
+                            break;
+                    }
+
+                    if ($unidade) {
+                        $caracteristica = Caracteristica::where('nome', 'valor')->first();
+                        $caracteristica_int = new CaracteristicaInteresse([
+                            'caracteristica_id' => $caracteristica->id,
+                            'interesse_id' => $interesse->id,
+                            'valor' => $valor,
+                            'comparador' => "~",
+                        ]);
+                        $caracteristica_int->caracteristica = $caracteristica;
+
+                        if (array_search($caracteristica_int, $caracteristicas) === false) {
+                            $caracteristicas[] = $caracteristica_int;
+                            $usadas[] = $palavra;
+                        }
+                    }
                 }
+            }
+        }
+
+        foreach ($palavras as $i => $palavra) {
+            if ($palavra && array_search($palavra, $usadas) === false) {
+                if ($i + 1 < count($palavras)) {
+                    $pesquisa = $palavra . " " . $palavras[$i + 1];
+
+                    $cars = Carro::where('nome', 'like', "%$pesquisa%")->select(['id'])->get();
+                    if (count($cars)) {
+                        $usadas[] = $palavra;
+                        $usadas[] = $palavras[$i + 1];
+
+                        foreach ($cars as $car) {
+                            $carros[] = $car->id;
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach ($palavras as $i => $palavra) {
+            if ($palavra && array_search($palavra, $usadas) === false) {
+                $cars = Carro::where('nome', 'REGEXP', "[[:<:]]$palavra" . "[[:>:]]")->select(['id'])->get();
+                if (count($cars)) {
+                    $usadas[] = $palavra;
+                } else {
+                    $cars = Carro::where('nome', 'like', "%$palavra%")->select(['id'])->get();
+                    if (count($cars)) {
+                        $usadas[] = $palavra;
+                    }
+                }
+
+                foreach ($cars as $car) {
+                    $carros[] = $car->id;
+                }
+            }
+        }
+        $carros = Carro::whereIn('id', $carros)->get()->toArray();
+
+        $nao_encontradas = [];
+        foreach ($palavras as $i => $palavra) {
+            if ($palavra && array_search($palavra, $usadas) === false) {
+                $nao_encontradas[] = $palavra;
             }
         }
 
         return [
             $carros,
-            $caracteristicas
+            $caracteristicas,
+            $nao_encontradas,
+            $usadas,
         ];
     }
 }
