@@ -45,13 +45,13 @@ class ContatoController extends Controller
 
         $palavras = array_slice(explode(" ", str_replace($ignorar, "", strtoupper($nome))), 1);
 
-        try {
-            [$carros, $caracteristicas, $nao_encontradas, $usadas] = ContatoController::parse($palavras, $interesse);
-        } catch (\Throwable $th) {
-            return [
-                'error' => $th->getMessage()
-            ];
-        }
+        // try {
+        [$carros, $caracteristicas, $nao_encontradas, $usadas] = ContatoController::parse($palavras, $interesse);
+        // } catch (\Throwable $th) {
+        //     return [
+        //         'error' => $th->getMessage()
+        //     ];
+        // }
 
         DB::rollback();
 
@@ -72,7 +72,7 @@ class ContatoController extends Controller
     {
         foreach ($palavras as $i => $palavra) {
             if (!$palavra) {
-                unset($palavras[$i]);
+                array_splice($palavras, $i, 1);
             }
         }
 
@@ -135,7 +135,7 @@ class ContatoController extends Controller
                 $valor = $palavra;
 
                 if (strlen($palavra) == 2) {
-                    if ($palavra <= date('Y')) {
+                    if ($valor + 2000 <= date('Y')) {
                         $valor = $palavra + 2000;
                     } else {
                         $valor = $palavra + 1900;
@@ -183,7 +183,7 @@ class ContatoController extends Controller
                     $caracteristicas[] = $caracteristica_int;
                     $usadas[] = $palavra;
                 }
-            } elseif ($opcao = OpcaoCaracteristica::where('valor', $palavra)->first()) {
+            } elseif ($opcao = OpcaoCaracteristica::where('valor', 'like', "$palavra%")->first()) {
                 $caracteristica = Caracteristica::find($opcao->caracteristica_id);
                 if (array_search($caracteristica->id, $caracteristicas_usadas) == false) {
                     $caracteristicas_usadas[] = $caracteristica->id;
@@ -277,9 +277,14 @@ class ContatoController extends Controller
                     if (count($cars)) {
                         $usadas[] = $palavra;
                     } else {
-                        $cars = Carro::where('nome', 'like', "%$palavra%")->select(['id'])->get();
+                        $cars = Carro::where('nome', 'like', "$palavra%")->select(['id'])->get();
                         if (count($cars)) {
                             $usadas[] = $palavra;
+                        } else {
+                            $cars = Carro::where('nome', 'like', "%$palavra%")->select(['id'])->get();
+                            if (count($cars)) {
+                                $usadas[] = $palavra;
+                            }
                         }
                     }
 
