@@ -132,6 +132,8 @@ class ContatoController extends Controller
                     }
                 }
             } elseif (is_numeric($palavra) && $i >= count($palavras) - 1 && ((strlen($palavra) == 4 && $palavra <= date('Y') && $palavra > 1900) || strlen($palavra) == 2)) { // ano
+                $valor = $palavra;
+
                 if (strlen($palavra) == 2) {
                     if ($palavra <= date('Y')) {
                         $valor = $palavra + 2000;
