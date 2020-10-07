@@ -69,23 +69,23 @@ class FipeSeeder extends Seeder
 
             $erros_carro = 0;
             foreach ($carros as $carro_fipe) {
-                $carro_id = $carro_fipe['id'];
+                $carro_fipe_id = $carro_fipe['id'];
 
-                $carro = Carro::find($carro_id);
+                $carro = Carro::where("fipe_ids", "like", "%\"$carro_fipe_id\"%");
                 $msg = "";
                 if (!$carro) {
                     $carro = new Carro();
-                    $carro->id = $carro_id;
+                    $carro->fipe_ids = "[\"$carro_fipe_id\"]";
+                    $carro->nome = $carro_fipe['name'];
                     $carro->marca_id = $marca->id;
+                    $carro->save();
                     $msg = ": Novo";
                 }
-                $carro->nome = $carro_fipe['name'];
-                $carro->save();
 
                 echo $this->tab(1) . $carro->nome . "$msg\r\n";
 
                 try {
-                    $url = "http://fipeapi.appspot.com/api/1/carros/veiculo/$marca->id/$carro->id.json";
+                    $url = "http://fipeapi.appspot.com/api/1/carros/veiculo/$marca->id/$carro_fipe_id.json";
                     $dados_fipe = json_decode(file_get_contents($url), true);
                     sleep(1);
 
@@ -98,7 +98,7 @@ class FipeSeeder extends Seeder
                                 $modelo_id = $dados['id'];
 
                                 if (array_search($modelo_id, $modelos_buscados) === false) {
-                                    $url = "http://fipeapi.appspot.com/api/1/carros/veiculo/$marca->id/$carro->id/$modelo_id.json";
+                                    $url = "http://fipeapi.appspot.com/api/1/carros/veiculo/$marca->id/$carro_fipe_id/$modelo_id.json";
                                     $json = file_get_contents($url);
                                     $dados_modelo = json_decode($json, true);
                                     $dados_modelo['preco'] = $this->onlyNumbers($dados_modelo['preco']);

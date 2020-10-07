@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call(CaracteristicaEstoqueSeeder::class);
         $this->call(CaracteristicaInteresseSeeder::class);
+        $this->call(ConsertaCarros::class);
 
         DB::commit();
 
