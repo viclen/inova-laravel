@@ -111,6 +111,7 @@ class FipeSeeder extends Seeder
                                         $modelo->combustivel = substr($dados_modelo['combustivel'], 0, 1);
                                         $modelo->carro_id = $carro->id;
                                         $modelo->fipe_id = $modelo_id;
+                                        $modelo->nome = $dados_modelo['name'];
                                         $modelo->preco = 0;
                                         $msg = ": Novo";
                                     }
