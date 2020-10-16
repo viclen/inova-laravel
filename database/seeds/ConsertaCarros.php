@@ -6,8 +6,6 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-use function PHPSTORM_META\map;
-
 class ConsertaCarros extends Seeder
 {
     /**
@@ -17,11 +15,20 @@ class ConsertaCarros extends Seeder
      */
     public function run()
     {
+        DB::unprepared('
+            UPDATE carros SET nome = REPLACE(nome, "/", " / ") WHERE nome LIKE "%/%" AND nome NOT LIKE "% / %";
+            UPDATE carros SET nome = REPLACE(nome, "  ", " ") WHERE nome LIKE "%  %";
+            UPDATE modelos SET nome = REPLACE(nome, "/", " / ") WHERE nome LIKE "%/%" AND nome NOT LIKE "% / %";
+            UPDATE modelos SET nome = REPLACE(nome, "  ", " ") WHERE nome LIKE "%  %";
+        ');
+
         $modelos = Modelo::with('carro')->where('nome', '')->get();
 
         foreach ($modelos as $modelo) {
-            $modelo->nome = $modelo->carro->nome;
-            $modelo->save();
+            if (!$modelo->nome) {
+                $modelo->nome = $modelo->carro->nome;
+                $modelo->save();
+            }
         }
 
         $best_carros = [];
@@ -54,7 +61,7 @@ class ConsertaCarros extends Seeder
             foreach ($palavras as $i => $palavra) {
                 $atual = trim($atual . ' ' . $palavra);
 
-                $search = $i < count($palavras) - 1 ? "$atual %" : "$atual%";
+                $search = $i < count($palavras) - 1 ? "$atual %" : "$atual";
 
                 $carros_iguais = Carro::whereRaw("nome like '$search'")->get()->toArray();
 
@@ -105,26 +112,28 @@ class ConsertaCarros extends Seeder
         Storage::put('best_carros.json', json_encode($best_carros));
 
         DB::beginTransaction();
-
         DB::unprepared('SET FOREIGN_KEY_CHECKS=0;');
 
         Carro::query()->truncate();
 
         Carro::insert(array_map(function ($car) {
+            echo '.';
             $car['fipe_ids'] = json_encode($car['fipe_ids']);
             return $car;
         }, $best_carros));
 
+        echo "\n\n\n";
+
         foreach ($best_carros as $carro) {
+            echo '.';
             $id = Carro::where('nome', $carro['nome'])->first()->id;
 
             Modelo::whereIn('id', $carro['fipe_ids'])->update(['carro_id' => $id]);
         }
 
-        DB::unprepared('SET FOREIGN_KEY_CHECKS=1;');
-
         // DB::rollBack();
         DB::commit();
+        DB::unprepared('SET FOREIGN_KEY_CHECKS=1;');
 
         $modelos = Modelo::with('carro')->get();
 
@@ -132,7 +141,7 @@ class ConsertaCarros extends Seeder
             if ($modelo->carro == null) {
                 $carro = Carro::whereRaw("'$modelo->nome' LIKE CONCAT(carros.nome, ' %') OR '$modelo->nome' LIKE carros.nome")->first();
 
-                if ($carro->id) {
+                if ($carro) {
                     $modelo->carro_id = $carro->id;
                     $modelo->save();
                 } else {

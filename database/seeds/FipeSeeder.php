@@ -71,7 +71,7 @@ class FipeSeeder extends Seeder
             foreach ($carros as $carro_fipe) {
                 $carro_fipe_id = $carro_fipe['id'];
 
-                $carro = Carro::where("fipe_ids", "like", "%\"$carro_fipe_id\"%");
+                $carro = Carro::where("fipe_ids", "like", "%\"$carro_fipe_id\"%")->first();
                 $msg = "";
                 if (!$carro) {
                     $carro = new Carro();
