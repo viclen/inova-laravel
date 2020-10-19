@@ -105,8 +105,6 @@ class ConsertaCarros extends Seeder
             echo "$anterior | $marca | $cont_atual | " . json_encode(array_map(function ($car) {
                 return $car['id'];
             }, $carros_iguais_anterior)) . "\n";
-
-            // echo '.';
         }
 
         Storage::put('best_carros.json', json_encode($best_carros));
@@ -123,30 +121,37 @@ class ConsertaCarros extends Seeder
         }, $best_carros));
 
         echo "\n\n\n";
+        DB::commit();
 
         foreach ($best_carros as $carro) {
             echo '.';
-            $id = Carro::where('nome', $carro['nome'])->first()->id;
+            $id = Carro::where('fipe_ids', json_encode($carro['fipe_ids']))->first()->id;
 
-            Modelo::whereIn('id', $carro['fipe_ids'])->update(['carro_id' => $id]);
+            Modelo::whereIn('carro_id', $carro['fipe_ids'])->update(['carro_id' => $id]);
         }
 
         // DB::rollBack();
-        DB::commit();
         DB::unprepared('SET FOREIGN_KEY_CHECKS=1;');
 
         $modelos = Modelo::with('carro')->get();
 
         foreach ($modelos as $modelo) {
             if ($modelo->carro == null) {
-                $carro = Carro::whereRaw("'$modelo->nome' LIKE CONCAT(carros.nome, ' %') OR '$modelo->nome' LIKE carros.nome")->first();
-
+                $carro = Carro::where("fipe_ids", 'LIKE', "%\"$modelo->carro_id\"%")->first();
                 if ($carro) {
+                    echo "Fixing $modelo->id: $carro->id \n";
                     $modelo->carro_id = $carro->id;
                     $modelo->save();
                 } else {
-                    echo "Cleaning $modelo->id: $modelo->nome \n";
-                    $modelo->delete();
+                    $carro = Carro::whereRaw("'$modelo->nome' LIKE CONCAT(carros.nome, ' %') OR '$modelo->nome' LIKE carros.nome")->first();
+                    if ($carro) {
+                        echo "Fixing $modelo->id: $carro->id \n";
+                        $modelo->carro_id = $carro->id;
+                        $modelo->save();
+                    } else {
+                        echo "Cleaning $modelo->id: $modelo->nome \n";
+                        $modelo->delete();
+                    }
                 }
             }
         }
