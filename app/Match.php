@@ -138,8 +138,14 @@ class Match extends Model
             }
         }
 
+        $found = Interesse::whereIn('id', array_keys($matches))->get()->toArray();
+
         $insert = [];
         foreach ($matches as $interesse_id => $dados) {
+            if (array_search($interesse_id, $found) === false) {
+                continue;
+            }
+
             $insert[] = [
                 'interesse_id' => $interesse_id,
                 'estoque_id' => $estoque->id,
@@ -147,6 +153,8 @@ class Match extends Model
                 'caracteristicas' => json_encode($dados['caracteristicas']),
             ];
         }
+
+        CaracteristicaInteresse::whereNotIn('estoque_id', $found)->delete();
 
         Match::where('estoque_id', $estoque->id)->delete();
         Match::insert($insert);
@@ -264,8 +272,14 @@ class Match extends Model
             }
         }
 
+        $found = Estoque::whereIn('id', array_keys($matches))->get()->toArray();
+
         $insert = [];
         foreach ($matches as $estoque_id => $dados) {
+            if (array_search($estoque_id, $found) === false) {
+                continue;
+            }
+
             $insert[] = [
                 'estoque_id' => $estoque_id,
                 'interesse_id' => $interesse->id,
@@ -273,6 +287,8 @@ class Match extends Model
                 'caracteristicas' => json_encode($dados['caracteristicas']),
             ];
         }
+
+        CaracteristicaEstoque::whereNotIn('estoque_id', $found)->delete();
 
         Match::where('interesse_id', $interesse->id)->delete();
         Match::insert($insert);
