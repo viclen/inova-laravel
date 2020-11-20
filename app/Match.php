@@ -154,7 +154,7 @@ class Match extends Model
             ];
         }
 
-        CaracteristicaInteresse::whereNotIn('estoque_id', $found)->delete();
+        CaracteristicaInteresse::whereNotIn('interesse_id', $found)->delete();
 
         Match::where('estoque_id', $estoque->id)->delete();
         Match::insert($insert);
