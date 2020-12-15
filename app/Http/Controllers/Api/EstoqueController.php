@@ -39,16 +39,15 @@ class EstoqueController extends Controller
         ]);
 
         $resultados = [];
+        DB::table('carros')->where('id', $request['carro_id'])->update(['uso' => DB::raw('uso + 1')]);
+
+        $est = new Estoque([
+            'carro_id' => $request['carro_id'],
+            'observacoes' => $request['observacoes'],
+        ]);
+        $est->save();
+
         try {
-            DB::beginTransaction();
-            DB::table('carros')->where('id', $request['carro_id'])->update(['uso' => DB::raw('uso + 1')]);
-
-            $est = new Estoque([
-                'carro_id' => $request['carro_id'],
-                'observacoes' => $request['observacoes'],
-            ]);
-            $est->save();
-
             $ces = [];
             foreach ($request['caracteristicas'] as $caracteristica) {
                 $ces[] = [
@@ -58,17 +57,14 @@ class EstoqueController extends Controller
                 ];
             }
             CaracteristicaEstoque::insert($ces);
-
-            $est->load(['caracteristicas.descricao', 'carro.marca']);
-            $resultados = Match::findInteresses($est, 10);
-
-            DB::commit();
         } catch (Throwable $th) {
-            return [
-                'message' => $th->getMessage(),
-                'request' => $request->toArray(),
-            ];
+            // return [
+            //     'message' => $th->getMessage(),
+            //     'request' => $request->toArray(),
+            // ];
         }
+
+        $resultados = $this->match($est->id);
 
         return [
             'status' => 1,
@@ -105,7 +101,6 @@ class EstoqueController extends Controller
 
         $resultados = [];
         try {
-            DB::beginTransaction();
 
             $est = Estoque::find($id);
             $est->update([
@@ -127,8 +122,6 @@ class EstoqueController extends Controller
 
             $est->load(['caracteristicas.descricao', 'carro.marca']);
             $resultados = Match::findInteresses($est, 5);
-
-            DB::commit();
         } catch (Throwable $th) {
             return [
                 'message' => $th->getMessage(),
@@ -144,13 +137,9 @@ class EstoqueController extends Controller
 
     public function destroy(int $id)
     {
-        DB::beginTransaction();
-
         CaracteristicaEstoque::where('estoque_id', $id)->delete();
         Match::where('estoque_id', $id)->delete();
         Estoque::where('id', $id)->delete();
-
-        DB::commit();
 
         return [
             'status' => 1,
@@ -186,10 +175,11 @@ class EstoqueController extends Controller
     public function match(int $id)
     {
         $est = Estoque::with(['caracteristicas.descricao', 'carro.marca'])->find($id);
+
         $matches = Match::findInteresses($est, 10);
 
         foreach ($matches as $i => $match) {
-            $matches[$i]->caracteristicas = Caracteristica::whereIn('id', json_decode($match->caracteristicas))->select(['id', 'nome'])->get();
+            $matches[$i]['caracteristicas'] = Caracteristica::whereIn('id', json_decode($match['caracteristicas']))->select(['id', 'nome'])->get();
         }
 
         return $matches;

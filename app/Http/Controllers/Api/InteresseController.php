@@ -44,8 +44,6 @@ class InteresseController extends Controller
         $resultados = [];
 
         try {
-            DB::beginTransaction();
-
             $cliente = $request['cliente'];
 
             if (!isset($cliente['id']) || !$cliente['id']) {
@@ -89,9 +87,9 @@ class InteresseController extends Controller
                 CaracteristicaInteresse::insert($cis);
 
                 $int->load(['caracteristicas.descricao', 'carro.marca']);
-                $matches = Match::findEstoques($int, 1);
+                $matches = $this->match($int->id);
                 if (count($matches)) {
-                    $matches[0]->interesse = $int;
+                    $matches[0]['interesse'] = $int;
                     $resultados[] = $matches[0];
                 }
 
@@ -117,8 +115,6 @@ class InteresseController extends Controller
 
                 DB::table('carros')->where('id', $troca['carro_id'])->update(['uso' => DB::raw('uso + 1')]);
             }
-
-            DB::commit();
         } catch (Throwable $th) {
             return [
                 'message' => $th->getMessage(),
@@ -160,7 +156,6 @@ class InteresseController extends Controller
             'observacoes' => '',
         ]);
 
-        DB::beginTransaction();
         Interesse::where('id', $id)->update([
             'carro_id' => $request['carro_id'],
             'observacoes' => $request['observacoes'],
@@ -180,8 +175,6 @@ class InteresseController extends Controller
         }
         CaracteristicaInteresse::insert($cis);
 
-        DB::commit();
-
         return [
             'status' => 1,
         ];
@@ -189,13 +182,9 @@ class InteresseController extends Controller
 
     public function destroy(int $id)
     {
-        DB::beginTransaction();
-
         CaracteristicaInteresse::where('interesse_id', $id)->delete();
         Match::where('interesse_id', $id)->delete();
         Interesse::where('id', $id)->delete();
-
-        DB::commit();
 
         return [
             'status' => 1,
@@ -239,7 +228,7 @@ class InteresseController extends Controller
         $matches = Match::findEstoques($int, 10);
 
         foreach ($matches as $i => $match) {
-            $matches[$i]->caracteristicas = Caracteristica::whereIn('id', json_decode($match->caracteristicas))->select(['id', 'nome'])->get();
+            $matches[$i]['caracteristicas'] = Caracteristica::whereIn('id', json_decode($match['caracteristicas']))->select(['id', 'nome'])->get();
         }
 
         return $matches;

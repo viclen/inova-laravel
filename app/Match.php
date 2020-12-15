@@ -112,7 +112,7 @@ class Match extends Model
 
             foreach ($encontradas as $int_car) {
                 if (isset($matches[$int_car->interesse_id])) {
-                    $matches[$int_car->interesse_id]['prioridade'] += $caracteristica->peso;
+                    $matches[$int_car->interesse_id]['prioridade'] += $caracteristica->descricao->peso;
                     $matches[$int_car->interesse_id]['caracteristicas'][] = $int_car->caracteristica_id;
                 } else {
                     $matches[$int_car->interesse_id] = [
@@ -142,7 +142,9 @@ class Match extends Model
 
         $insert = [];
         foreach ($matches as $interesse_id => $dados) {
-            if (array_search($interesse_id, $found) === false) {
+            if (array_search($interesse_id, array_map(function ($obj) {
+                return $obj['id'];
+            }, $found)) === false) {
                 continue;
             }
 
@@ -246,7 +248,7 @@ class Match extends Model
 
             foreach ($encontradas as $est_car) {
                 if (isset($matches[$est_car->estoque_id])) {
-                    $matches[$est_car->estoque_id]['prioridade'] += $caracteristica->peso;
+                    $matches[$est_car->estoque_id]['prioridade'] += $caracteristica->descricao->peso;
                     $matches[$est_car->estoque_id]['caracteristicas'][] = $est_car->caracteristica_id;
                 } else {
                     $matches[$est_car->estoque_id] = [
@@ -276,7 +278,9 @@ class Match extends Model
 
         $insert = [];
         foreach ($matches as $estoque_id => $dados) {
-            if (array_search($estoque_id, $found) === false) {
+            if (array_search($estoque_id, array_map(function ($obj) {
+                return $obj['id'];
+            }, $found)) === false) {
                 continue;
             }
 
@@ -295,7 +299,7 @@ class Match extends Model
 
         return Match::with([
             'estoque.caracteristicas.descricao',
-            'estoque.carro.marca'
+            'estoque.carro.marca',
         ])
             ->where('interesse_id', $interesse->id)
             ->orderByDesc('prioridade')
