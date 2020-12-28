@@ -10,6 +10,7 @@ use App\Cliente;
 use App\Interesse;
 use App\Http\Controllers\Controller;
 use App\Match;
+use App\Regra;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -232,5 +233,85 @@ class InteresseController extends Controller
         }
 
         return $matches;
+    }
+
+    public function advancedSearch()
+    {
+        $q = request()->textoPesquisa;
+
+        $caracteristicas = request()->caracteristicas;
+
+        $interesses = [];
+
+        $regra = Regra::where([
+            ['grupo', 'valor'],
+            ['nome', 'porcentagem']
+        ])->first();
+        $porcentagem = $regra ? $regra->valor / 100 : 0.2;
+
+        foreach ($caracteristicas as $caracteristica) {
+            $encontrados = CaracteristicaInteresse::where([
+                ['caracteristica_id', $caracteristica['id']]
+            ])->where(function ($query) use ($caracteristica, $porcentagem) {
+                $query->where('valor', '=', $caracteristica['valor']);
+                if ($caracteristica['tipo'] == 1 || $caracteristica['tipo'] == 2) {
+                    $query->orWhere([
+                        ['comparador', '<'],
+                        ['valor', '<=', $caracteristica['valor']]
+                    ])->orWhere([
+                        ['comparador', '>'],
+                        ['valor', '>=', $caracteristica['valor']]
+                    ])->orWhere([
+                        ['comparador', '~'],
+                        ['valor', '>=', $caracteristica['valor'] - $caracteristica['valor'] * $porcentagem],
+                        ['valor', '<=', $caracteristica['valor'] + $caracteristica['valor'] * $porcentagem],
+                    ]);
+                } elseif ($caracteristica['tipo'] == 0) {
+                    $query->orWhereRaw("
+                        comparador = '<'
+                        AND '$caracteristica[valor]' LIKE CONCAT(`valor`, '%')
+                    ")->orWhereRaw("
+                        comparador = '>'
+                        AND '$caracteristica[valor]' LIKE CONCAT('%', `valor`)
+                    ")->orWhereRaw("
+                        comparador = '~'
+                        AND '$caracteristica[valor]' LIKE CONCAT('%', `valor`, '%')
+                    ");
+                }
+            })
+                ->selectRaw('DISTINCT interesse_id, caracteristica_id')
+                ->get();
+
+            foreach ($encontrados as $encontrado) {
+                $interesses[] = $encontrado->interesse_id;
+            }
+        }
+
+        if ($q) {
+            $query = Interesse::whereHas('carro', function ($query) use ($q) {
+                $query->whereRaw("
+                    nome LIKE '%$q%'
+                ");
+            })->orWhereHas('cliente', function ($query) use ($q) {
+                $query->whereRaw("
+                    nome LIKE '%$q%' OR
+                    cidade LIKE '%$q%'
+                ");
+            })->orWhereIn('id', $interesses);
+
+            $qtd = request()->input('qtd', 100000);
+
+            $with = 'carro.marca,cliente,caracteristicas.descricao';
+            if ($with) {
+                $relations = explode(",", $with);
+                $dados = $query->with($relations)->orderByDesc('id')->paginate($qtd);
+            } else {
+                $dados = $query->orderByDesc('id')->paginate($qtd);
+            }
+
+            return $dados->items();
+        }
+
+        return request();
     }
 }

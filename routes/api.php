@@ -26,6 +26,7 @@ Route::get('/carros/search', 'Api\CarroController@search')->middleware('auth:api
 Route::get('/marcas/search', 'Api\MarcaController@search')->middleware('auth:api');
 Route::get('/estoques/search', 'Api\EstoqueController@search')->middleware('auth:api');
 Route::get('/interesses/search', 'Api\InteresseController@search')->middleware('auth:api');
+Route::post('/interesses/search', 'Api\InteresseController@advancedSearch'); // ->middleware('auth:api');
 
 // resources
 Route::middleware('auth:api')->resource('marcas', 'Api\MarcaController');
