@@ -9,9 +9,9 @@ use App\Cliente;
 use App\Http\Controllers\Controller;
 use App\Interesse;
 use App\OpcaoCaracteristica;
-use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+
+const IGNORE = ['(', ')', '[', ']', ',', '.', "INT", "MODELO"];
 
 class ContatoController extends Controller
 {
@@ -38,12 +38,7 @@ class ContatoController extends Controller
         ]);
         $interesse->save();
 
-        $ignorar = [
-            "INT",
-            "MODELO"
-        ];
-
-        $palavras = array_slice(explode(" ", str_replace($ignorar, "", strtoupper($nome))), 1);
+        $palavras = array_slice(explode(" ", str_replace(IGNORE, "", strtoupper($nome))), 1);
 
         // try {
         [$carros, $caracteristicas, $nao_encontradas, $usadas] = ContatoController::parse($palavras, $interesse);
@@ -62,10 +57,6 @@ class ContatoController extends Controller
             'nao_encontradas' => $nao_encontradas,
             'usadas' => $usadas
         ];
-    }
-
-    public function store($request)
-    {
     }
 
     public static function parse($palavras, $interesse)
