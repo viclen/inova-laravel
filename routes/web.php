@@ -30,6 +30,9 @@ Route::resource('interesses', 'InteresseController')->middleware('auth');
 Route::resource('caracteristicas', 'CaracteristicaController')->middleware('auth');
 Route::resource('usuarios', 'UserController')->middleware('auth')->name('index', 'users');
 
+// download
+Route::get('estoques/{id}/matches/download', 'EstoqueController@downloadMatches')->middleware('auth');
+
 // search
 Route::get('/clientes/search/{search}', 'ClienteController@search')->middleware('auth');
 Route::get('/carros/search/{search}', 'CarroController@search')->middleware('auth');

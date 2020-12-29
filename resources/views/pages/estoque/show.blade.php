@@ -36,7 +36,14 @@
     <div class="row justify-content-center">
         <div class="col">
             <div class="card">
-                <div class="card-header" id="interesses">Interesses</div>
+                <div class="card-header" id="interesses">
+                    Interesses
+
+                    <a href="/estoques/{{ $estoque->id }}/matches/download" class="btn btn-sm btn-success float-right">
+                        Baixar CSV
+                        <i class="fas fa-download"></i>
+                    </a>
+                </div>
 
                 <div class="card-body">
                     <div class="row mb-2">

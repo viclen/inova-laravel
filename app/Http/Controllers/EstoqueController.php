@@ -11,6 +11,7 @@ use App\Marca;
 use App\Match;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 
 class EstoqueController extends Controller
@@ -328,5 +329,37 @@ class EstoqueController extends Controller
         return view('pages.estoque.index', [
             'dados' => $estoques,
         ]);
+    }
+
+    public function downloadMatches(int $id)
+    {
+        $headers = array(
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=contatos.csv",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        );
+
+        $estoque = Estoque::with(['caracteristicas.descricao', 'carro.marca'])->find($id);
+
+        foreach ($estoque->caracteristicas as $i => $_) {
+            $estoque->caracteristicas[$i]->valor_opcao;
+        }
+
+        $matches = Match::findInteresses($estoque);
+        $columns = array('Nome', 'Telefone');
+
+        $callback = function () use ($matches, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($matches as $match) {
+                fputcsv($file, array($match->interesse->cliente->nome, $match->interesse->cliente->telefone));
+            }
+            fclose($file);
+        };
+
+        return Response::stream($callback, 200, $headers);
     }
 }
