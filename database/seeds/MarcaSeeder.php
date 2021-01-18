@@ -14,27 +14,27 @@ class MarcaSeeder extends Seeder
      */
     public function run()
     {
-        DB::unprepared(Storage::get('marcas.sql'));
+        // DB::unprepared(Storage::get('marcas.sql'));
 
-        return;
+        // return;
 
-        // $marcas = [];
+        $marcas = [];
 
-        // $data = Storage::get('marcas_carros.json');
+        $data = Storage::get('marcas_carros.json');
 
-        // $array_marcas = json_decode($data, true);
+        $array_marcas = json_decode($data, true);
 
-        // foreach ($array_marcas as $marca) {
-        //     $marcas[] = [
-        //         'nome' => $marca['name'],
-        //         'fipe_id' => $marca['id'],
-        //         'created_at' => now(),
-        //         'updated_at' => now(),
-        //     ];
-        // }
+        foreach ($array_marcas as $marca) {
+            $marcas[] = [
+                'nome' => $marca['name'],
+                'fipe_id' => $marca['id'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
 
-        // Marca::insert($marcas);
+        Marca::insert($marcas);
 
-        // return true;
+        return true;
     }
 }
