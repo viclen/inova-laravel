@@ -12,16 +12,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-
-        $this->call(ConsertaCarrosJson::class);
-
-        return;
-
-        $this->call(MarcaSeeder::class);
-        $this->call(CarroSeeder::class);
-        $this->call(ModeloSeeder::class);
-
         DB::beginTransaction();
+
+        $this->call(ModeloSeeder::class);
+        $this->call(ConsertaCarrosJson::class);
 
         $this->call(UserSeeder::class);
         $this->call(ClienteSeeder::class);
@@ -33,9 +27,11 @@ class DatabaseSeeder extends Seeder
 
         $this->call(CaracteristicaEstoqueSeeder::class);
         $this->call(CaracteristicaInteresseSeeder::class);
-        $this->call(ConsertaCarrosJson::class);
 
         DB::commit();
+
+        // $this->call(MarcaSeeder::class);
+        // $this->call(CarroSeeder::class);
 
         // $this->call(FipeSeeder::class);
     }

@@ -1,5 +1,8 @@
 <?php
 
+use App\Carro;
+use App\Marca;
+use App\Modelo;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
@@ -13,14 +16,26 @@ class ConsertaCarrosJson extends Seeder
     public function run()
     {
         $marcas = json_decode(Storage::get('marcas_carros.json'), true);
+        $marcasSalvar = [[
+            'id' => 0,
+            'nome' => 'Outra',
+            'key' => null
+        ]];
 
         $best_carros = [];
-        $anterior = "";
         $count = 0;
 
         foreach ($marcas as $marca) {
+            $marcasSalvar[] = [
+                'id' => $marca['id'],
+                'nome' => $marca['name'],
+                'key' => $marca['key']
+            ];
+
             foreach ($marca['carros'] as $nome) {
                 $nome = $this->clearString($nome);
+
+                // echo "$nome\n";
 
                 $palavras = explode(' ', $nome);
 
@@ -40,7 +55,7 @@ class ConsertaCarrosJson extends Seeder
 
                     $idsIguais = $this->idsIguais($atual, $marca['carros']);
 
-                    if (count($idsIguais) > count($idsSalvar)) {
+                    if (count($idsIguais) >= count($idsSalvar)) {
                         $idsSalvar = $idsIguais;
                         $nomeSalvar = $atual;
                     }
@@ -51,18 +66,23 @@ class ConsertaCarrosJson extends Seeder
 
                 $novo_carro = [
                     'nome' => strtoupper(trim($nomeSalvar)),
-                    'fipe_ids' => $idsSalvar,
+                    'fipe_ids' => json_encode($idsSalvar),
                     'marca_id' => $marca['id']
                 ];
 
                 $best_carros[] = $novo_carro;
 
-                print_r($novo_carro);
-
-                if ($count > 40) return;
-
                 $count++;
             }
+        }
+
+        Marca::insert($marcasSalvar);
+        Carro::insert($best_carros);
+
+        $carros = Carro::all();
+
+        foreach ($carros as $carro) {
+            Modelo::whereIn('carro_id', json_decode($carro->fipe_ids))->update(['carro_id' => $carro->id]);
         }
     }
 
@@ -82,15 +102,17 @@ class ConsertaCarrosJson extends Seeder
 
     public function clearString($str)
     {
-        $allowed = strtoupper('1234567890qwertyuiopasdfghjklçzxcvbnm -éáâãõêóáíúà');
+        $allowed = strtoupper('1234567890qwertyuiopasdfghjklçzxcvbnm. -éáâãõêóáíúà');
 
-        $splitted = str_split($str);
+        $splitted = str_split(strtoupper($str));
 
         $result = "";
 
         foreach ($splitted as $letter) {
-            if(strpos($allowed, $letter) !== false){
+            if (($letter || $letter == 0) && strpos($allowed, $letter) !== false) {
                 $result .= $letter;
+            } else {
+                $result .= "-";
             }
         }
 

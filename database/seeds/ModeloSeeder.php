@@ -1,5 +1,6 @@
 <?php
 
+use App\Modelo;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -13,14 +14,12 @@ class ModeloSeeder extends Seeder
      */
     public function run()
     {
-        $queries = explode('INSERT', Storage::get('modelos.sql'));
+        DB::unprepared('SET FOREIGN_KEY_CHECKS=0;');
 
-        array_splice($queries, 0, 1);
+        DB::unprepared(Storage::get('modelos.sql'));
 
-        foreach ($queries as $query) {
-            DB::unprepared("INSERT $query");
-        }
+        DB::unprepared('SET FOREIGN_KEY_CHECKS=1;');
 
-        return;
+        Storage::put('modelos.json', json_encode(Modelo::all()));
     }
 }

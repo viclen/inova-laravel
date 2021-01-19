@@ -3,9 +3,7 @@
 use App\Carro;
 use App\Marca;
 use App\Modelo;
-use Illuminate\Contracts\Cache\Store;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class FipeSeeder extends Seeder
@@ -52,8 +50,13 @@ class FipeSeeder extends Seeder
             $marca->save();
 
             echo $this->tab(0) . $marca->nome . " $marca->id" . "$msg\r\n";
+
             $url = "http://fipeapi.appspot.com/api/1/carros/veiculos/$marca->id.json";
-            $carros = json_decode(file_get_contents($url), true);
+            try {
+                $carros = json_decode(file_get_contents($url), true);
+            } catch (Exception $e) {
+                continue;
+            }
             sleep(1);
 
             if ($ultimo_carro) {
@@ -74,12 +77,41 @@ class FipeSeeder extends Seeder
                 $carro = Carro::where("fipe_ids", "like", "%\"$carro_fipe_id\"%")->first();
                 $msg = "";
                 if (!$carro) {
-                    $carro = new Carro();
-                    $carro->fipe_ids = "[\"$carro_fipe_id\"]";
-                    $carro->nome = $carro_fipe['name'];
-                    $carro->marca_id = $marca->id;
-                    $carro->save();
-                    $msg = ": Novo";
+                    $nome = $this->clearString($carro_fipe['name']);
+
+                    $palavras = explode(' ', $nome);
+
+                    $atual = '';
+
+                    foreach ($palavras as $palavra) {
+                        $atual = trim($atual . ' ' . $palavra);
+
+                        $modelo = Modelo::where('nome', $marca->id)->where("nome", "like", "$atual")->first();
+
+                        if ($modelo) {
+                            $carro = Carro::find($modelo->carro_id);
+                        } else {
+                            $carro_atual = Carro::where('marca_id', $marca->id)->where(function ($query) use ($atual) {
+                                $query->where("nome", "like", "$atual")
+                                    ->orWhere("nome", "like", "$atual %");
+                            })->first();
+
+                            if ($carro_atual) {
+                                $carro = $carro_atual;
+                            }
+                        }
+                    }
+
+                    if (!$carro) {
+                        $carro = new Carro();
+                        $carro->fipe_ids = "[\"$carro_fipe_id\"]";
+                        $carro->nome = $this->clearString($carro_fipe['name']);
+                        $carro->marca_id = $marca->id;
+                        $carro->save();
+                        $msg = ": Novo";
+                    }else{
+                        $msg = ": Encontrado";
+                    }
                 }
 
                 echo $this->tab(1) . $carro->nome . "$msg\r\n";
@@ -154,7 +186,6 @@ class FipeSeeder extends Seeder
                     if ($erros_carro + 1 < $max_erros) {
                         sleep(10);
                         $erros_carro++;
-                        $cont--;
                     } else {
                         $erros_carro = 0;
                     }
@@ -193,5 +224,24 @@ class FipeSeeder extends Seeder
             $r .= "\t";
         }
         return $r;
+    }
+
+    public function clearString($str)
+    {
+        $allowed = strtoupper('1234567890qwertyuiopasdfghjklçzxcvbnm. -éáâãõêóáíúà');
+
+        $splitted = str_split(strtoupper($str));
+
+        $result = "";
+
+        foreach ($splitted as $letter) {
+            if (($letter || $letter == 0) && strpos($allowed, $letter) !== false) {
+                $result .= $letter;
+            } else {
+                $result .= "-";
+            }
+        }
+
+        return $result;
     }
 }
