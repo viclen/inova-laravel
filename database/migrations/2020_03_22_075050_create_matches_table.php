@@ -17,7 +17,7 @@ class CreateMatchesTable extends Migration
             $table->unsignedBigInteger('interesse_id');
             $table->unsignedBigInteger('estoque_id');
             $table->integer('prioridade');
-            $table->json('caracteristicas');
+            $table->text('caracteristicas');
 
             $table->primary(['interesse_id', 'estoque_id']);
 
