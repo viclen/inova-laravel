@@ -29,6 +29,7 @@ Route::resource('estoques', 'EstoqueController')->middleware('auth');
 Route::resource('interesses', 'InteresseController')->middleware('auth');
 Route::resource('caracteristicas', 'CaracteristicaController')->middleware('auth');
 Route::resource('usuarios', 'UserController')->middleware('auth')->name('index', 'users');
+Route::resource('fipe', 'FipeController')->middleware('auth');
 
 // download
 Route::get('estoques/{id}/matches/download', 'EstoqueController@downloadMatches')->middleware('auth');

@@ -1,15 +1,17 @@
 <template>
   <div>
-    <div :class="{
+    <div
+      :class="{
         'loading-background': true,
         show: loading,
-    }">
+      }"
+    >
       <div class="loading-container">
         <b-spinner type="grow" label="Loading..."></b-spinner>
       </div>
     </div>
 
-    <div v-if="!isRoute('login')" :class="{ 'sidebar': true, 'mostrar': mostrar }">
+    <div v-if="!isRoute('login')" :class="{ sidebar: true, mostrar: mostrar }">
       <div class="sidebar-container">
         <button class="toggle" @click="mostrar = !mostrar">
           <fa-icon v-if="mostrar" icon="chevron-left" />
@@ -25,11 +27,10 @@
             <template v-slot:button-content>
               <fa-icon icon="user" />
               &nbsp;
-              {{user.name}}
+              {{ user.name }}
             </template>
             <b-dropdown-item href="/alterarsenha">
-              <fa-icon icon="lock" />&nbsp;
-              Alterar Senha
+              <fa-icon icon="lock" />&nbsp; Alterar Senha
             </b-dropdown-item>
 
             <a
@@ -37,45 +38,79 @@
               href="/logout"
               onclick="event.preventDefault();document.getElementById('logout-form').submit();"
             >
-              <fa-icon icon="sign-out-alt" />&nbsp;
-              Sair
+              <fa-icon icon="sign-out-alt" />&nbsp; Sair
             </a>
           </b-dropdown>
         </div>
 
-        <form id="logout-form" action="/logout" method="POST" style="display: none;">
+        <form
+          id="logout-form"
+          action="/logout"
+          method="POST"
+          style="display: none"
+        >
           <input type="hidden" name="_token" :value="csrf" />
         </form>
 
         <div class="menu">
-          <a @click="go('/home')" :class="{ 'menu-item': true, 'active': isRoute('home') }">
+          <a
+            @click="go('/home')"
+            :class="{
+              'menu-item': true,
+              active: isRoute('home') || isRoute(''),
+            }"
+          >
             <fa-icon icon="home" class="item-icon" />Home
           </a>
           <a
             @click="go('/interesses')"
-            :class="{ 'menu-item': true, 'active': isRoute('interesses') }"
+            :class="{ 'menu-item': true, active: isRoute('interesses') }"
           >
             <fa-icon icon="address-book" class="item-icon" />Interesses
           </a>
-          <a @click="go('/clientes')" :class="{ 'menu-item': true, 'active': isRoute('clientes') }">
+          <a
+            @click="go('/clientes')"
+            :class="{ 'menu-item': true, active: isRoute('clientes') }"
+          >
             <fa-icon icon="users" class="item-icon" />Clientes
           </a>
-          <a @click="go('/carros')" :class="{ 'menu-item': true, 'active': isRoute('carros') && !isRoute('clientes') }">
+          <a
+            @click="go('/carros')"
+            :class="{
+              'menu-item': true,
+              active: isRoute('carros') && !isRoute('clientes'),
+            }"
+          >
             <fa-icon icon="car" class="item-icon" />Carros
           </a>
-          <a @click="go('/marcas')" :class="{ 'menu-item': true, 'active': isRoute('marcas') }">
+          <a
+            @click="go('/marcas')"
+            :class="{ 'menu-item': true, active: isRoute('marcas') }"
+          >
             <fa-icon icon="ad" class="item-icon" />Marcas
           </a>
-          <a @click="go('/estoques')" :class="{ 'menu-item': true, 'active': isRoute('estoques') }">
+          <a
+            @click="go('/estoques')"
+            :class="{ 'menu-item': true, active: isRoute('estoques') }"
+          >
             <fa-icon icon="box-open" class="item-icon" />Estoques
           </a>
           <a
+            @click="go('/fipe')"
+            :class="{ 'menu-item': true, active: isRoute('fipe') }"
+          >
+            <fa-icon icon="dollar-sign" class="item-icon" />Fipe
+          </a>
+          <a
             @click="go('/caracteristicas')"
-            :class="{ 'menu-item': true, 'active': isRoute('caracteristicas') }"
+            :class="{ 'menu-item': true, active: isRoute('caracteristicas') }"
           >
             <fa-icon icon="project-diagram" class="item-icon" />Características
           </a>
-          <a @click="go('/usuarios')" :class="{ 'menu-item': true, 'active': isRoute('usuarios') }">
+          <a
+            @click="go('/usuarios')"
+            :class="{ 'menu-item': true, active: isRoute('usuarios') }"
+          >
             <fa-icon icon="user" class="item-icon" />Usuários
           </a>
         </div>
@@ -85,14 +120,18 @@
             href="http://autosavestudio.com"
             class="text-capitalize text-success d-block text-decoration-none"
             target="_blank"
-          >AutoSave Studio</a>
+            >AutoSave Studio</a
+          >
         </div>
       </div>
     </div>
 
     <div
       v-if="!loading"
-      :class="{ 'sidebar-margin': !isRoute('login'), 'mostrar': mostrar && !isRoute('login') }"
+      :class="{
+        'sidebar-margin': !isRoute('login'),
+        mostrar: mostrar && !isRoute('login'),
+      }"
     >
       <slot></slot>
     </div>
@@ -105,7 +144,7 @@ export default {
   data() {
     return {
       mostrar: false,
-      loading: true
+      loading: true,
     };
   },
   mounted() {
@@ -116,14 +155,15 @@ export default {
   },
   methods: {
     isRoute(name) {
+      if (!name) return window.location.href.endsWith("/");
       return window.location.href.includes("/" + name);
     },
     go(url) {
       this.mostrar = false;
       this.loading = true;
       setTimeout(() => (window.location = url), 400);
-    }
-  }
+    },
+  },
 };
 </script>
 
