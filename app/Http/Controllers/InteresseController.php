@@ -313,7 +313,7 @@ class InteresseController extends Controller
             'interesse' => $interesse,
             'matches' => $matches,
             'highlight' => true,
-            'relacionamentos' => ['carro.marca', 'caracteristicas'],
+            'relacionamentos' => ['carro.marca', 'caracteristicas', 'categoria'],
             'ignorar' => $ignorar,
         ]);
     }

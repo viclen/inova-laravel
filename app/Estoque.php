@@ -31,7 +31,7 @@ class Estoque extends Model
         return $types;
     }
 
-    public function dadosTabela(array $relacionamentos = ['carro', 'caracteristicas'], $ignorar = [])
+    public function dadosTabela(array $relacionamentos = ['carro', 'caracteristicas', 'categoria'], $ignorar = [])
     {
         $dados = [];
 
@@ -64,6 +64,13 @@ class Estoque extends Model
                         }
 
                         $dados[$caracteristica->descricao->nome] = $valor;
+                    }
+                }
+            } elseif (strpos($relacao, 'categoria') !== false && array_search('categoria', $ignorar) === false) {
+                if ($this->carro->categoria_id) {
+                    $categoria = OpcaoCaracteristica::where([['caracteristica_id', 2], ['ordem', $this->carro->categoria_id]])->first();
+                    if ($categoria) {
+                        $dados['categoria'] = $categoria->valor;
                     }
                 }
             }

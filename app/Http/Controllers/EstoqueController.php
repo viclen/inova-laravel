@@ -168,7 +168,7 @@ class EstoqueController extends Controller
 
         return view('pages.estoque.index', [
             'estoques' => $dados->items(),
-            'relacionamentos' => ['carro.marca', 'caracteristicas'],
+            'relacionamentos' => ['carro.marca', 'caracteristicas', 'categoria'],
             'ignorar' => $ignorar,
             'dados' => $dados,
             'colunas' => $colunas,
@@ -260,7 +260,7 @@ class EstoqueController extends Controller
             'estoque' => $estoque,
             'matches' => $matches,
             'highlight' => true,
-            'relacionamentos' => ['carro.marca', 'caracteristicas'],
+            'relacionamentos' => ['carro.marca', 'caracteristicas', 'categoria'],
             'ignorar' => $ignorar,
         ]);
     }

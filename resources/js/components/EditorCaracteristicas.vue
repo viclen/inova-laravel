@@ -7,10 +7,9 @@
     </div>
     <div class="row justify-content-center">
       <div class="col-12 my-2">
-        <b-checkbox
-          v-model="match_marca"
-          @change="matchMarca(match_marca)"
-        >Habilitar ligação de estoque e interesse por marca.</b-checkbox>
+        <b-checkbox v-model="match_marca" @change="matchMarca"
+          >Habilitar ligação de estoque e interesse por marca.</b-checkbox
+        >
       </div>
       <div class="col-12">
         <b-card
@@ -22,7 +21,7 @@
         >
           <template v-slot:header>
             <div @click="mostrar(i)" style="cursor: pointer">
-              {{ caracteristica.nome || '- nova caracteristica -' }}
+              {{ caracteristica.nome || "- nova caracteristica -" }}
               <span class="float-right">
                 <button
                   class="btn btn-sm btn-outline-danger mr-2"
@@ -30,14 +29,21 @@
                 >
                   <fa-icon icon="times" />
                 </button>
-                <fa-icon :icon="caracteristica.mostrar ? 'chevron-up' : 'chevron-down'" />
+                <fa-icon
+                  :icon="caracteristica.mostrar ? 'chevron-up' : 'chevron-down'"
+                />
               </span>
             </div>
           </template>
           <div
-            :class="{ 'dados-caracteristica': true, 'mostrar': !!caracteristica.mostrar }"
+            :class="{
+              'dados-caracteristica': true,
+              mostrar: !!caracteristica.mostrar,
+            }"
             :style="{
-              'max-height': caracteristica.mostrar ? 160 + (caracteristica.opcoes.length * 45) + 'px' : 0
+              'max-height': caracteristica.mostrar
+                ? 160 + caracteristica.opcoes.length * 45 + 'px'
+                : 0,
             }"
           >
             <b-input-group prepend="Nome">
@@ -59,11 +65,16 @@
 
             <div class="row mt-2">
               <div class="col pr-0">
-                <b-input-group prepend="Tipo" @change="salvarCaracteristica(caracteristica)">
+                <b-input-group
+                  prepend="Tipo"
+                  @change="salvarCaracteristica(caracteristica)"
+                >
                   <b-select v-model="caracteristica.tipo">
                     <b-select-option value="0">Texto</b-select-option>
                     <b-select-option value="1">Número</b-select-option>
-                    <b-select-option value="2">Valor decimal (R$)</b-select-option>
+                    <b-select-option value="2"
+                      >Valor decimal (R$)</b-select-option
+                    >
                     <b-select-option value="3">Opção</b-select-option>
                     <b-select-option value="4">Sim e não</b-select-option>
                   </b-select>
@@ -99,7 +110,12 @@
                   <b-input
                     type="text"
                     v-model="opcao.valor"
-                    :ref="'caracteristica' + caracteristica.id + 'opcao' + opcao.ordem"
+                    :ref="
+                      'caracteristica' +
+                      caracteristica.id +
+                      'opcao' +
+                      opcao.ordem
+                    "
                     @change="salvarCaracteristica(caracteristica)"
                   />
                   <b-input-group-append>
@@ -114,9 +130,11 @@
               </div>
 
               <div class="text-center mt-1">
-                <button class="btn btn-primary" @click="adicionarOpcao(caracteristica)">
-                  <fa-icon icon="plus" />&nbsp;
-                  Adicionar opcao
+                <button
+                  class="btn btn-primary"
+                  @click="adicionarOpcao(caracteristica)"
+                >
+                  <fa-icon icon="plus" />&nbsp; Adicionar opcao
                 </button>
               </div>
             </div>
@@ -159,8 +177,7 @@
         </b-card>
         <div class="text-center mb-5">
           <button class="btn btn-success" @click="adicionarCaracteristica()">
-            <fa-icon icon="plus" />&nbsp;
-            Adicionar característica
+            <fa-icon icon="plus" />&nbsp; Adicionar característica
           </button>
         </div>
       </div>
@@ -174,7 +191,7 @@ export default {
   data() {
     return {
       caracteristicas: [],
-      match_marca: false
+      match_marca: false,
     };
   },
   mounted() {
@@ -194,23 +211,24 @@ export default {
     }
   },
   methods: {
-    matchMarca(m) {
+    matchMarca() {
       let data = [
         {
           grupo: "match",
           nome: "marca",
-          valor: !this.match_marca ? 1 : 0
-        }
+          valor: !!this.match_marca ? 1 : 0,
+        },
       ];
       axios
         .post("/regras", {
-          data
+          data,
         })
-        .then(r => {
+        .then((r) => {
+          console.log(r);
           this.$toasted.success("Salva", {
             theme: "toasted-primary",
             position: "bottom-right",
-            duration: 2000
+            duration: 2000,
           });
         });
     },
@@ -222,11 +240,11 @@ export default {
       );
     },
     salvarCaracteristica(caracteristica) {
-      axios.post("/caracteristicas", caracteristica).then(r => {
+      axios.post("/caracteristicas", caracteristica).then((r) => {
         this.$toasted.success("Salva", {
           theme: "toasted-primary",
           position: "bottom-right",
-          duration: 2000
+          duration: 2000,
         });
       });
     },
@@ -267,7 +285,7 @@ export default {
       let opcao = {
         caracteristica_id: caracteristica.id,
         ordem: caracteristica.opcoes.length,
-        valor: ""
+        valor: "",
       };
 
       caracteristica.opcoes.push(opcao);
@@ -286,15 +304,15 @@ export default {
         valor_padrao: null,
         tipo: 0,
         opcoes: [],
-        mostrar: true
+        mostrar: true,
       };
 
-      axios.post("/caracteristicas", data).then(r => {
+      axios.post("/caracteristicas", data).then((r) => {
         this.caracteristicas.push(r.data);
         this.$toasted.success("Adicionada", {
           theme: "toasted-primary",
           position: "bottom-right",
-          duration: 2000
+          duration: 2000,
         });
 
         this.$nextTick(() => this.$scrollTo("#caracteristica" + r.data.id));
@@ -302,25 +320,27 @@ export default {
     },
     removerCaracteristica(i) {
       this.caracteristicas[i].mostrar = true;
-      axios.delete("/caracteristicas/" + this.caracteristicas[i].id).then(r => {
-        if (r.data.status == 1) {
-          this.caracteristicas.splice(i, 1);
-          this.$toasted.success("Removida", {
-            theme: "toasted-primary",
-            position: "bottom-right",
-            duration: 2000
-          });
-          this.$forceUpdate();
-        } else {
-          this.$toasted.error(r.data.error, {
-            theme: "toasted-primary",
-            position: "bottom-right",
-            duration: 5000
-          });
-        }
-      });
-    }
-  }
+      axios
+        .delete("/caracteristicas/" + this.caracteristicas[i].id)
+        .then((r) => {
+          if (r.data.status == 1) {
+            this.caracteristicas.splice(i, 1);
+            this.$toasted.success("Removida", {
+              theme: "toasted-primary",
+              position: "bottom-right",
+              duration: 2000,
+            });
+            this.$forceUpdate();
+          } else {
+            this.$toasted.error(r.data.error, {
+              theme: "toasted-primary",
+              position: "bottom-right",
+              duration: 5000,
+            });
+          }
+        });
+    },
+  },
 };
 </script>
 
