@@ -21,6 +21,7 @@ class CreateCarrosTable extends Migration
             $table->unsignedBigInteger('marca_id')->nullable();
             $table->integer('uso')->default(0);
             $table->text('fipe_ids')->nullable();
+            $table->unsignedBigInteger('categoria_id')->nullable();
             $table->timestamps();
 
             $table->foreign('marca_id')->references('id')->on('marcas')->onDelete('cascade');

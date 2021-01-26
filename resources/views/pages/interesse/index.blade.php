@@ -175,14 +175,14 @@
 @section('scripts')
 <script type="text/javascript">
     document.onreadystatechange = () => {
-        for (let i = 0; i < document.getElementsByClassName('search-coluna').length; i++) {
-            document.getElementsByClassName('search-coluna')[i].addEventListener("change", function() {
+        for (let i = 0; i < document.querySelectorAll('.search-coluna').length; i++) {
+            document.querySelectorAll('.search-coluna')[i].addEventListener("change", function() {
                 document.querySelector("form#filtros").submit();
             });
         }
 
-        for (let i = 0; i < document.getElementsByClassName('btn-remove-filter').length; i++) {
-            document.getElementsByClassName('btn-remove-filter')[i].addEventListener("click", function() {
+        for (let i = 0; i < document.querySelectorAll('.btn-remove-filter').length; i++) {
+            document.querySelectorAll('.btn-remove-filter')[i].addEventListener("click", function() {
                 document.querySelector('[name="' + this.getAttribute('for') + '"]').value = "";
                 document.querySelector('[name="' + this.getAttribute('for') + '"]').selectedIndex = 0;
                 document.querySelector("form#filtros").submit();

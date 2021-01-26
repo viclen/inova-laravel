@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Caracteristica;
 use App\Carro;
 use App\Marca;
 use Illuminate\Http\Request;
@@ -26,7 +27,11 @@ class CarroController extends Controller
 
         $dados = Carro::leftJoin('estoques', 'estoques.carro_id', 'carros.id')
             ->leftJoin('marcas', 'marcas.id', 'carros.marca_id')
-            ->selectRaw("carros.*, marcas.nome as marca, count(estoques.id) as estoque")
+            ->leftJoin('opcao_caracteristicas', function ($join) {
+                $join->on('opcao_caracteristicas.ordem', 'carros.categoria_id')
+                    ->where('opcao_caracteristicas.caracteristica_id', 2);
+            })
+            ->selectRaw("carros.*, marcas.nome as marca, count(estoques.id) as estoque, opcao_caracteristicas.valor as categoria")
             ->groupBy('carros.id')
             ->orderByDesc('carros.uso')
             ->orderByDesc('estoque')
@@ -45,10 +50,20 @@ class CarroController extends Controller
      */
     public function create()
     {
+        $caracteristica = Caracteristica::with('opcoes')->where("nome", "categoria")->first();
+
+        $tipos = (new Carro)->getTypes();
+
         return view('pages.carro.create', [
-            'tipos' => (new Carro)->getTypes(),
+            'tipos' => $tipos,
             'opcoes' => [
                 'marcas' => Marca::select(["id", "nome"])->get(),
+                'categorias' => array_map(function ($opcao) {
+                    return [
+                        'id' => $opcao['ordem'],
+                        'nome' => $opcao['valor']
+                    ];
+                }, $caracteristica->opcoes->toArray())
             ]
         ]);
     }
@@ -64,6 +79,8 @@ class CarroController extends Controller
         $validator = Validator::make($request->all(), [
             'nome' => 'required',
             'marca_id' => 'required',
+            'uso' => '',
+            'categoria_id' => ''
         ]);
 
         if ($validator->fails()) {
@@ -127,10 +144,18 @@ class CarroController extends Controller
      */
     public function edit(Carro $carro)
     {
+        $caracteristica = Caracteristica::with('opcoes')->where("nome", "categoria")->first();
+
         return view('pages.carro.edit', [
             'tipos' => (new Carro)->getTypes(),
             'opcoes' => [
                 'marcas' => Marca::select(["id", "nome"])->get(),
+                'categorias' => array_map(function ($opcao) {
+                    return [
+                        'id' => $opcao['ordem'],
+                        'nome' => $opcao['valor']
+                    ];
+                }, $caracteristica->opcoes->toArray())
             ],
             'dados' => $carro,
         ]);
@@ -148,6 +173,8 @@ class CarroController extends Controller
         $validator = Validator::make($request->all(), [
             'nome' => 'required',
             'marca_id' => 'required',
+            'uso' => '',
+            'categoria_id' => ''
         ]);
 
         if ($validator->fails()) {
@@ -158,6 +185,8 @@ class CarroController extends Controller
         } else {
             $carro->nome = $request['nome'];
             $carro->marca_id = $request['marca_id'];
+            $carro->uso = strlen($request['uso']) ? $request['uso'] : $carro->uso;
+            $carro->categoria_id = $request['categoria_id'];
 
             if ($carro->save()) {
                 return [

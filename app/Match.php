@@ -38,7 +38,9 @@ class Match extends Model
         $matches = [];
         $num_caracteristicas = count($estoque->caracteristicas) ?: 1;
 
-        $int_carro = Interesse::where('carro_id', $estoque->carro_id)->get();
+        $int_carro = Interesse::whereHas('carro', function ($query) use ($estoque) {
+            $query->where('categoria_id', $estoque->carro->categoria_id);
+        })->orWhere('carro_id', $estoque->carro_id)->get();
         foreach ($int_carro as $interesse) {
             $matches[$interesse->id] = [
                 'prioridade' => $num_caracteristicas * 2,
@@ -46,30 +48,30 @@ class Match extends Model
             ];
         }
 
-        $regra_marca = Regra::where([
-            ['grupo', 'match'],
-            ['nome', 'marca']
-        ])->first();
-        $match_marca = $regra_marca ? $regra_marca->valor : 1;
-        if ($match_marca && $estoque->carro && $estoque->carro->marca_id) {
-            $int_marca = Interesse::join('carros', 'carros.id', 'interesses.carro_id')
-                ->where('carros.marca_id', $estoque->carro->marca_id)
-                ->whereNotIn('interesses.id', array_keys($matches))
-                ->select(['interesses.id'])
-                ->get();
+        // $regra_marca = Regra::where([
+        //     ['grupo', 'match'],
+        //     ['nome', 'marca']
+        // ])->first();
+        // $match_marca = $regra_marca ? $regra_marca->valor : 1;
+        // if ($match_marca && $estoque->carro && $estoque->carro->marca_id) {
+        //     $int_marca = Interesse::join('carros', 'carros.id', 'interesses.carro_id')
+        //         ->where('carros.marca_id', $estoque->carro->marca_id)
+        //         ->whereNotIn('interesses.id', array_keys($matches))
+        //         ->select(['interesses.id'])
+        //         ->get();
 
-            foreach ($int_marca as $interesse) {
-                if (isset($matches[$interesse->id])) {
-                    $matches[$interesse->id]['prioridade']++;
-                    $matches[$interesse->id]['caracteristicas'][] = 'marca';
-                } else {
-                    $matches[$interesse->id] = [
-                        'caracteristicas' => ['marca'],
-                        'prioridade' => 1
-                    ];
-                }
-            }
-        }
+        //     foreach ($int_marca as $interesse) {
+        //         if (isset($matches[$interesse->id])) {
+        //             $matches[$interesse->id]['prioridade']++;
+        //             $matches[$interesse->id]['caracteristicas'][] = 'marca';
+        //         } else {
+        //             $matches[$interesse->id] = [
+        //                 'caracteristicas' => ['marca'],
+        //                 'prioridade' => 1
+        //             ];
+        //         }
+        //     }
+        // }
 
         $regra = Regra::where([
             ['grupo', 'valor'],
@@ -177,7 +179,9 @@ class Match extends Model
         $matches = [];
         $num_caracteristicas = count($interesse->caracteristicas) ?: 1;
 
-        $est_carro = Estoque::where('carro_id', $interesse->carro_id)->get();
+        $est_carro = Estoque::whereHas('carro', function ($query) use ($interesse) {
+            $query->where('categoria_id', $interesse->carro->categoria_id);
+        })->orWhere('carro_id', $interesse->carro_id)->get();
         foreach ($est_carro as $estoque) {
             $matches[$estoque->id] = [
                 'prioridade' => $num_caracteristicas * 2,
@@ -185,31 +189,31 @@ class Match extends Model
             ];
         }
 
-        $regra_marca = Regra::where([
-            ['grupo', 'match'],
-            ['nome', 'marca']
-        ])->first();
-        $match_marca = $regra_marca ? $regra_marca->valor : 1;
+        // $regra_marca = Regra::where([
+        //     ['grupo', 'match'],
+        //     ['nome', 'marca']
+        // ])->first();
+        // $match_marca = $regra_marca ? $regra_marca->valor : 1;
 
-        if ($match_marca && $interesse->carro && $interesse->carro->marca_id) {
-            $est_marca = Estoque::join('carros', 'carros.id', 'estoques.carro_id')
-                ->where('carros.marca_id', $interesse->carro->marca_id)
-                ->whereNotIn('estoques.id', array_keys($matches))
-                ->select(['estoques.id'])
-                ->get();
+        // if ($match_marca && $interesse->carro && $interesse->carro->marca_id) {
+        //     $est_marca = Estoque::join('carros', 'carros.id', 'estoques.carro_id')
+        //         ->where('carros.marca_id', $interesse->carro->marca_id)
+        //         ->whereNotIn('estoques.id', array_keys($matches))
+        //         ->select(['estoques.id'])
+        //         ->get();
 
-            foreach ($est_marca as $estoque) {
-                if (isset($matches[$estoque->id])) {
-                    $matches[$estoque->id]['prioridade']++;
-                    $matches[$estoque->id]['caracteristicas'][] = 'marca';
-                } else {
-                    $matches[$estoque->id] = [
-                        'caracteristicas' => ['marca'],
-                        'prioridade' => 1
-                    ];
-                }
-            }
-        }
+        //     foreach ($est_marca as $estoque) {
+        //         if (isset($matches[$estoque->id])) {
+        //             $matches[$estoque->id]['prioridade']++;
+        //             $matches[$estoque->id]['caracteristicas'][] = 'marca';
+        //         } else {
+        //             $matches[$estoque->id] = [
+        //                 'caracteristicas' => ['marca'],
+        //                 'prioridade' => 1
+        //             ];
+        //         }
+        //     }
+        // }
 
         $regra = Regra::where([
             ['grupo', 'valor'],

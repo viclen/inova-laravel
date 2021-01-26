@@ -11,6 +11,7 @@ class Carro extends Model
         'nome',
         'fipe_id',
         'marca_id',
+        'categoria_id'
     ];
 
     protected $hidden = [
@@ -21,6 +22,11 @@ class Carro extends Model
     public function marca()
     {
         return $this->belongsTo(Marca::class);
+    }
+
+    public function categoria()
+    {
+        return $this->belongsTo(OpcaoCaracteristica::class, "categoria_id", "ordem_id")->where('caracteristica_id', 2);
     }
 
     public function estoques()

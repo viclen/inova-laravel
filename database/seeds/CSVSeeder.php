@@ -2,10 +2,12 @@
 
 use App\Caracteristica;
 use App\CaracteristicaCarroCliente;
+use App\CaracteristicaEstoque;
 use App\CaracteristicaInteresse;
 use App\Carro;
 use App\CarroCliente;
 use App\Cliente;
+use App\Estoque;
 use App\Interesse;
 use App\OpcaoCaracteristica;
 use Illuminate\Database\Seeder;
@@ -84,12 +86,16 @@ class CSVSeeder extends Seeder
     {
         DB::unprepared('SET FOREIGN_KEY_CHECKS=0;');
         Cliente::truncate();
+        Estoque::truncate();
+        CaracteristicaEstoque::truncate();
         Interesse::truncate();
         CaracteristicaInteresse::truncate();
         CaracteristicaCarroCliente::truncate();
         CarroCliente::truncate();
 
         $tabela = $this->readCSV('dados.csv', 1);
+
+        $ultima_data = '2015-01-01';
 
         foreach ($tabela as $i => $linha) {
             $nome = clearString($linha[COLUNAS['nome']]);
@@ -100,13 +106,22 @@ class CSVSeeder extends Seeder
 
             $telefone = $linha[COLUNAS['telefone']];
             $carro = $linha[COLUNAS['carro']];
+            $data = $this->converterData($linha[COLUNAS['data']]);
+
+            if ($data) {
+                $ultima_data = $data;
+            } else {
+                $data = $ultima_data;
+            }
 
             $cliente = Cliente::where('telefone', $telefone)->first();
 
             if (!$cliente) {
                 $cliente = Cliente::create([
                     'nome' => $nome,
-                    'telefone' => $telefone
+                    'telefone' => $telefone,
+                    'created_at' => $data,
+                    'updated_at' => $data
                 ]);
             }
 
@@ -117,7 +132,7 @@ class CSVSeeder extends Seeder
 
             $palavras = explode(" ", clearString(strtoupper($carro)));
 
-            [$carros, $caracteristicas, $nao_encontradas, $usadas] = $this->parse($palavras, $interesse);
+            [$carros, $caracteristicas, $_nao_encontradas, $_usadas] = $this->parse($palavras, $interesse);
 
             if (count($carros) > 0) {
                 $carro = $carros[0];
@@ -127,6 +142,23 @@ class CSVSeeder extends Seeder
             }
         }
         DB::unprepared('SET FOREIGN_KEY_CHECKS=1;');
+    }
+
+    public function converterData($entrada)
+    {
+        $splitted = explode("/", $entrada);
+
+        if (count($splitted) == 3) {
+            if (
+                strlen($splitted[0]) == 2 && is_numeric($splitted[0]) &&
+                strlen($splitted[1]) == 2 && is_numeric($splitted[1]) &&
+                strlen($splitted[2]) == 4 && is_numeric($splitted[2])
+            ) {
+                return "$splitted[2]-$splitted[1]-$splitted[0]";
+            }
+        }
+
+        return null;
     }
 
     public function readCSV($filename, $header = 1)
