@@ -42,7 +42,7 @@ class Match extends Model
         foreach ($int_carro as $interesse) {
             $matches[$interesse->id] = [
                 'prioridade' => $num_caracteristicas * 2,
-                'caracteristicas' => ['carro', 'marca'],
+                'caracteristicas' => ['carro', 'marca', 'categoria'],
             ];
         }
 
@@ -198,7 +198,7 @@ class Match extends Model
         foreach ($est_carro as $estoque) {
             $matches[$estoque->id] = [
                 'prioridade' => $num_caracteristicas * 2,
-                'caracteristicas' => ['carro', 'marca'],
+                'caracteristicas' => ['carro', 'marca', 'categoria'],
             ];
         }
 

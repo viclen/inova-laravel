@@ -2,10 +2,11 @@
 
 namespace App;
 
-class OpcaoCaracteristica extends CompositeKeyModel
+use Illuminate\Database\Eloquent\Model;
+
+class OpcaoCaracteristica extends Model
 {
-    protected $primaryKey = ['caracteristica_id', 'ordem'];
-    protected $fillable = ['caracteristica_id', 'ordem', 'valor'];
+    protected $fillable = ['id', 'caracteristica_id', 'ordem', 'valor'];
     // protected $table = "opcao_caracteristicas";
 
     public function caracteristica()

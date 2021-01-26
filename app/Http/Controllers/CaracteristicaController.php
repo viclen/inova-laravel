@@ -9,6 +9,7 @@ use App\CaracteristicaInteresse;
 use App\OpcaoCaracteristica;
 use App\Regra;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use SebastianBergmann\Environment\Console;
 use Throwable;
 
@@ -68,10 +69,27 @@ class CaracteristicaController extends Controller
             $caracteristica->save();
 
             if ($caracteristica->tipo == 3) {
-                OpcaoCaracteristica::where('caracteristica_id', $caracteristica->id)->delete();
+                $opcoes_atuais = OpcaoCaracteristica::where('caracteristica_id', $caracteristica->id)->get();
+                $opcoes_novas = $request['opcoes'];
 
-                if (count($request['opcoes'])) {
-                    OpcaoCaracteristica::insert($request['opcoes']);
+                foreach ($opcoes_novas as &$opcao_nova) {
+                    if (!isset($opcao_nova['id']) || !$opcao_nova['id']) {
+                        $opcao_nova['id'] = DB::table('opcao_caracteristicas')->insertGetId($opcao_nova);
+                    }
+                }
+
+                foreach ($opcoes_atuais as $opcao_atual) {
+                    $found = false;
+                    foreach ($opcoes_novas as $opcao_nova) {
+                        if (isset($opcao_nova['id']) && $opcao_atual->id == $opcao_nova['id']) {
+                            $found = true;
+                            unset($opcao_nova['id']);
+                            DB::table('opcao_caracteristicas')->where('id', $opcao_atual->id)->update($opcao_nova);
+                        }
+                    }
+                    if (!$found) {
+                        $opcao_atual->delete();
+                    }
                 }
             }
 

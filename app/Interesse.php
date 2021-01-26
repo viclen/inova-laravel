@@ -75,33 +75,37 @@ class Interesse extends Model
                 }
             } elseif (strpos($relacao, 'caracteristicas') !== false && array_search('caracteristicas', $ignorar) === false) {
                 foreach ($this->caracteristicas as $caracteristica) {
-                    try {
-                        if (array_search($caracteristica->descricao->nome, $ignorar) === false) {
-                            $valor = $caracteristica->valor;
-                            $comparador = "";
+                    // try {
+                    if (array_search($caracteristica->descricao->nome, $ignorar) === false) {
+                        $valor = $caracteristica->valor;
+                        $comparador = "";
 
-                            if ($caracteristica->descricao->tipo == 0) {
-                                $comparador = Interesse::COMPARADORES_TEXTO[$caracteristica->comparador];
-                            } elseif ($caracteristica->descricao->tipo == 1) {
-                                $comparador = Interesse::COMPARADORES[$caracteristica->comparador];
-                                $valor = Formatter::mil($valor);
-                            } elseif ($caracteristica->descricao->tipo == 2) {
-                                $valor = Formatter::valor($valor);
-                                $comparador = Interesse::COMPARADORES[$caracteristica->comparador];
-                            } elseif ($caracteristica->descricao->tipo == 3) {
+                        if ($caracteristica->descricao->tipo == 0) {
+                            $comparador = Interesse::COMPARADORES_TEXTO[$caracteristica->comparador];
+                        } elseif ($caracteristica->descricao->tipo == 1) {
+                            $comparador = Interesse::COMPARADORES[$caracteristica->comparador];
+                            $valor = Formatter::mil($valor);
+                        } elseif ($caracteristica->descricao->tipo == 2) {
+                            $valor = Formatter::valor($valor);
+                            $comparador = Interesse::COMPARADORES[$caracteristica->comparador];
+                        } elseif ($caracteristica->descricao->tipo == 3) {
+                            if ($caracteristica->valor_opcao) {
                                 $valor = $caracteristica->valor_opcao->valor;
-                            } elseif ($caracteristica->descricao->tipo == 4) {
-                                $valor = Formatter::boolean($valor);
+                            } else {
+                                $valor = "";
                             }
-
-                            $dados[$caracteristica->descricao->nome] = trim("$comparador $valor");
+                        } elseif ($caracteristica->descricao->tipo == 4) {
+                            $valor = Formatter::boolean($valor);
                         }
-                    } catch (Exception $e) {
+
+                        $dados[$caracteristica->descricao->nome] = trim("$comparador $valor");
                     }
+                    // } catch (Exception $e) {
+                    // }
                 }
             } elseif (strpos($relacao, 'categoria') !== false && array_search('categoria', $ignorar) === false) {
                 if ($this->carro->categoria_id) {
-                    $categoria = OpcaoCaracteristica::where([['caracteristica_id', 2], ['ordem', $this->carro->categoria_id]])->first();
+                    $categoria = OpcaoCaracteristica::find($this->carro->categoria_id)->first();
                     if ($categoria) {
                         $dados['categoria'] = $categoria->valor;
                     }

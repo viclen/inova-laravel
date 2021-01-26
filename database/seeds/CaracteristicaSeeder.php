@@ -96,7 +96,8 @@ class CaracteristicaSeeder extends Seeder
             $id++;
         }
 
-        Caracteristica::insert($caracteristicas);
+        // Caracteristica::insert($caracteristicas);
+        OpcaoCaracteristica::truncate();
         OpcaoCaracteristica::insert($opcoes);
     }
 }

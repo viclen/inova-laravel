@@ -81,8 +81,7 @@
                             </thead>
                             <tbody>
                                 @foreach ($matches as $match)
-                                <tr @if ($match->prioridade > count($estoque->caracteristicas)*2) class="bg-info
-                                    text-white" @endif>
+                                <tr>
                                     <td>
                                         {{ $match->interesse->cliente->nome }}
                                     </td>

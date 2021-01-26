@@ -120,6 +120,22 @@
                   />
                   <b-input-group-append>
                     <button
+                      class="btn btn-outline-secondary"
+                      @click="mover(caracteristica, opcao.ordem, 'cima')"
+                      :disabled="opcao.ordem == 0"
+                    >
+                      <fa-icon icon="chevron-up" />
+                    </button>
+                    <button
+                      class="btn btn-outline-secondary"
+                      @click="mover(caracteristica, opcao.ordem, 'baixo')"
+                      :disabled="
+                        opcao.ordem == caracteristica.opcoes.length - 1
+                      "
+                    >
+                      <fa-icon icon="chevron-down" />
+                    </button>
+                    <button
                       class="btn btn-danger"
                       @click="removerOpcao(caracteristica, opcao.ordem)"
                     >
@@ -224,7 +240,6 @@ export default {
           data,
         })
         .then((r) => {
-          console.log(r);
           this.$toasted.success("Salva", {
             theme: "toasted-primary",
             position: "bottom-right",
@@ -241,6 +256,9 @@ export default {
     },
     salvarCaracteristica(caracteristica) {
       axios.post("/caracteristicas", caracteristica).then((r) => {
+        this.caracteristicas[
+          this.caracteristicas.findIndex((c) => c.id == caracteristica.id)
+        ] = r.data;
         this.$toasted.success("Salva", {
           theme: "toasted-primary",
           position: "bottom-right",
@@ -249,18 +267,22 @@ export default {
       });
     },
     removerOpcao(caracteristica, ordem) {
-      caracteristica.opcoes.splice(ordem, 1);
+      if (
+        confirm("Tem certeza? Isso pode corromper outros dados relacionados.")
+      ) {
+        caracteristica.opcoes.splice(ordem, 1);
 
-      caracteristica.opcoes = caracteristica.opcoes.map((opcao, i) => {
-        opcao.ordem = i;
-        return opcao;
-      });
+        caracteristica.opcoes = caracteristica.opcoes.map((opcao, i) => {
+          opcao.ordem = i;
+          return opcao;
+        });
 
-      this.salvarCaracteristica(caracteristica);
+        this.salvarCaracteristica(caracteristica);
 
-      this.$nextTick(() =>
-        this.$scrollTo("#caracteristica" + caracteristica.id)
-      );
+        this.$nextTick(() =>
+          this.$scrollTo("#caracteristica" + caracteristica.id)
+        );
+      }
     },
     selecionarPadrao(caracteristica, valor) {
       if (caracteristica.valor_padrao == valor) {
@@ -339,6 +361,31 @@ export default {
             });
           }
         });
+    },
+    mover(caracteristica, ordem, direcao) {
+      const opcao = { ...caracteristica.opcoes[ordem] };
+
+      caracteristica.opcoes.splice(ordem, 1);
+      if (direcao == "cima") {
+        caracteristica.opcoes = [
+          ...caracteristica.opcoes.slice(0, ordem - 1),
+          opcao,
+          ...caracteristica.opcoes.slice(ordem - 1),
+        ];
+      } else {
+        caracteristica.opcoes = [
+          ...caracteristica.opcoes.slice(0, ordem + 1),
+          opcao,
+          ...caracteristica.opcoes.slice(ordem + 1),
+        ];
+      }
+
+      caracteristica.opcoes = caracteristica.opcoes.map((opcao, i) => {
+        opcao.ordem = i;
+        return opcao;
+      });
+
+      this.salvarCaracteristica(caracteristica);
     },
   },
 };

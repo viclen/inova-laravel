@@ -68,7 +68,7 @@ class Estoque extends Model
                 }
             } elseif (strpos($relacao, 'categoria') !== false && array_search('categoria', $ignorar) === false) {
                 if ($this->carro->categoria_id) {
-                    $categoria = OpcaoCaracteristica::where([['caracteristica_id', 2], ['ordem', $this->carro->categoria_id]])->first();
+                    $categoria = OpcaoCaracteristica::find($this->carro->categoria_id)->first();
                     if ($categoria) {
                         $dados['categoria'] = $categoria->valor;
                     }

@@ -14,10 +14,10 @@ class CreateOpcaoCaracteristicasTable extends Migration
     public function up()
     {
         Schema::create('opcao_caracteristicas', function (Blueprint $table) {
+            $table->bigIncrements('id');
             $table->unsignedBigInteger('caracteristica_id');
             $table->integer("ordem");
             $table->string("valor");
-            $table->primary(["caracteristica_id", "ordem"]);
 
             $table->foreign('caracteristica_id')->references('id')->on('caracteristicas')->onDelete('cascade');
         });

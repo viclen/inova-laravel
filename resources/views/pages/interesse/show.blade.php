@@ -75,8 +75,7 @@
                             </thead>
                             <tbody>
                                 @foreach ($matches as $match)
-                                <tr @if ($match->prioridade >= count($interesse->caracteristicas)*2) class="bg-info
-                                    text-white" @endif>
+                                <tr>
                                     @foreach ($interesse->dadosTabela($relacionamentos, $ignorar) as $int_coluna =>
                                     $int_valor)
                                     <td class="text-capitalize">

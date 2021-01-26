@@ -26,7 +26,7 @@ class Carro extends Model
 
     public function categoria()
     {
-        return $this->belongsTo(OpcaoCaracteristica::class, "categoria_id", "ordem_id")->where('caracteristica_id', 2);
+        return $this->belongsTo(OpcaoCaracteristica::class);
     }
 
     public function estoques()

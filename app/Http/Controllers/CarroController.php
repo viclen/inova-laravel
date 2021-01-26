@@ -28,8 +28,7 @@ class CarroController extends Controller
         $dados = Carro::leftJoin('estoques', 'estoques.carro_id', 'carros.id')
             ->leftJoin('marcas', 'marcas.id', 'carros.marca_id')
             ->leftJoin('opcao_caracteristicas', function ($join) {
-                $join->on('opcao_caracteristicas.ordem', 'carros.categoria_id')
-                    ->where('opcao_caracteristicas.caracteristica_id', 2);
+                $join->on('opcao_caracteristicas.id', 'carros.categoria_id');
             })
             ->selectRaw("carros.*, marcas.nome as marca, count(estoques.id) as estoque, opcao_caracteristicas.valor as categoria")
             ->groupBy('carros.id')
@@ -60,7 +59,7 @@ class CarroController extends Controller
                 'marcas' => Marca::select(["id", "nome"])->get(),
                 'categorias' => array_map(function ($opcao) {
                     return [
-                        'id' => $opcao['ordem'],
+                        'id' => $opcao['id'],
                         'nome' => $opcao['valor']
                     ];
                 }, $caracteristica->opcoes->toArray())
@@ -152,7 +151,7 @@ class CarroController extends Controller
                 'marcas' => Marca::select(["id", "nome"])->get(),
                 'categorias' => array_map(function ($opcao) {
                     return [
-                        'id' => $opcao['ordem'],
+                        'id' => $opcao['id'],
                         'nome' => $opcao['valor']
                     ];
                 }, $caracteristica->opcoes->toArray())

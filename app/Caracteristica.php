@@ -14,7 +14,7 @@ class Caracteristica extends Model
 
     public function opcaos()
     {
-        return $this->hasMany(OpcaoCaracteristica::class);
+        return $this->hasMany(OpcaoCaracteristica::class)->orderBy("ordem");
     }
 
     public function opcoes()
