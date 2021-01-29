@@ -131,6 +131,7 @@
                 let el;
                 if (window.mobileCheck()) {
                     el = document.getElementById("whatsWeb");
+                    el.setAttribute("target", "_blank");
                 } else {
                     el = document.getElementById("whatsMobile");
                 }
