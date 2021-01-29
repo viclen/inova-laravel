@@ -33,6 +33,15 @@
                         </div>
                     </div>
                     @endforeach
+                    <div class="form-group row">
+                        <label for="data" class="text-capitalize col-md-4 col-form-label text-md-right">
+                            Data
+                        </label>
+                        <div class="col-md-6">
+                            <input type="text" id="data" class="form-control"
+                                value="{{ date_format(date_create($interesse->updated_at), 'd/m/Y') }}" readonly />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

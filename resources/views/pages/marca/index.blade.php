@@ -8,8 +8,8 @@
                 <div class="card-header">Marcas</div>
 
                 <div class="card-body">
-                    <tabela-acoes :mostrarid="false" :dados="{{ json_encode($dados->items()) }}" :colunas="''"
-                        :controller="'marca'">
+                    <tabela-acoes :mostrarid="false" :excluir="false" :dados="{{ json_encode($dados->items()) }}"
+                        :colunas="''" :controller="'marca'">
                 </div>
             </div>
         </div>

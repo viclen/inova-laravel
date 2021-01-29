@@ -8,7 +8,7 @@
                 <div class="card-header">Carros</div>
 
                 <div class="card-body">
-                    <tabela-acoes :mostrarid="false" :dados="{{ json_encode($dados->items()) }}" :colunas="''"
+                    <tabela-acoes :mostrarid="false" :excluir="false" :dados="{{ json_encode($dados->items()) }}" :colunas="''"
                         :controller="'carro'" :colunasvalor="['fipe']">
                 </div>
             </div>

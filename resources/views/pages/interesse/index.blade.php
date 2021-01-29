@@ -107,6 +107,9 @@
                                         @endif
                                         @endforeach
                                         <th width="5px">
+                                            Data
+                                        </th>
+                                        <th width="5px">
                                             Ações
                                         </th>
                                     </tr>
@@ -129,11 +132,12 @@
                                         @endif
                                         @endforeach
                                         <td>
-                                            <a href="/interesses/{{ $interesse->id }}"
-                                                class="btn btn-secondary btn-sm text-nowrap">
-                                                Ver
-                                                <i class="fas fa-eye"></i>
-                                            </a>
+                                            {{ date_format(date_create($interesse->updated_at), 'd/m/Y') }}
+                                        </td>
+
+                                        <td>
+                                            <dropdown-acoes :ver="true" :excluir="true" :id="{{ $interesse->id }}"
+                                                controller="interesses" />
                                         </td>
                                     </tr>
                                     @endforeach

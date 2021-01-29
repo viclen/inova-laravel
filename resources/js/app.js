@@ -17,6 +17,7 @@ Vue.component('number-pattern-input', require('./components/NumberPatternInput.v
 Vue.component('sidebar', require('./components/Sidebar.vue').default);
 Vue.component('editor-caracteristicas', require('./components/EditorCaracteristicas.vue').default);
 Vue.component('consulta-fipe', require('./components/ConsultaFipe.vue').default);
+Vue.component('dropdown-acoes', require('./components/DropdownAcoes').default);
 
 import Toasted from 'vue-toasted';
 import BootstrapVue from 'bootstrap-vue';
