@@ -209,12 +209,6 @@ class CarroController extends Controller
      */
     public function destroy(Carro $carro)
     {
-        if (!count($carro->estoques) && !count($carro->interesses) && $carro->delete()) {
-            return [
-                'status' => 1
-            ];
-        }
-
         return [
             'status' => 0
         ];

@@ -145,11 +145,6 @@ class MarcaController extends Controller
      */
     public function destroy(Marca $marca)
     {
-        if (!count($marca->carros) && $marca->delete()) {
-            return [
-                'status' => 1
-            ];
-        }
         return [
             'status' => 0
         ];

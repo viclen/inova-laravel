@@ -333,14 +333,6 @@ class EstoqueController extends Controller
 
     public function downloadMatches(int $id)
     {
-        $headers = array(
-            "Content-type" => "text/csv",
-            "Content-Disposition" => "attachment; filename=contatos.csv",
-            "Pragma" => "no-cache",
-            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
-            "Expires" => "0"
-        );
-
         $estoque = Estoque::with(['caracteristicas.descricao', 'carro.marca'])->find($id);
 
         foreach ($estoque->caracteristicas as $i => $_) {
@@ -348,18 +340,63 @@ class EstoqueController extends Controller
         }
 
         $matches = Match::findInteresses($estoque);
-        $columns = array('Nome', 'Telefone');
 
-        $callback = function () use ($matches, $columns) {
+        $columns = ['Nome', 'Telefone'];
+
+        $relacionamentos = ['carro.marca', 'caracteristicas', 'categoria'];
+
+        $est_colunas = $estoque->dadosTabela($relacionamentos, []);
+        foreach ($matches as &$match) {
+            $match->int_colunas = $match->interesse->dadosTabela($relacionamentos, []);
+        }
+
+        if(count($matches)){
+            foreach ($est_colunas as $nome => $_){
+                $columns[] = $nome;
+            }
+        }
+
+        $columns[] = "Data";
+
+        $callback = function () use ($matches, $columns, $est_colunas) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
 
             foreach ($matches as $match) {
-                fputcsv($file, array($match->interesse->cliente->nome, $match->interesse->cliente->telefone));
+                $linha = [
+                    $match->interesse->cliente->nome,
+                    $match->interesse->cliente->telefone
+                ];
+
+                foreach ($est_colunas as $est_coluna => $est_valor) {
+                    $added = false;
+                    foreach ($match->int_colunas as $int_coluna => $int_valor){
+                        if ($int_coluna == $est_coluna){
+                            $linha[] = $int_valor;
+                            $added = true;
+                        }
+                    }
+                    if(!$added){
+                        $linha[] = "";
+                    }
+                }
+
+                $date = date_create($match->interesse->updated_at);
+
+                $linha[] = date_format($date, 'd/m/Y');
+
+                fputcsv($file, $linha);
             }
             fclose($file);
         };
 
+        $headers = array(
+            "Content-type" => "text/csv; charset=utf-8",
+            "Content-Disposition" => "attachment; filename=contatos.csv",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        );
         return Response::stream($callback, 200, $headers);
     }
 }

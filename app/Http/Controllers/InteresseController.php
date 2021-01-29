@@ -382,12 +382,14 @@ class InteresseController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Interesse  $interesse
+     * @param  integer  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Interesse $interesse)
+    public function destroy($id)
     {
-        if ($interesse->delete()) {
+        CaracteristicaInteresse::where("interesse_id", $id)->delete();
+
+        if (Interesse::where("id", $id)->delete()) {
             return [
                 'status' => 1
             ];
