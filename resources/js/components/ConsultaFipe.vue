@@ -286,7 +286,7 @@ export default {
         count++;
         saidacomponto = saida.charAt(i) + saidacomponto;
       }
-      saida = saidacomponto + (decimal ? "," + saida.split(",")[1] : "");
+      saida = saidacomponto + (decimal ? "," + saida.split(",")[1] : ",00");
 
       return saida;
     },
