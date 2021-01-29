@@ -128,17 +128,16 @@
     <script>
         setTimeout(() => {
             if(window.mobileCheck){
+                let el;
                 if (window.mobileCheck()) {
-                    const el = document.getElementById("whatsWeb");
-                    if (el)
-                        el.remove();
+                    el = document.getElementById("whatsWeb");
                 } else {
-                    const el = document.getElementById("whatsMobile");
+                    el = document.getElementById("whatsMobile");
+                }
                     if (el)
                         el.remove();
-                }
             }
-        }, 100);
+        }, 1000);
     </script>
 </body>
 

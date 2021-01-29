@@ -47,7 +47,7 @@
                         </label>
                         <div class="col-md-6">
                             <input type="text" id="data" class="form-control"
-                                value="{{ date_format(date_create($interesse->updated_at), 'd/m/Y') }}" readonly />
+                                value="{{ date_format(date_create($interesse->created_at), 'd/m/Y') }}" readonly />
                         </div>
                     </div>
                 </div>

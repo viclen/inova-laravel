@@ -132,7 +132,7 @@
                                         @endif
                                         @endforeach
                                         <td>
-                                            {{ date_format(date_create($interesse->updated_at), 'd/m/Y') }}
+                                            {{ date_format(date_create($interesse->created_at), 'd/m/Y') }}
                                         </td>
 
                                         <td>
