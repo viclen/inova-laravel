@@ -128,6 +128,8 @@ class CSVSeeder extends Seeder
             $interesse = new Interesse([
                 'cliente_id' => $cliente->id,
                 'carro_id' => null,
+                'created_at' => $data,
+                'updated_at' => $data
             ]);
 
             $palavras = explode(" ", clearString(strtoupper($carro)));
