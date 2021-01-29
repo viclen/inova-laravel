@@ -51,7 +51,7 @@ class Estoque extends Model
                         $valor = $caracteristica->valor;
                         try {
                             if ($caracteristica->descricao->tipo == 1) {
-                                $valor = Formatter::mil($valor);
+                                $valor = $valor;
                             } elseif ($caracteristica->descricao->tipo == 2) {
                                 $valor = Formatter::valor($valor);
                             } elseif ($caracteristica->descricao->tipo == 3) {
@@ -68,9 +68,9 @@ class Estoque extends Model
                 }
             } elseif (strpos($relacao, 'categoria') !== false && array_search('categoria', $ignorar) === false) {
                 if ($this->carro->categoria_id) {
-                    $categoria = OpcaoCaracteristica::find($this->carro->categoria_id)->first();
+                    $categoria = OpcaoCaracteristica::where("id", $this->carro->categoria_id)->first();
                     if ($categoria) {
-                        $dados['categoria'] = $categoria->valor;
+                        $dados['categoria-carro'] = $categoria->valor;
                     }
                 }
             }

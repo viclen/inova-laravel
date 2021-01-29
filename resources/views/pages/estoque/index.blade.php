@@ -88,7 +88,7 @@
                                         @foreach ($colunas as $coluna)
                                         @if (trim($coluna))
                                         <th class="text-capitalize text-nowrap">
-                                            {{ $coluna }}
+                                            {{ str_replace("-", " ", $coluna) }}
                                             <a class="btn-link"
                                                 href="/{{ request()->path() }}?ignorar={{ $coluna }},{{ join(',', $ignorar) }}">
                                                 <i class="fas fa-eye-slash"></i>
@@ -108,10 +108,10 @@
                                         @if (trim($coluna))
                                         <td class="text-capitalize text-nowrap text-ellipsis">
                                             {{ isset($estoque->dadosTabela($relacionamentos, $ignorar)[$coluna]) ?
-                                            $estoque->dadosTabela($relacionamentos, $ignorar)[$coluna]
-                                        :
-                                            ""
-                                        }}
+                                                $estoque->dadosTabela($relacionamentos, $ignorar)[$coluna]
+                                            :
+                                                ""
+                                            }}
                                         </td>
                                         @endif
                                         @endforeach

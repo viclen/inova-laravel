@@ -33,7 +33,7 @@
                     @foreach ($interesse->dadosTabela($relacionamentos) as $nome => $item)
                     <div class="form-group row">
                         <label for="{{ $nome . "_" }}" class="text-capitalize col-md-4 col-form-label text-md-right">
-                            {{ $nome }}
+                            {{ str_replace("-", " ", $nome) }}
                         </label>
                         <div class="col-md-6">
                             <input type="text" id="{{ $nome . "_" }}" class="form-control" value="{{ $item }}"
@@ -80,7 +80,7 @@
                                 <tr>
                                     @foreach ($interesse->dadosTabela($relacionamentos, $ignorar) as $nome => $_)
                                     <th class="text-capitalize text-nowrap">
-                                        {{ $nome }}
+                                        {{ str_replace("-", " ", $nome) }}
                                         <a class="btn-link"
                                             href="/{{ request()->path() }}?ignorar={{ $nome }},{{ request()->input('ignorar') }}#estoques">
                                             <i class="fas fa-eye-slash"></i>

@@ -105,9 +105,9 @@ class Interesse extends Model
                 }
             } elseif (strpos($relacao, 'categoria') !== false && array_search('categoria', $ignorar) === false) {
                 if ($this->carro->categoria_id) {
-                    $categoria = OpcaoCaracteristica::find($this->carro->categoria_id)->first();
+                    $categoria = OpcaoCaracteristica::where("id", $this->carro->categoria_id)->first();
                     if ($categoria) {
-                        $dados['categoria'] = $categoria->valor;
+                        $dados['categoria-carro'] = $categoria->valor;
                     }
                 }
             }

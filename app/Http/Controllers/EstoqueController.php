@@ -135,7 +135,8 @@ class EstoqueController extends Controller
             }
         }, array_merge([
             'carro',
-            'marca'
+            'marca',
+            'categoria-carro'
         ], Caracteristica::whereNotIn('caracteristicas.nome', $ignorar)
             ->selectRaw('DISTINCT caracteristicas.nome')
             ->get()

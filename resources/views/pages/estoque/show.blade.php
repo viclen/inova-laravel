@@ -11,7 +11,7 @@
                     @foreach ($estoque->dadosTabela($relacionamentos) as $nome => $item)
                     <div class="form-group row">
                         <label class="text-capitalize col-md-4 col-form-label text-md-right">
-                            {{ $nome }}
+                            {{ str_replace("-", " ", $nome) }}
                         </label>
                         <div class="col-md-6">
                             <a @if ($estoque[$nome . "_id" ]) href="/{{ $nome }}s/{{ $estoque[$nome . "_id"] }}" @endif
@@ -69,7 +69,7 @@
                                     </th>
                                     @foreach ($estoque->dadosTabela($relacionamentos, $ignorar) as $nome => $_)
                                     <th class="text-capitalize text-nowrap">
-                                        {{ $nome }}
+                                        {{ str_replace("-", " ", $nome) }}
                                         <a class="btn-link"
                                             href="/{{ request()->path() }}?ignorar={{ $nome }},{{ request()->input('ignorar') }}#interesses">
                                             <i class="fas fa-eye-slash"></i>

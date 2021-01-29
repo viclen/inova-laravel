@@ -140,7 +140,8 @@ class InteresseController extends Controller
             }
         }, array_merge([
             'carro',
-            'marca'
+            'marca',
+            'categoria-carro'
         ], Caracteristica::whereNotIn('caracteristicas.nome', $ignorar)
             ->selectRaw('DISTINCT caracteristicas.nome')
             ->get()
@@ -173,7 +174,7 @@ class InteresseController extends Controller
 
         return view('pages.interesse.index', [
             'interesses' => $dados->items(),
-            'relacionamentos' => ['carro.marca', 'caracteristicas'],
+            'relacionamentos' => ['carro.marca', 'caracteristicas', 'categoria'],
             'ignorar' => $ignorar,
             'dados' => $dados,
             'colunas' => $colunas,
