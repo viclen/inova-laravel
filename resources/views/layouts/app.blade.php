@@ -131,12 +131,14 @@
                 let el;
                 if (window.mobileCheck()) {
                     el = document.getElementById("whatsWeb");
-                    el.setAttribute("target", "_blank");
                 } else {
                     el = document.getElementById("whatsMobile");
+                    const web= document.getElementById("whatsWeb");
+                    if(web)
+                        web.setAttribute("target", "_blank");
                 }
-                    if (el)
-                        el.remove();
+                if (el)
+                    el.remove();
             }
         }, 1000);
     </script>
