@@ -11,6 +11,7 @@
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Scripts -->
+    <script src="{{ asset('js/mobile-check.js') }}"></script>
     <script src="{{ asset('js/app.js') }}?{{ filemtime(__DIR__ . '/../../../public/js/app.js') }}" defer></script>
 
     <!-- Fonts -->
@@ -123,6 +124,22 @@
     </div>
 
     @yield('scripts')
+
+    <script>
+        setTimeout(() => {
+            if(window.mobileCheck){
+                if (window.mobileCheck()) {
+                    const el = document.getElementById("whatsWeb");
+                    if (el)
+                        el.remove();
+                } else {
+                    const el = document.getElementById("whatsMobile");
+                    if (el)
+                        el.remove();
+                }
+            }
+        }, 100);
+    </script>
 </body>
 
 </html>

@@ -2,7 +2,11 @@
   <div class="justify-content-center w-100">
     <div class="row mb-1">
       <div class="col-md-3">
-        <a v-if="this.podevoltar !== false" v-bind:href="'/'" class="btn btn-light mb-2">
+        <a
+          v-if="this.podevoltar !== false"
+          v-bind:href="'/'"
+          class="btn btn-light mb-2"
+        >
           <fa-icon icon="arrow-left" />&nbsp;Voltar
         </a>
       </div>
@@ -44,16 +48,28 @@
     </div>
     <div class="row">
       <div class="col">
-        <div class="alert alert-secondary" role="alert" v-if="!dadosTabela.length">Nenhum dado.</div>
+        <div
+          class="alert alert-secondary"
+          role="alert"
+          v-if="!dadosTabela.length"
+        >
+          Nenhum dado.
+        </div>
 
         <table class="table table-responsive table-striped w-100 bg-white">
           <thead class="w-100">
             <tr>
-              <template v-for="(coluna,i) in titulosColunas">
+              <template v-for="(coluna, i) in titulosColunas">
                 <th
                   v-bind:key="i"
-                  v-bind:style="'width: ' + Math.floor((100 / (titulosColunas.length + 1))) + '%'"
-                >{{ coluna }}</th>
+                  v-bind:style="
+                    'width: ' +
+                    Math.floor(100 / (titulosColunas.length + 1)) +
+                    '%'
+                  "
+                >
+                  {{ coluna }}
+                </th>
               </template>
               <th v-bind:style="'width: 1%'">Ações</th>
             </tr>
@@ -62,28 +78,36 @@
             <template v-for="(item, i) in dadosTabela">
               <tr
                 v-bind:key="i"
-                v-bind:class="{ 'bg-info': highlight && i==0, 'text-white': highlight && i==0 }"
+                v-bind:class="{
+                  'bg-info': highlight && i == 0,
+                  'text-white': highlight && i == 0,
+                }"
               >
                 <template v-for="(coluna, j) in item">
                   <td v-bind:key="j" class="nowrap ellipsis">
                     <fa-icon
                       v-if="coluna === true"
                       icon="check"
-                      v-bind:class="{ 'text-success': !(highlight && i==0) }"
+                      v-bind:class="{ 'text-success': !(highlight && i == 0) }"
                     />
                     <fa-icon
                       v-else-if="coluna === false"
                       icon="times"
-                      v-bind:class="{ 'text-danger': !(highlight && i==0) }"
+                      v-bind:class="{ 'text-danger': !(highlight && i == 0) }"
                     />
-                    <span v-else-if="j=='telefone'">
+                    <span v-else-if="j == 'telefone'">
                       <a
-                        :href="'http://wa.me/55' + soNumeros(coluna)"
+                        :href="
+                          (mobile
+                            ? 'https://api.whatsapp.com/send?phone=55'
+                            : 'https://web.whatsapp.com/send?phone=55') +
+                          soNumeros(coluna)
+                        "
                         class="text-success mr-1"
                         style="font-size: 20px"
                         target="_blank"
                       >
-                        <fa-icon :icon="['fab','whatsapp-square']" />
+                        <fa-icon :icon="['fab', 'whatsapp-square']" />
                       </a>
                       <a :href="'tel:+55' + soNumeros(coluna)" target="_blank">
                         <fa-icon icon="phone-square" style="font-size: 20px" />
@@ -94,7 +118,7 @@
                   </td>
                 </template>
                 <td v-bind:key="i">
-                  <div class="dropdown" v-if="n_acoes>1">
+                  <div class="dropdown" v-if="n_acoes > 1">
                     <button
                       class="btn btn-secondary btn-sm dropdown-toggle text-nowrap"
                       type="button"
@@ -129,7 +153,7 @@
                     </div>
                   </div>
 
-                  <div v-if="n_acoes<=1">
+                  <div v-if="n_acoes <= 1">
                     <button
                       v-if="mostrarVer"
                       class="btn btn-sm btn-success text-nowrap"
@@ -173,10 +197,18 @@
       </div>
       <template v-slot:modal-footer>
         <div class="w-100">
-          <b-button class="float-right" variant="outline-secondary" @click="cancelDelete()">
+          <b-button
+            class="float-right"
+            variant="outline-secondary"
+            @click="cancelDelete()"
+          >
             <fa-icon icon="times" />&nbsp;Cancelar
           </b-button>
-          <b-button class="float-right mr-2" variant="outline-danger" @click="confirmDelete()">
+          <b-button
+            class="float-right mr-2"
+            variant="outline-danger"
+            @click="confirmDelete()"
+          >
             <fa-icon icon="trash" />&nbsp;Excluir
           </b-button>
         </div>
@@ -200,7 +232,7 @@ export default {
     "podepesquisar",
     "colunasvalor",
     "colunascheck",
-    "highlight"
+    "highlight",
   ],
   data() {
     return {
@@ -214,7 +246,8 @@ export default {
       mostrarExcluir: true,
       pesquisa: "",
       searchInvalid: false,
-      n_acoes: 3
+      n_acoes: 3,
+      mobile: false,
     };
   },
   mounted() {
@@ -242,6 +275,8 @@ export default {
       this.pesquisa = decodeURI(search);
     }
 
+    this.mobile = window.mobileCheck();
+
     setTimeout(() => {
       if (
         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
@@ -256,7 +291,7 @@ export default {
     prepararTabela() {
       if (this.dados) {
         if (this.colunas) {
-          this.titulosColunas = this.colunas.map(c => {
+          this.titulosColunas = this.colunas.map((c) => {
             if (
               !c.includes("_at") &&
               ((this.mostrarid !== false && (c == "id" || c.includes())) ||
@@ -277,9 +312,9 @@ export default {
             }
           }
         }
-        this.dadosTabela = this.dados.map(dado => {
+        this.dadosTabela = this.dados.map((dado) => {
           var retorno = {};
-          this.titulosColunas.forEach(t => {
+          this.titulosColunas.forEach((t) => {
             //   console.log(t);
             if (
               !t.includes("_at") &&
@@ -320,7 +355,7 @@ export default {
       let id = this.deleteId;
       if (id > -1) {
         let url = this.getUrl() + this.dados[id].id;
-        axios.delete(url).then(r => {
+        axios.delete(url).then((r) => {
           if (r.data.status == "1") {
             this.dadosTabela.splice(id, 1);
             this.dados.splice(id, 1);
@@ -328,13 +363,13 @@ export default {
             let toast = this.$toasted.success("Apagado com sucesso!", {
               theme: "toasted-primary",
               position: "bottom-right",
-              duration: 5000
+              duration: 5000,
             });
           } else {
             let toast = this.$toasted.error("Não foi possível apagar.", {
               theme: "toasted-primary",
               position: "bottom-right",
-              duration: 5000
+              duration: 5000,
             });
             // console.log(r);
           }
@@ -444,8 +479,8 @@ export default {
       } else {
         return "/" + this.controller + "s/";
       }
-    }
-  }
+    },
+  },
 };
 </script>
 

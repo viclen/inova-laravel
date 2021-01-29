@@ -13,7 +13,15 @@
                             Cliente
                         </label>
                         <div class="col-md-6">
-                            <a href="http://wa.me/55{{ \App\Formatter::soNumeros($interesse->cliente->telefone) }}"
+                            <a id="whatsMobile" href="https://api.whatsapp.com/send?phone=55{{ \App\Formatter::soNumeros($interesse->cliente->telefone) }}"
+                                class="form-control bg-light btn-link">
+                                {{ $interesse->cliente->nome }}
+                                <span>
+                                    <fa-icon :icon="['fab', 'whatsapp']" />
+                                </span>
+                            </a>
+
+                            <a id="whatsWeb" href="https://web.whatsapp.com/send?phone=55{{ \App\Formatter::soNumeros($interesse->cliente->telefone) }}"
                                 class="form-control bg-light btn-link">
                                 {{ $interesse->cliente->nome }}
                                 <span>

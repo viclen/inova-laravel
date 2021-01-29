@@ -23,31 +23,53 @@
                 <div class="card-body">
                     @if ($items)
                     @foreach ($items as $nome => $item)
-                    @if (is_array($item) || $item instanceof Collection)
+                    @if(strtolower($nome) == "telefone")
+                    <div class="form-group row">
+                        <label for="" class="text-capitalize col-md-4 col-form-label text-md-right">
+                            Cliente
+                        </label>
+                        <div class="col-md-6">
+                            <a id="whatsMobile"
+                                href="https://api.whatsapp.com/send?phone=55{{ \App\Formatter::soNumeros($item) }}"
+                                class="form-control bg-light btn-link">
+                                {{ $item }}
+                                <span>
+                                    <fa-icon :icon="['fab', 'whatsapp']" />
+                                </span>
+                            </a>
+
+                            <a id="whatsWeb"
+                                href="https://web.whatsapp.com/send?phone=55{{ \App\Formatter::soNumeros($item) }}"
+                                class="form-control bg-light btn-link">
+                                {{ $item }}
+                                <span>
+                                    <fa-icon :icon="['fab', 'whatsapp']" />
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                    @elseif(is_array($item) || $item instanceof Collection)
                     <tabela-acoes :mostrarid="false" :dados="{{ json_encode($items) }}" :colunas="''"
                         :controller="'{{ $titulo }}'" :colunasvalor="['fipe', 'valor']" :podecriar="false"
                         :podevoltar="false" :podepesquisar="false" :colunascheck="['financiado']"
-                        :highlight="{{ isset($highlight) && $highlight ? "true" : "false" }}">
+                        :highlight="{{ isset($highlight) && $highlight ? "true" : "false" }}" />
 
-                        @break
-                        @endif
-
-                        @if (!strpos($nome, "_id") && !strpos($nome, "_at"))
-                        <div class="form-group row">
-                            <label for="{{ $nome . "_" }}"
-                                class="text-capitalize col-md-4 col-form-label text-md-right">
-                                {{ $nome }}
-                            </label>
-                            <div class="col-md-6">
-                                <input type="text" id="{{ $nome . "_" }}" class="form-control" value="{{ $item }}"
-                                    readonly />
-                            </div>
+                    @break
+                    @elseif(!strpos($nome, "_id") && !strpos($nome, "_at"))
+                    <div class="form-group row">
+                        <label for="{{ $nome . "_" }}" class="text-capitalize col-md-4 col-form-label text-md-right">
+                            {{ $nome }}
+                        </label>
+                        <div class="col-md-6">
+                            <input type="text" id="{{ $nome . "_" }}" class="form-control" value="{{ $item }}"
+                                readonly />
                         </div>
-                        @endif
-                        @endforeach
-                        @else
-                        <div class="alert alert-secondary mb-0" role="alert">Nenhum dado.</div>
-                        @endif
+                    </div>
+                    @endif
+                    @endforeach
+                    @else
+                    <div class="alert alert-secondary mb-0" role="alert">Nenhum dado.</div>
+                    @endif
                 </div>
             </div>
         </div>
