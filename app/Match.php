@@ -206,7 +206,7 @@ class Match extends Model
             $est_carro = Estoque::whereHas('carro', function ($query) use ($interesse, $matches) {
                 $query->where('categoria_id', $interesse->carro->categoria_id);
             })->whereNotIn('estoques.id', array_keys($matches))->get();
-            foreach ($est_carro as $interesse) {
+            foreach ($est_carro as $estoque) {
                 if (isset($matches[$estoque->id])) {
                     $matches[$estoque->id]['prioridade']++;
                     $matches[$estoque->id]['caracteristicas'][] = 'categoria';
