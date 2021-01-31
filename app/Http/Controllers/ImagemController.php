@@ -44,7 +44,7 @@ class ImagemController extends Controller
      * @param  \App\Imagem  $imagem
      * @return \Illuminate\Http\Response
      */
-    public function show(Imagem $imagem)
+    public function show(int $id)
     {
         //
     }
@@ -55,7 +55,7 @@ class ImagemController extends Controller
      * @param  \App\Imagem  $imagem
      * @return \Illuminate\Http\Response
      */
-    public function edit(Imagem $imagem)
+    public function edit(int $id)
     {
         //
     }
@@ -67,7 +67,7 @@ class ImagemController extends Controller
      * @param  \App\Imagem  $imagem
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Imagem $imagem)
+    public function update(Request $request, int $id)
     {
         //
     }
@@ -78,7 +78,7 @@ class ImagemController extends Controller
      * @param  \App\Imagem  $imagem
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Imagem $imagem)
+    public function destroy(int $id)
     {
         //
     }
