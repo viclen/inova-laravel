@@ -214,7 +214,7 @@ class InteresseController extends Controller
 
         $resultados = [];
 
-        try {
+        // try {
             $cliente = $request['cliente'];
 
             if (!isset($cliente['id']) || !$cliente['id']) {
@@ -240,11 +240,18 @@ class InteresseController extends Controller
             foreach ($request['interesses'] as $interesse) {
                 $int = new Interesse([
                     'cliente_id' => $cliente['id'],
-                    'carro_id' => $interesse['carro_id'],
+                    'carro_id' => (isset($interesse['carro_id']) && $interesse['carro_id']) ? $interesse['carro_id'] : null,
                     'observacoes' => $interesse['observacoes'],
                     'origem' => $interesse['origem'],
                 ]);
                 $int->save();
+
+                if((isset($interesse['carro_id']) && $interesse['carro_id'])){
+                    DB::table('carros')->where('id', $interesse['carro_id'])->update(['uso' => DB::raw('uso + 1')]);
+                    Marca::whereHas("carros", function ($query) use ($interesse) {
+                        $query->where("id", $interesse['carro_id']);
+                    })->update(['uso' => DB::raw('uso + 1')]);
+                }
 
                 $cis = [];
                 foreach ($interesse['caracteristicas'] as $caracteristica) {
@@ -256,8 +263,6 @@ class InteresseController extends Controller
                     ];
                 }
                 CaracteristicaInteresse::insert($cis);
-
-                DB::table('carros')->where('id', $interesse['carro_id'])->update(['uso' => DB::raw('uso + 1')]);
 
                 $int->load(['caracteristicas.descricao', 'carro.marca']);
                 $matches = Match::findEstoques($int, 1);
@@ -285,10 +290,13 @@ class InteresseController extends Controller
                 CaracteristicaCarroCliente::insert($cccs);
 
                 DB::table('carros')->where('id', $troca['carro_id'])->update(['uso' => DB::raw('uso + 1')]);
+                Marca::whereHas("carros", function ($query) use ($troca) {
+                    $query->where("id", $troca['carro_id']);
+                })->update(['uso' => DB::raw('uso + 1')]);
             }
-        } catch (Throwable $th) {
-            return [$th->getMessage()];
-        }
+        // } catch (Throwable $th) {
+        //     return [$th->getMessage()];
+        // }
 
         return [
             'status' => 1,
@@ -327,15 +335,14 @@ class InteresseController extends Controller
      */
     public function edit($id)
     {
-        $interesse = Interesse::find($id);
+        $interesse = Interesse::with(["cliente", "caracteristicas.valor_opcao"])->find($id);
 
         return view('pages.interesse.edit', [
-            'tipos' => (new Interesse())->getTypes(),
-            'opcoes' => [
-                'carros' => Carro::select(["id", "nome"])->get(),
-                'clientes' => Cliente::select(["id", "nome"])->get(),
-            ],
-            'dados' => $interesse,
+            'caracteristicas' => Caracteristica::with('opcoes')->get(),
+            'marcas' => Marca::all(),
+            'carros' => Carro::with('marca')->get(),
+            'clientes' => Cliente::all(),
+            'dados' => $interesse
         ]);
     }
 
@@ -348,35 +355,85 @@ class InteresseController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'carro_id' => "required",
-            'cliente_id' => "required",
-            'valor' => "",
-            'ano' => "",
-            'cor' => "",
-            'observacoes' => "",
-            'financiado' => "",
-            'origem' => "",
+        $int = Interesse::find($id);
+
+        if(!$int) return response("Interesse nao encontrado", 404);
+
+        $request->validate([
+            'interesses' => 'array',
+            'cliente' => 'required',
+            'troca' => '',
         ]);
 
-        if ($validator->fails()) {
-            return [
-                'status' => 0,
-                'errors' => $validator->errors()
-            ];
-        } else {
-            $interesse = Interesse::find($id);
-            if ($interesse->update($request->all())) {
-                return [
-                    'status' => 1,
-                    'data' => $interesse,
+        $resultados = [];
+
+        try {
+            $cliente = $request['cliente'];
+
+            if (!isset($cliente['id']) || !$cliente['id']) {
+                if (!isset($cliente['nome']) || !isset($cliente['telefone']) || !$cliente['nome'] || !$cliente['telefone']) {
+                    return [
+                        'status' => 0
+                    ];
+                }
+
+                $cliente = new Cliente([
+                    'nome' => $cliente['nome'],
+                    'telefone' => $cliente['telefone'],
+                    'endereco' => isset($cliente['endereco']) ? $cliente['endereco'] : '',
+                    'cidade' => isset($cliente['cidade']) ? $cliente['cidade'] : '',
+                    'email' => isset($cliente['email']) ? $cliente['email'] : '',
+                    'cpf' => isset($cliente['cpf']) ? $cliente['cpf'] : ''
+                ]);
+
+                $cliente->save();
+            }
+            $cliente = json_decode(json_encode($cliente), true);
+
+            $interesse = $request['interesses'][0];
+
+            if ((isset($interesse['carro_id']) && $interesse['carro_id'])) {
+                if($int->carro_id != $interesse['carro_id']){
+                    DB::table('carros')->where('id', $interesse['carro_id'])->update(['uso' => DB::raw('uso + 1')]);
+                    Marca::whereHas("carros", function($query) use ($interesse) {
+                        $query->where("id", $interesse['carro_id']);
+                    })->update(['uso' => DB::raw('uso + 1')]);
+                }
+            }
+
+            $int->update([
+                'cliente_id' => $cliente['id'],
+                'carro_id' => (isset($interesse['carro_id']) && $interesse['carro_id']) ? $interesse['carro_id'] : null,
+                'observacoes' => $interesse['observacoes'],
+                'origem' => $interesse['origem'],
+            ]);
+
+            CaracteristicaInteresse::where("interesse_id", $id)->delete();
+
+            $cis = [];
+            foreach ($interesse['caracteristicas'] as $caracteristica) {
+                $cis[] = [
+                    'caracteristica_id' => $caracteristica['id'],
+                    'interesse_id' => $int->id,
+                    'valor' => $caracteristica['valor']['valor'],
+                    'comparador' => $caracteristica['valor']['comparador'],
                 ];
             }
+            CaracteristicaInteresse::insert($cis);
+
+            $int->load(['caracteristicas.descricao', 'carro.marca']);
+            $matches = Match::findEstoques($int, 1);
+            if (count($matches)) {
+                $matches[0]->interesse = $int;
+                $resultados[] = $matches[0];
+            }
+        } catch (Throwable $th) {
+            return [$th->getMessage()];
         }
 
         return [
-            'status' => 0,
-            'errors' => []
+            'status' => 1,
+            'resultados' => $resultados
         ];
     }
 
