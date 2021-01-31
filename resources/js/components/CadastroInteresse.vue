@@ -77,7 +77,7 @@
                   'border border-danger rounded is-invalid': false,
                 }"
                 v-model="interesse.carro"
-                @input="interesses[0].erro = false"
+                @input="(carro) => selecionarCarro(index, carro)"
               >
                 <div slot="no-options">Nenhum resultado.</div>
               </v-select>
@@ -660,7 +660,6 @@ export default {
     },
     adicionarCaracteristica(int_index, caracteristica, troca = false) {
       if (troca === true) {
-        let opcoesCaracteristicas = [];
         let caracteristicasSelecionadas = [
           ...this.troca.caracteristicasSelecionadas,
         ];
@@ -675,7 +674,6 @@ export default {
       } else {
         let interesse = this.interesses[int_index];
 
-        let opcoesCaracteristicas = [];
         let caracteristicasSelecionadas = [
           ...interesse.caracteristicasSelecionadas,
         ];
@@ -942,6 +940,46 @@ export default {
         }
       }
       return saida;
+    },
+    selecionarCarro(int_index, carro) {
+      if (!carro || !carro.id) {
+        return;
+      }
+
+      this.interesses[int_index].erro = false;
+
+      axios.get(`/carros/${carro.id}/preco`).then((r) => {
+        const preco = r.data;
+
+        const catIndex = this.interesses[
+          int_index
+        ].caracteristicasSelecionadas.findIndex(
+          (c) => c.nome.toLowerCase() == "valor"
+        );
+
+        if (catIndex > -1) {
+          this.interesses[int_index].caracteristicasSelecionadas.splice(
+            catIndex,
+            1
+          );
+        }
+
+        this.$forceUpdate();
+
+        const caracteristica = this.caracteristicas.find(
+          (c) => c.nome.toLowerCase() == "valor"
+        );
+
+        this.interesses[int_index].caracteristicasSelecionadas.push({
+          ...caracteristica,
+          valor: {
+            valor: preco,
+            comparador: "~",
+          },
+        });
+
+        this.$forceUpdate();
+      });
     },
   },
 };

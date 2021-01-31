@@ -31,6 +31,9 @@ Route::resource('caracteristicas', 'CaracteristicaController')->middleware('auth
 Route::resource('usuarios', 'UserController')->middleware('auth')->name('index', 'users');
 Route::resource('fipe', 'FipeController')->middleware('auth');
 
+// sugestao de preco nas caracteristicas pela fipe
+Route::get('carros/{id}/preco', 'CarroController@precoMedio'); //->middleware('auth');
+
 // download
 Route::get('estoques/{id}/matches/download', 'EstoqueController@downloadMatches')->middleware('auth');
 

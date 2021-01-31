@@ -12,7 +12,12 @@
         v-on:input="updateValue()"
       />
 
-      <b-form-input type="text" v-if="dados.tipo == 0" v-model="valor" v-on:input="updateValue()" />
+      <b-form-input
+        type="text"
+        v-if="dados.tipo == 0"
+        v-model="valor"
+        v-on:input="updateValue()"
+      />
 
       <b-form-input
         type="number"
@@ -44,7 +49,9 @@
       </b-input-group-append>
     </b-input-group>
 
-    <div v-if="valor === ''" class="text-danger p-1">Por favor, complete esse campo</div>
+    <div v-if="valor === ''" class="text-danger p-1">
+      Por favor, complete esse campo
+    </div>
   </div>
 </template>
 
@@ -53,18 +60,25 @@ export default {
   props: ["dados", "remover", "value", "mostrarcomparador"],
   data() {
     return {
-      valor: null,
+      valor: this.value ? this.value.valor || "" : null,
       opcoes: [],
       comparadores: [],
-      comparador: "="
+      comparador: this.value ? this.value.comparador || "=" : "=",
     };
   },
-  mounted() {
-    if (this.value) {
-      this.valor = this.value.valor || "";
-      this.comparador = this.value.comparador || "=";
-    }
+  watch: {
+    value: function () {
+      if (this.value) {
+        this.valor = this.value.valor || "";
+        this.comparador = this.value.comparador || "=";
 
+        if (this.dados.tipo == 2) {
+          this.formatarValor(this.value.valor, false);
+        }
+      }
+    },
+  },
+  mounted() {
     let opcoes = [];
 
     if (this.dados.tipo == 0) {
@@ -72,27 +86,27 @@ export default {
         { value: "<", text: "Começa com" },
         { value: ">", text: "Termina em" },
         { value: "=", text: "Igual a" },
-        { value: "~", text: "Contém" }
+        { value: "~", text: "Contém" },
       ];
     } else if (this.dados.tipo == 1) {
       this.comparadores = [
         { value: "<", text: "Menor que" },
         { value: ">", text: "Maior que" },
         { value: "=", text: "Igual a" },
-        { value: "~", text: "Em torno de" }
+        { value: "~", text: "Em torno de" },
       ];
     } else if (this.dados.tipo == 2) {
       this.comparadores = [
         { value: "<", text: "Menor que" },
         { value: ">", text: "Maior que" },
         { value: "=", text: "Igual a" },
-        { value: "~", text: "Em torno de" }
+        { value: "~", text: "Em torno de" },
       ];
     } else if (this.dados.tipo == 3) {
-      this.dados.opcoes.forEach(opcao => {
+      this.dados.opcoes.forEach((opcao) => {
         opcoes.push({
           value: opcao.ordem,
-          text: opcao.valor
+          text: opcao.valor,
         });
       });
       this.valor = this.value.valor || opcoes[0].value;
@@ -100,12 +114,12 @@ export default {
       opcoes = [
         {
           value: 1,
-          text: "Sim"
+          text: "Sim",
         },
         {
           value: 0,
-          text: "Não"
-        }
+          text: "Não",
+        },
       ];
       this.valor = this.value.value || opcoes[0].value;
     }
@@ -128,11 +142,12 @@ export default {
 
       this.$emit("input", {
         valor,
-        comparador: this.comparador
+        comparador: this.comparador,
       });
     },
-    formatarValor() {
-      let entrada = this.valor;
+    formatarValor(entrada, update = true) {
+      entrada = entrada || this.valor;
+      entrada = entrada + "";
 
       var permitido = "1234567890";
       var decimal = 0;
@@ -167,9 +182,11 @@ export default {
 
       this.valor = saida;
 
-      this.updateValue();
-    }
-  }
+      if (update) {
+        this.updateValue();
+      }
+    },
+  },
 };
 </script>
 

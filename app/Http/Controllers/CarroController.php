@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Caracteristica;
 use App\Carro;
 use App\Marca;
+use App\Modelo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -243,5 +244,11 @@ class CarroController extends Controller
         return view('pages.carro.index', [
             'dados' => $dados,
         ]);
+    }
+
+    public function precoMedio($id)
+    {
+        $media = Modelo::where("carro_id", $id)->average("preco");
+        return round($media);
     }
 }
