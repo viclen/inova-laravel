@@ -213,6 +213,9 @@ class EstoqueController extends Controller
             $estoque->observacoes = $request['observacoes'];
 
             DB::table('carros')->where('id', $request['carro_id'])->update(['uso' => DB::raw('uso + 1')]);
+            Marca::whereHas("carros", function ($query) use ($request) {
+                $query->where("id", $request['carro_id']);
+            })->update(['uso' => DB::raw('uso + 1')]);
 
             CaracteristicaEstoque::where('estoque_id', $estoque->id)->delete();
         } else {

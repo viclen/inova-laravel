@@ -13,7 +13,7 @@ class FipeController extends Controller
     public function index()
     {
         $carros = Carro::with('marca')->orderByDesc('uso')->get();
-        $marcas = Marca::all();
+        $marcas = Marca::orderByDesc('uso')->get();
 
         return view('pages.fipe.index', [
             'carros' => $carros,
@@ -35,6 +35,14 @@ class FipeController extends Controller
         $comparador = $request["comparador"];
         $ano = $request["ano"];
         $modelo = $request["modelo"];
+
+        if ($carro_id) {
+            $carro = Carro::find($carro_id);
+            $carro->update(['uso' => DB::raw('uso + 1')]);
+            Marca::where("id", $carro->marca_id)->update(['uso' => DB::raw('uso + 1')]);
+        } elseif ($marca_id) {
+            Marca::where("id", $marca_id)->update(['uso' => DB::raw('uso + 1')]);
+        }
 
         if ($carro_id) {
             $query = Modelo::where('carro_id', $carro_id);

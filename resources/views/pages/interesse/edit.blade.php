@@ -4,14 +4,11 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col">
-            <div class="card">
-                <div class="card-header">Cadastro de Interesses</div>
-
-                <div class="card-body">
-                    <form-padrao :dados="{{ json_encode($tipos) }}" :opcoes="{{ json_encode($opcoes) }}"
-                        :action="'/interesses'" :redirect="'/interesses'" :valores="{{ json_encode($dados) }}" />
-                </div>
-            </div>
+            <h1>Cadastrar Interesses</h1>
+            <b-card no-body>
+                <cadastro-interesse :caracteristicas="{{ $caracteristicas }}" :carros="{{ $carros }}"
+                    :marcas="{{ $marcas }}" :clientes="{{ $clientes }}" :dados="{{ $dados }}" />
+            </b-card>
         </div>
     </div>
 </div>

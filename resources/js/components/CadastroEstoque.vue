@@ -3,8 +3,7 @@
     <div class="row mb-1">
       <div class="col">
         <a href="/estoques" class="btn btn-light">
-          <fa-icon icon="arrow-left" />&nbsp;
-          Voltar
+          <fa-icon icon="arrow-left" />&nbsp; Voltar
         </a>
       </div>
     </div>
@@ -17,7 +16,9 @@
             <v-select
               :options="opcoesMarcas"
               v-bind:id="'marca'"
-              v-bind:class="{'border border-danger rounded is-invalid': false}"
+              v-bind:class="{
+                'border border-danger rounded is-invalid': false,
+              }"
               v-model="marca"
               @input="(marca) => selecionarMarca(marca)"
             >
@@ -30,7 +31,9 @@
             <v-select
               :options="opcoesCarros"
               v-bind:id="'carro'"
-              v-bind:class="{'border border-danger rounded is-invalid': !!erros.carro}"
+              v-bind:class="{
+                'border border-danger rounded is-invalid': !!erros.carro,
+              }"
               v-model="carro"
             >
               <div slot="no-options">Nenhum resultado.</div>
@@ -39,9 +42,10 @@
           </b-form-group>
           <hr />
           <h4>Caracteristicas</h4>
-          <div
-            v-if="caracteristicasSelecionadas.length == 0"
-          >Nenhuma característica selecionada. O carro será financiado? Automático? Qual o ano ou valor?</div>
+          <div v-if="caracteristicasSelecionadas.length == 0">
+            Nenhuma característica selecionada. O carro será financiado?
+            Automático? Qual o ano ou valor?
+          </div>
           <div>
             <caracteristica-input
               class="mt-2"
@@ -68,7 +72,8 @@
               v-for="opcao in opcoesCaracteristicas"
               :key="opcao.id"
               v-on:click="() => adicionarCaracteristica(opcao)"
-            >{{ opcao.nome }}</b-dropdown-item>
+              >{{ opcao.nome }}</b-dropdown-item
+            >
           </b-dropdown>
 
           <b-form-group class="mt-3">
@@ -78,8 +83,7 @@
 
           <div class="text-center">
             <b-button variant="primary" @click="salvar">
-              <fa-icon icon="save" />&nbsp;
-              Salvar
+              <fa-icon icon="save" />&nbsp; Salvar
             </b-button>
           </div>
         </b-card>
@@ -100,24 +104,24 @@ export default {
       marca: { id: 0, label: "Todas" },
       carro: null,
       caracteristicasSelecionadas: [],
-      observacoes: ""
+      observacoes: "",
     };
   },
   mounted() {
     let opcoesMarcas = [];
-    this.marcas.forEach(marca => {
+    this.marcas.forEach((marca) => {
       opcoesMarcas.push({
         id: marca.id,
-        label: marca.nome
+        label: marca.nome,
       });
     });
     this.opcoesMarcas = opcoesMarcas;
 
     let opcoesCarros = [];
-    this.carros.forEach(carro => {
+    this.carros.forEach((carro) => {
       opcoesCarros.push({
         id: carro.id,
-        label: carro.nome + " - " + carro.marca.nome
+        label: carro.nome + " - " + carro.marca.nome,
       });
     });
     this.opcoesCarros = opcoesCarros;
@@ -126,14 +130,14 @@ export default {
     this.selecionarMarca(null);
 
     if (this.dados) {
-      this.dados.caracteristicas.forEach(car => {
+      this.dados.caracteristicas.forEach((car) => {
         let caracteristica = this.getCaracteristica(car.caracteristica_id);
         this.caracteristicasSelecionadas.push({
           ...caracteristica,
           valor: {
             valor: car.valor,
-            comparador: "="
-          }
+            comparador: "=",
+          },
         });
       });
 
@@ -142,6 +146,7 @@ export default {
         const carro = this.opcoesCarros[i];
         if (carro.id == this.dados.carro_id) {
           this.carro = { ...carro };
+          break;
         }
       }
 
@@ -151,11 +156,11 @@ export default {
   methods: {
     selecionarMarca(marca) {
       let opcoesCarros = [];
-      this.carros.forEach(carro => {
+      this.carros.forEach((carro) => {
         if (!marca || carro.marca.id == marca.id) {
           opcoesCarros.push({
             id: carro.id,
-            label: carro.nome + " - " + carro.marca.nome
+            label: carro.nome + " - " + carro.marca.nome,
           });
         }
       });
@@ -171,7 +176,7 @@ export default {
 
       caracteristica.valor = {
         valor: caracteristica.valor_padrao || "",
-        comparador: "="
+        comparador: "=",
       };
       caracteristicasSelecionadas.push({ ...caracteristica });
 
@@ -182,7 +187,7 @@ export default {
     removerCaracteristica(id) {
       let caracteristicasSelecionadas = [];
 
-      this.caracteristicasSelecionadas.forEach(caracteristica => {
+      this.caracteristicasSelecionadas.forEach((caracteristica) => {
         if (caracteristica.id != id) {
           caracteristicasSelecionadas.push({ ...caracteristica });
         }
@@ -195,7 +200,7 @@ export default {
     carregarCaracteristicas() {
       let opcoesCaracteristicas = [];
 
-      this.caracteristicas.forEach(c => {
+      this.caracteristicas.forEach((c) => {
         let achou = false;
         for (let i = 0; i < this.caracteristicasSelecionadas.length; i++) {
           if (this.caracteristicasSelecionadas[i].id == c.id) {
@@ -222,7 +227,7 @@ export default {
           ({ id, valor }) => ({ id, valor: valor.valor })
         ),
         observacoes: this.observacoes,
-        carro_id: this.carro.id
+        carro_id: this.carro.id,
       };
 
       if (this.dados) {
@@ -230,12 +235,12 @@ export default {
       }
 
       let url = "/estoques";
-      axios.post(url, dados).then(r => {
+      axios.post(url, dados).then((r) => {
         if (r.data.status == "1") {
           let toast = this.$toasted.success("Estoque salvo!", {
             theme: "toasted-primary",
             position: "bottom-right",
-            duration: 5000
+            duration: 5000,
           });
 
           setTimeout(() => {
@@ -245,7 +250,7 @@ export default {
           let toast = this.$toasted.error("Houve algum erro.", {
             theme: "toasted-primary",
             position: "bottom-right",
-            duration: 5000
+            duration: 5000,
           });
           console.log(r.data);
         }
@@ -283,8 +288,8 @@ export default {
         }
       }
       return saida;
-    }
-  }
+    },
+  },
 };
 </script>
 

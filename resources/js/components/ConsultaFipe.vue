@@ -19,6 +19,27 @@
                 >
                   <div slot="no-options">Nenhum resultado.</div>
                 </v-select>
+
+                <div>
+                  <b-button
+                    v-for="sugestao in sugestoesMarca"
+                    :key="sugestao.id"
+                    class="display-inline"
+                    :variant="
+                      marca && marca.id == sugestao.id ? 'success' : 'light'
+                    "
+                    size="sm"
+                    @click="
+                      () =>
+                        selecionarMarca({
+                          id: sugestao.id,
+                          label: sugestao.nome,
+                        })
+                    "
+                  >
+                    {{ sugestao.nome }}
+                  </b-button>
+                </div>
               </b-form-group>
 
               <b-form-group>
@@ -142,11 +163,19 @@ export default {
       error: "",
       resultados: [],
       tab: 0,
+      sugestoesMarca: [],
     };
   },
   mounted() {
     let opcoesMarcas = [];
+    let contSugestoes = 0;
+
     this.marcas.forEach((marca) => {
+      if (contSugestoes < 10) {
+        this.sugestoesMarca.push(marca);
+        contSugestoes++;
+      }
+
       opcoesMarcas.push({
         id: marca.id,
         label: marca.nome,
@@ -176,6 +205,7 @@ export default {
           label: carro.nome + " - " + carro.marca.nome,
         }));
       } else {
+        this.marca = marca;
         this.carros.forEach((carro) => {
           if (carro.marca.id == marca.id) {
             opcoesCarros.push({

@@ -136,7 +136,7 @@
                                         </td>
 
                                         <td>
-                                            <dropdown-acoes :ver="true" :excluir="true" :id="{{ $interesse->id }}"
+                                            <dropdown-acoes :ver="true" :excluir="true" :editar="true" :id="{{ $interesse->id }}"
                                                 controller="interesses" />
                                         </td>
                                     </tr>

@@ -238,7 +238,10 @@
       </b-tab>
       <!-- cliente -->
       <!-- troca -->
-      <b-tab title="Troca" :disabled="resultados !== null || passo != 2">
+      <b-tab
+        title="Troca"
+        :disabled="resultados !== null || passo != 2 || !!dados"
+      >
         <b-form-group>
           <label>Marca</label>
           <v-select
@@ -437,9 +440,25 @@
 
       <b-button
         variant="danger"
-        v-if="tabIndex == 1 && (dadosCliente.nome || dadosCliente.telefone)"
+        v-if="
+          tabIndex == 1 &&
+          (dadosCliente.nome || dadosCliente.telefone) &&
+          !dados
+        "
       >
         <fa-icon icon="times" />&nbsp; Limpar
+      </b-button>
+
+      <b-button
+        variant="primary"
+        v-if="
+          tabIndex == 1 &&
+          (dadosCliente.nome || dadosCliente.telefone) &&
+          !!dados
+        "
+        @click="salvar"
+      >
+        <fa-icon icon="save" />&nbsp; Salvar
       </b-button>
 
       <b-button
@@ -456,7 +475,7 @@
 
 <script>
 export default {
-  props: ["caracteristicas", "carros", "marcas", "clientes"],
+  props: ["caracteristicas", "carros", "marcas", "clientes", "dados"],
   data() {
     return {
       cliente: null,
@@ -515,6 +534,34 @@ export default {
       });
     });
     this.opcoesClientes = opcoesClientes;
+
+    if (this.dados) {
+      this.dados.caracteristicas.forEach((car) => {
+        let caracteristica = this.getCaracteristica(car.caracteristica_id);
+        this.interesses[0].caracteristicasSelecionadas.push({
+          ...caracteristica,
+          valor: {
+            valor: car.valor,
+            comparador: "=",
+          },
+        });
+      });
+
+      this.interesses[0].observacoes = this.dados.observacoes;
+      for (const i in this.opcoesCarros) {
+        const carro = this.opcoesCarros[i];
+        if (carro.id == this.dados.carro_id) {
+          this.interesses[0].carro = { ...carro };
+          break;
+        }
+      }
+
+      this.cliente = {
+        id: this.dados.cliente.id,
+        label: this.dados.cliente.nome,
+      };
+      this.dadosCliente = this.dados.cliente;
+    }
 
     this.carregarCaracteristicas(0);
     this.selecionarMarca(0, null);
@@ -813,9 +860,16 @@ export default {
       }
 
       let url = "/interesses";
-      axios.post(url, dados).then((r) => {
+      let send = axios.post;
+
+      if (this.dados) {
+        url = "/interesses/" + this.dados.id;
+        send = axios.put;
+      }
+
+      send(url, dados).then((r) => {
         if (r.data.status == "1") {
-          let toast = this.$toasted.success("Interesses salvos!", {
+          this.$toasted.success("Interesses salvos!", {
             theme: "toasted-primary",
             position: "bottom-right",
             duration: 5000,
@@ -828,7 +882,7 @@ export default {
             this.$forceUpdate();
           }, 500);
         } else {
-          let toast = this.$toasted.error("Houve algum erro.", {
+          this.$toasted.error("Houve algum erro.", {
             theme: "toasted-primary",
             position: "bottom-right",
             duration: 5000,

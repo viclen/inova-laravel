@@ -202,7 +202,7 @@ class Match extends Model
             ];
         }
 
-        if($interesse->carro->categoria_id){
+        if($interesse->carro && $interesse->carro->categoria_id){
             $est_carro = Estoque::whereHas('carro', function ($query) use ($interesse, $matches) {
                 $query->where('categoria_id', $interesse->carro->categoria_id);
             })->whereNotIn('estoques.id', array_keys($matches))->get();

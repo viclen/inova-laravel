@@ -17,6 +17,7 @@ class CreateMarcasTable extends Migration
             $table->unsignedBigInteger('id')->unique();
             $table->string('nome');
             $table->string('key')->nullable();
+            $table->integer('uso')->default(0);
             $table->timestamps();
         });
     }
