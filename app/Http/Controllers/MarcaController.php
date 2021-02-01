@@ -115,6 +115,7 @@ class MarcaController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nome' => 'required',
+            'uso' => ''
         ]);
 
         if ($validator->fails()) {
