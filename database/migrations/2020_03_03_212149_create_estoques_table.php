@@ -18,6 +18,7 @@ class CreateEstoquesTable extends Migration
             $table->unsignedBigInteger('carro_id');
             $table->unsignedBigInteger('modelo_id')->nullable();
             $table->text('observacoes')->nullable();
+            $table->string("imagem");
             $table->timestamps();
 
             $table->foreign('modelo_id')->references('id')->on('modelos')->onDelete('cascade');

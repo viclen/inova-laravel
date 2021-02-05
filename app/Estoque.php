@@ -12,6 +12,7 @@ class Estoque extends Model
         'observacoes',
         'fipe_id',
         'carro_id',
+        'imagem'
     ];
 
     public function carro()

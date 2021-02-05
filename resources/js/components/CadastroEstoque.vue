@@ -12,6 +12,22 @@
       <div class="col-12">
         <b-card header="Cadastro de Estoque">
           <b-form-group>
+            <label>Imagem</label>
+            <div class="row">
+              <div class="col">
+                <b-file v-model="imagem" plain />
+              </div>
+              <div v-if="dados" class="col">
+                Antiga <br />
+                <img
+                  :src="dados.imagem.replace('public', '/storage')"
+                  height="100"
+                />
+              </div>
+            </div>
+          </b-form-group>
+
+          <b-form-group>
             <label>Marca</label>
             <v-select
               :options="opcoesMarcas"
@@ -105,6 +121,7 @@ export default {
       carro: null,
       caracteristicasSelecionadas: [],
       observacoes: "",
+      imagem: null,
     };
   },
   mounted() {
@@ -234,27 +251,44 @@ export default {
         dados.id = this.dados.id;
       }
 
-      let url = "/estoques";
-      axios.post(url, dados).then((r) => {
-        if (r.data.status == "1") {
-          let toast = this.$toasted.success("Estoque salvo!", {
-            theme: "toasted-primary",
-            position: "bottom-right",
-            duration: 5000,
-          });
+      const formData = new FormData();
 
-          setTimeout(() => {
-            window.location = "/estoques/" + r.data.estoque.id;
-          }, 500);
-        } else {
-          let toast = this.$toasted.error("Houve algum erro.", {
-            theme: "toasted-primary",
-            position: "bottom-right",
-            duration: 5000,
-          });
-          console.log(r.data);
+      for (const name in dados) {
+        if (Object.hasOwnProperty.call(dados, name)) {
+          const valor = dados[name];
+          formData.append(name, JSON.stringify(valor));
         }
-      });
+      }
+
+      formData.append("imagem", this.imagem);
+
+      let url = "/estoques";
+      axios
+        .post(url, formData, {
+          headers: {
+            "Content-Type": `multipart/form-data; boundary=${formData._boundary}`,
+          },
+        })
+        .then((r) => {
+          if (r.data.status == "1") {
+            let toast = this.$toasted.success("Estoque salvo!", {
+              theme: "toasted-primary",
+              position: "bottom-right",
+              duration: 5000,
+            });
+
+            setTimeout(() => {
+              window.location = "/estoques/" + r.data.estoque.id;
+            }, 500);
+          } else {
+            let toast = this.$toasted.error("Houve algum erro.", {
+              theme: "toasted-primary",
+              position: "bottom-right",
+              duration: 5000,
+            });
+            console.log(r.data);
+          }
+        });
     },
     getCaracteristica(id) {
       for (const i in this.caracteristicas) {

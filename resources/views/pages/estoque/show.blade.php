@@ -8,6 +8,15 @@
                 <div class="card-header">Estoque</div>
 
                 <div class="card-body">
+                    <div class="form-group row">
+                        <label class="text-capitalize col-md-4 col-form-label text-md-right">
+                            Imagem
+                        </label>
+                        <div class="col-md-6">
+                            <img src="{{ Storage::url($estoque->imagem) }}" height="200" />
+                        </div>
+                    </div>
+
                     @foreach ($estoque->dadosTabela($relacionamentos) as $nome => $item)
                     <div class="form-group row">
                         <label class="text-capitalize col-md-4 col-form-label text-md-right">

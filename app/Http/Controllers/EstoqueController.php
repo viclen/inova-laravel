@@ -9,9 +9,11 @@ use App\Estoque;
 use App\Formatter;
 use App\Marca;
 use App\Match;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class EstoqueController extends Controller
@@ -200,34 +202,54 @@ class EstoqueController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'caracteristicas' => 'array',
+        $dados = $request->validate([
+            'caracteristicas' => 'required',
             'carro_id' => 'required',
             'observacoes' => '',
-            'id' => ''
+            'id' => '',
+            'imagem' => ''
         ]);
 
-        if (isset($request['id']) && $request['id']) {
-            $estoque = Estoque::find($request['id']);
-            $estoque->carro_id = $request['carro_id'];
-            $estoque->observacoes = $request['observacoes'];
+        $imagem = "";
 
-            DB::table('carros')->where('id', $request['carro_id'])->update(['uso' => DB::raw('uso + 1')]);
-            Marca::whereHas("carros", function ($query) use ($request) {
-                $query->where("id", $request['carro_id']);
+        if($request->file("imagem")){
+            $imagem = $request->file('imagem')->store('public/estoques');
+        }
+
+        foreach ($dados as $key => $value) {
+            $dados[$key] = json_decode($value, true);
+        }
+
+        if (isset($dados['id']) && $dados['id']) {
+            $estoque = Estoque::find($dados['id']);
+            $estoque->carro_id = $dados['carro_id'];
+            $estoque->observacoes = $dados['observacoes'];
+
+            if($imagem){
+                try{
+                    Storage::delete($estoque->imagem);
+                }catch(Exception $e){}
+
+                $estoque->imagem = $imagem;
+            }
+
+            DB::table('carros')->where('id', $dados['carro_id'])->update(['uso' => DB::raw('uso + 1')]);
+            Marca::whereHas("carros", function ($query) use ($dados) {
+                $query->where("id", $dados['carro_id']);
             })->update(['uso' => DB::raw('uso + 1')]);
 
             CaracteristicaEstoque::where('estoque_id', $estoque->id)->delete();
         } else {
             $estoque = new Estoque([
-                'carro_id' => $request['carro_id'],
-                'observacoes' => $request['observacoes']
+                'carro_id' => $dados['carro_id'],
+                'observacoes' => $dados['observacoes'],
+                'imagem' => $imagem
             ]);
         }
         $estoque->save();
 
         $caracteristicas = [];
-        foreach ($request['caracteristicas'] as $caracteristica) {
+        foreach ($dados['caracteristicas'] as $caracteristica) {
             $caracteristicas[] = [
                 'caracteristica_id' => $caracteristica['id'],
                 'estoque_id' => $estoque->id,
