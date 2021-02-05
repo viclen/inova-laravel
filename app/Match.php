@@ -61,6 +61,27 @@ class Match extends Model
                     ];
                 }
             }
+
+            $encontradas = CaracteristicaInteresse::where([
+                ['caracteristica_id', 2],
+                ['valor', $estoque->carro->categoria_id]
+            ])
+                ->selectRaw('DISTINCT interesse_id, caracteristica_id')
+                ->get();
+
+            foreach ($encontradas as $int_car) {
+                if(array_search('categoria', $matches[$int_car->interesse_id]['caracteristicas']) === false){
+                    if (isset($matches[$int_car->interesse_id])) {
+                        $matches[$int_car->interesse_id]['prioridade'] ++;
+                        $matches[$int_car->interesse_id]['caracteristicas'][] = 'categoria';
+                    } else {
+                        $matches[$int_car->interesse_id] = [
+                            'caracteristicas' => ['categoria'],
+                            'prioridade' => 1
+                        ];
+                    }
+                }
+            }
         }
 
         $regra_marca = Regra::where([
@@ -215,6 +236,27 @@ class Match extends Model
                         'caracteristicas' => ['categoria'],
                         'prioridade' => 1
                     ];
+                }
+            }
+
+            $encontradas = CaracteristicaEstoque::where([
+                ['caracteristica_id', 2],
+                ['valor', $interesse->carro->categoria_id]
+            ])
+                ->selectRaw('DISTINCT estoque_id, caracteristica_id')
+                ->get();
+
+            foreach ($encontradas as $est_car) {
+                if (array_search('categoria', $matches[$est_car->estoque_id]['caracteristicas']) === false) {
+                    if (isset($matches[$est_car->estoque_id])) {
+                        $matches[$est_car->estoque_id]['prioridade']++;
+                        $matches[$est_car->estoque_id]['caracteristicas'][] = 'categoria';
+                    } else {
+                        $matches[$est_car->estoque_id] = [
+                            'caracteristicas' => ['categoria'],
+                            'prioridade' => 1
+                        ];
+                    }
                 }
             }
         }
