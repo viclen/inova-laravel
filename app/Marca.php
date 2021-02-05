@@ -9,7 +9,8 @@ class Marca extends Model
 {
     protected $fillable = [
         'nome',
-        'fipe_id'
+        'fipe_id',
+        'uso'
     ];
 
     protected $hidden = [

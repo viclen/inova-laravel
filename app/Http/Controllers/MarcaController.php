@@ -108,14 +108,15 @@ class MarcaController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Marca  $marca
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Marca $marca)
+    public function update(Request $request, int $id)
     {
+        $marca = Marca::find($id);
+
         $validator = Validator::make($request->all(), [
             'nome' => 'required',
-            'uso' => ''
+            'uso' => 'integer'
         ]);
 
         if ($validator->fails()) {
