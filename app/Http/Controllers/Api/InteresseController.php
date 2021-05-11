@@ -54,15 +54,20 @@ class InteresseController extends Controller
                     ];
                 }
 
-                $cliente = new Cliente([
-                    'nome' => $cliente['nome'],
-                    'telefone' => $cliente['telefone'],
-                    'endereco' => isset($cliente['endereco']) ? $cliente['endereco'] : '',
-                    'cidade' => isset($cliente['cidade']) ? $cliente['cidade'] : '',
-                    'email' => isset($cliente['email']) ? $cliente['email'] : '',
-                    'cpf' => isset($cliente['cpf']) ? $cliente['cpf'] : ''
-                ]);
+                $cliente = Cliente::where("telefone", $cliente['telefone'])->first();
 
+                if(!$cliente){
+                    $cliente = new Cliente([
+                        'nome' => $cliente['nome'],
+                        'telefone' => $cliente['telefone'],
+                        'endereco' => isset($cliente['endereco']) ? $cliente['endereco'] : '',
+                        'cidade' => isset($cliente['cidade']) ? $cliente['cidade'] : '',
+                        'email' => isset($cliente['email']) ? $cliente['email'] : '',
+                        'cpf' => isset($cliente['cpf']) ? $cliente['cpf'] : ''
+                    ]);
+                }
+
+                $cliente->nome = $cliente['nome'];
                 $cliente->save();
             }
             $cliente = json_decode(json_encode($cliente), true);
@@ -119,8 +124,7 @@ class InteresseController extends Controller
         } catch (Throwable $th) {
             return [
                 'message' => $th->getMessage(),
-                'request' => $request->toArray(),
-                'i' => $i
+                'request' => $request->toArray()
             ];
         }
 
