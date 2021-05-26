@@ -243,7 +243,7 @@ class InteresseController extends Controller
 
     public function advancedSearch()
     {
-        $q = request()->textoPesquisa;
+        $q = request()->textoPesquisa || "";
 
         $caracteristicas = request()->caracteristicas;
 
@@ -293,31 +293,27 @@ class InteresseController extends Controller
             }
         }
 
-        if ($q) {
-            $query = Interesse::whereHas('carro', function ($query) use ($q) {
-                $query->whereRaw("
-                    nome LIKE '%$q%'
-                ");
-            })->orWhereHas('cliente', function ($query) use ($q) {
-                $query->whereRaw("
-                    nome LIKE '%$q%' OR
-                    cidade LIKE '%$q%'
-                ");
-            })->orWhereIn('id', $interesses);
+        $query = Interesse::whereHas('carro', function ($query) use ($q) {
+            $query->whereRaw("
+                nome LIKE '%$q%'
+            ");
+        })->orWhereHas('cliente', function ($query) use ($q) {
+            $query->whereRaw("
+                nome LIKE '%$q%' OR
+                cidade LIKE '%$q%'
+            ");
+        })->orWhereIn('id', $interesses);
 
-            $qtd = request()->input('qtd', 100000);
+        $qtd = request()->input('qtd', 100000);
 
-            $with = 'carro.marca,cliente,caracteristicas.descricao';
-            if ($with) {
-                $relations = explode(",", $with);
-                $dados = $query->with($relations)->orderByDesc('id')->paginate($qtd);
-            } else {
-                $dados = $query->orderByDesc('id')->paginate($qtd);
-            }
-
-            return $dados->items();
+        $with = 'carro.marca,cliente,caracteristicas.descricao';
+        if ($with) {
+            $relations = explode(",", $with);
+            $dados = $query->with($relations)->orderByDesc('id')->paginate($qtd);
+        } else {
+            $dados = $query->orderByDesc('id')->paginate($qtd);
         }
 
-        return request();
+        return $dados->items();
     }
 }
