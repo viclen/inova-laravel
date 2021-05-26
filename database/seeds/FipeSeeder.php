@@ -124,6 +124,14 @@ class FipeSeeder extends Seeder
                                 $carro->save();
                                 $msg = ": Novo";
                             } else {
+                                $fipe_ids = json_decode($carro->fipe_ids);
+
+                                if (array_search("$carro_fipe_id", $fipe_ids) === false) {
+                                    $fipe_ids[] = "$carro_fipe_id";
+                                    $carro->fipe_ids = json_encode($fipe_ids);
+                                    $carro->save();
+                                }
+
                                 $msg = ": Encontrado";
                             }
                         }
@@ -165,6 +173,7 @@ class FipeSeeder extends Seeder
                                                 if (!$msg)
                                                     $msg = ": Atualizado | $modelo->preco -> $dados_modelo[preco]";
                                                 $modelo->preco = $dados_modelo['preco'];
+                                                $modelo->referencia = $dados_modelo['referencia'];
                                             }
                                             $modelo->save();
 

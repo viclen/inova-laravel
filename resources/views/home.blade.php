@@ -4,7 +4,11 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col">
-            <div class="card">
+            <div>
+                <graficos-home :data="{{ json_encode($graficos_data) }}" />
+            </div>
+
+            <div class="card mb-3">
                 <div class="card-header">Possíveis clientes</div>
 
                 <div class="card-body">

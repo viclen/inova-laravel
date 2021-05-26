@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Carro;
 use App\Match;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -49,10 +50,44 @@ class HomeController extends Controller
             ->orderByDesc('prioridade')
             ->get();
 
-        // dd($matches);
+        $grafico_carros = DB::table('carros')
+            ->join('marcas', 'marcas.id', 'carros.marca_id')
+            ->join('interesses', 'interesses.carro_id', 'carros.id')
+            ->selectRaw('carros.*, marcas.nome as marca, COUNT(interesses.carro_id) as count_interesses')
+            ->groupBy('carros.id')
+            ->orderByDesc('count_interesses')
+            ->limit(30)
+            ->get();
+
+        $grafico_marcas = DB::table('marcas')
+            ->join('carros', 'marcas.id', 'carros.marca_id')
+            ->join('interesses', 'interesses.carro_id', 'carros.id')
+            ->selectRaw('marcas.*, COUNT(interesses.id) as count_interesses')
+            ->groupBy('marcas.id')
+            ->orderByDesc('count_interesses')
+            ->limit(30)
+            ->get();
+
+        $grafico_categorias = DB::table('caracteristica_interesses')
+            ->join('interesses', 'interesses.id', 'caracteristica_interesses.interesse_id')
+            ->join('opcao_caracteristicas', function ($join) {
+                $join->on('opcao_caracteristicas.ordem', 'caracteristica_interesses.valor')
+                    ->on('opcao_caracteristicas.caracteristica_id', 'caracteristica_interesses.caracteristica_id');
+            })
+            ->selectRaw('opcao_caracteristicas.valor as nome, COUNT(interesses.id) as count_interesses')
+            ->groupBy('opcao_caracteristicas.ordem')
+            ->orderByDesc('count_interesses')
+            ->whereRaw('opcao_caracteristicas.caracteristica_id = 2')
+            ->limit(30)
+            ->get();
 
         return view('home', [
             'matches' => $matches,
+            'graficos_data' => [
+                'grafico_carros' => $grafico_carros,
+                'grafico_marcas' => $grafico_marcas,
+                'grafico_categorias' => $grafico_categorias,
+            ]
         ]);
     }
 }

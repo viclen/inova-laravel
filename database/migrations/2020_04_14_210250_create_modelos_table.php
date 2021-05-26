@@ -21,6 +21,7 @@ class CreateModelosTable extends Migration
             $table->char('combustivel', 1);
             $table->string('fipe_id', 10);
             $table->unsignedBigInteger('carro_id');
+            $table->string('referencia', 40);
             $table->timestamps();
 
             $table->foreign('carro_id')->references('id')->on('carros')->onDelete('cascade');

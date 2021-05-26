@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
             'username' => 'admin',
             'email' => 'admin@autosavestudio.com',
             'password' => Hash::make('0.admin.1'),
-            'api_token' => Str::random('80'),
+            'api_token' => Str::random(80),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -28,7 +28,7 @@ class UserSeeder extends Seeder
             'username' => 'robson',
             'email' => 'robson@inova.autosavestudio.com',
             'password' => Hash::make('robson'),
-            'api_token' => Str::random('80'),
+            'api_token' => Str::random(80),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -37,7 +37,7 @@ class UserSeeder extends Seeder
             'username' => 'kaue',
             'email' => 'kaue@autosavestudio.com',
             'password' => Hash::make('kaue123'),
-            'api_token' => Str::random('80'),
+            'api_token' => Str::random(80),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -46,7 +46,7 @@ class UserSeeder extends Seeder
             'username' => 'testeapi',
             'email' => 'testeapi@autosavestudio.com',
             'password' => Hash::make('testeapi'),
-            'api_token' => Str::random('80'),
+            'api_token' => Str::random(80),
             'created_at' => now(),
             'updated_at' => now(),
         ]);

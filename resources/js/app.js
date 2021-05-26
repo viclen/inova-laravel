@@ -23,12 +23,19 @@ Vue.component('number-pattern-input', require('./components/NumberPatternInput.v
 Vue.component('sidebar', require('./components/Sidebar.vue').default);
 Vue.component('editor-caracteristicas', require('./components/EditorCaracteristicas.vue').default);
 Vue.component('consulta-fipe', require('./components/ConsultaFipe.vue').default);
-Vue.component('dropdown-acoes', require('./components/DropdownAcoes').default);
+Vue.component('dropdown-acoes', require('./components/DropdownAcoes.vue').default);
+Vue.component('grafico-interesses-carros', require('./components/GraficoInteressesCarros.vue').default);
+Vue.component('grafico-interesses-marcas', require('./components/GraficoInteressesMarcas.vue').default);
+Vue.component('grafico-interesses-categorias', require('./components/GraficoInteressesCategorias.vue').default);
+Vue.component('graficos-home', require('./components/GraficosHome.vue').default);
 
 import Toasted from 'vue-toasted';
 import BootstrapVue from 'bootstrap-vue';
 Vue.use(BootstrapVue)
 Vue.use(Toasted);
+
+import VueGoogleCharts from 'vue-google-charts';
+Vue.use(VueGoogleCharts);
 
 import vSelect from "vue-select";
 Vue.component("v-select", vSelect);

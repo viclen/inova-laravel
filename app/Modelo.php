@@ -15,6 +15,7 @@ class Modelo extends Model
         'fipe_id',
         'dados',
         'carro_id',
+        'referencia'
     ];
 
     public function carro()
