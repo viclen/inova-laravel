@@ -53,21 +53,22 @@ class InteresseController extends Controller
                         'status' => 0
                     ];
                 }
+                $cliente_req = $cliente;
 
-                $cliente = Cliente::where("telefone", $cliente['telefone'])->first();
+                $cliente = Cliente::where("telefone", $cliente_req['telefone'])->first();
 
                 if(!$cliente){
                     $cliente = new Cliente([
-                        'nome' => $cliente['nome'],
-                        'telefone' => $cliente['telefone'],
-                        'endereco' => isset($cliente['endereco']) ? $cliente['endereco'] : '',
-                        'cidade' => isset($cliente['cidade']) ? $cliente['cidade'] : '',
-                        'email' => isset($cliente['email']) ? $cliente['email'] : '',
-                        'cpf' => isset($cliente['cpf']) ? $cliente['cpf'] : ''
+                        'nome' => $cliente_req['nome'],
+                        'telefone' => $cliente_req['telefone'],
+                        'endereco' => isset($cliente_req['endereco']) ? $cliente_req['endereco'] : '',
+                        'cidade' => isset($cliente_req['cidade']) ? $cliente_req['cidade'] : '',
+                        'email' => isset($cliente_req['email']) ? $cliente_req['email'] : '',
+                        'cpf' => isset($cliente_req['cpf']) ? $cliente_req['cpf'] : ''
                     ]);
                 }
 
-                $cliente->nome = $cliente['nome'];
+                $cliente->nome = $cliente_req['nome'];
                 $cliente->save();
             }
 
