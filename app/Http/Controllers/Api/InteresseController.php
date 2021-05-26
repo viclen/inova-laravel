@@ -67,6 +67,7 @@ class InteresseController extends Controller
                     ]);
                 }
 
+                $cliente->nome = $cliente['nome'];
                 $cliente->save();
             }
 
@@ -124,7 +125,7 @@ class InteresseController extends Controller
         } catch (Throwable $th) {
             return [
                 'message' => $th->getMessage(),
-                'request' => $request->toArray(),
+                'request' => $request->toArray()
             ];
         }
 

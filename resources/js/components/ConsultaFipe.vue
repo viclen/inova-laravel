@@ -104,6 +104,7 @@
                   <tr>
                     <th>Nome</th>
                     <th>Ano</th>
+                    <th>Referência</th>
                     <th>Combustível</th>
                     <th>Preço</th>
                     <!-- <th>Ações</th> -->
@@ -116,6 +117,9 @@
                     </td>
                     <td>
                       {{ modelo.ano }}
+                    </td>
+                    <td>
+                      {{ modelo.referencia }}
                     </td>
                     <td>
                       {{ modelo.combustivel }}
