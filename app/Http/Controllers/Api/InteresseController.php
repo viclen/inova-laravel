@@ -56,7 +56,7 @@ class InteresseController extends Controller
 
                 $cliente = Cliente::where("telefone", $cliente['telefone'])->first();
 
-                if(!$cliente) {
+                if(!$cliente){
                     $cliente = new Cliente([
                         'nome' => $cliente['nome'],
                         'telefone' => $cliente['telefone'],
