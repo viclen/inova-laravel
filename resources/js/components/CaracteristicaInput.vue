@@ -30,7 +30,7 @@
         type="text"
         placeholder="R$ 00.000,00"
         class="form-control"
-        v-on:input="formatarValor"
+        v-on:input="(e) => formatarValor(e.target.value)"
         v-if="dados.tipo == 2"
         v-model="valor"
       />
@@ -149,9 +149,9 @@ export default {
       entrada = entrada || this.valor;
       entrada = entrada + "";
 
-      var permitido = "1234567890";
-      var decimal = 0;
-      var saida = "";
+      let permitido = "1234567890";
+      let decimal = 0;
+      let saida = "";
 
       for (let i = 0; i < entrada.length; i++) {
         let c = entrada.charAt(i);
